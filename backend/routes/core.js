@@ -31,7 +31,8 @@ module.exports = function startCoreRoutes(app, express)
         TIME: JSON.stringify(Date.now()),
         LOCALE: JSON.stringify(locale),
         GUEST_USER: JSON.stringify(app.user.guest),
-        PRIVILEGES: JSON.stringify(app.user.config.privileges)
+        PRIVILEGES: JSON.stringify(app.user.config.privileges),
+        TAG_VALUES: JSON.stringify(app.controller.values)
       }
     });
   }
