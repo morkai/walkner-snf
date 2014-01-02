@@ -1,0 +1,19 @@
+<div class="well">
+  <form id="<%- idPrefix %>-form" class="filter-form">
+    <div class="form-group">
+      <label for="<%- idPrefix %>-login"><%- t('users', 'PROPERTY:login') %></label>
+      <input id="<%- idPrefix %>-login" class="form-control" name="login" type="text" placeholder="<%- t('users', 'FILTER:PLACEHOLDER:login') %>">
+    </div><div
+      class="form-group">
+      <label for="<%- idPrefix %>-lastName"><%- t('users', 'PROPERTY:lastName') %></label>
+      <input id="<%- idPrefix %>-lastName" class="form-control" name="lastName" type="text" placeholder="<%- t('users', 'FILTER:PLACEHOLDER:lastName') %>">
+    </div><div
+      class="form-group">
+      <label for="<%- idPrefix %>-limit"><%- t('users', 'FILTER:LIMIT') %></label>
+      <input id="<%- idPrefix %>-limit" class="form-control" name="limit" type="number" value="25" min="5" max="100" step="1">
+    </div><div
+      class="form-group filter-actions">
+      <input type="submit" class="btn btn-primary" value="<%= t('users', 'FILTER:BUTTON') %>">
+    </div>
+  </form>
+</div>

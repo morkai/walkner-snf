@@ -1,0 +1,58 @@
+{
+  "TITLE": "Tester SNF",
+
+  "MSG:LOADING": "Ładowanie...",
+  "MSG:LOADING_FAILURE": "Ładowanie nie powiodło się :(",
+  "MSG:LOG_OUT:FAILURE": "Wylogowanie nie powiodło się :(",
+  "MSG:LOG_OUT:SUCCESS": "Zostałeś wylogowany!",
+
+  "PAGE_ACTION:filter": "Filtruj",
+
+  "LIST:COLUMN:actions": "Akcje",
+  "LIST:NO_DATA": "Brak danych.",
+  "LIST:NO_DATA:cell": "brak danych",
+  "LIST:ACTION:viewDetails": "Pokaż szczegóły",
+  "LIST:ACTION:edit": "Edytuj",
+  "LIST:ACTION:delete": "Usuń",
+
+  "BREADCRUMBS:edit": "Edycja",
+  "BREADCRUMBS:delete": "Usuwanie",
+  "BREADCRUMBS:error": "Błąd {code}: {codeStr, select, e401{nieautoryzowany dostęp} e404{nie znaleziono} other{nieprawidłowe zapytanie}}",
+
+  "ERROR:400": "Żądanie nie może być obsłużone z powodu błędnej składni zapytania :(",
+  "ERROR:401": "Niestety, ale nie masz wystarczających uprawnień do wykonania żądanej akcji :(",
+  "ERROR:404": "Wybrana strona nie istnieje :(",
+
+  "PAGINATION:FIRST_PAGE": "Pierwsza strona",
+  "PAGINATION:PREV_PAGE": "Poprzednia strona",
+  "PAGINATION:NEXT_PAGE": "Następna strona",
+  "PAGINATION:LAST_PAGE": "Ostatnia strona",
+
+  "LOG_IN_FORM:DIALOG_TITLE": "Logowanie do systemu",
+  "LOG_IN_FORM:LABEL:LOGIN": "Login",
+  "LOG_IN_FORM:LABEL:PASSWORD": "Hasło",
+  "LOG_IN_FORM:LABEL:SUBMIT": "Zaloguj się",
+
+  "BOOL:true": "Tak",
+  "BOOL:false": "Nie",
+
+  "GUEST_USER_NAME": "Gość",
+
+  "NAVBAR:TOGGLE": "Pokaż menu",
+  "NAVBAR:DASHBOARD": "Dashboard",
+  "NAVBAR:EVENTS": "Zdarzenia",
+  "NAVBAR:USERS": "Użytkownicy",
+  "NAVBAR:MY_ACCOUNT": "Moje konto",
+  "NAVBAR:UI_LOCALE": "Lokalizacja UI",
+  "NAVBAR:LOCALE_PL": "Po polsku",
+  "NAVBAR:LOCALE_US": "Po angielsku",
+  "NAVBAR:LOG_IN": "Zaloguj się",
+  "NAVBAR:LOG_OUT": "Wyloguj się",
+  "NAVBAR:PROGRAMS": "Programy",
+
+  "ACTION_FORM:BUTTON": "Wykonaj akcję",
+  "ACTION_FORM:BUTTON:delete": "Usuń",
+  "ACTION_FORM:BUTTON:cancel": "Anuluj",
+  "ACTION_FORM:MESSAGE": "Czy na pewno chcesz wykonać żądaną akcję?",
+  "ACTION_FORM:MESSAGE:failure": "Wykonywanie akcji nie powiodło się :("
+}
