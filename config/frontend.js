@@ -9,6 +9,8 @@ exports.modules = [
   'user',
   'express',
   'users',
+  {id: 'messenger/client', name: 'messenger/client:controller'},
+  'controller',
   'httpServer',
   'httpsServer',
   'sio'
@@ -52,7 +54,8 @@ exports.pubsub = {
   statsPublishInterval: 10000,
   republishTopics: [
     'events.saved',
-    '*.added', '*.edited', '*.deleted', '*.synced'
+    '*.added', '*.edited', '*.deleted', '*.synced',
+    'controller.tagsChanged', 'controller.tagValuesChanged'
   ]
 };
 
@@ -84,4 +87,16 @@ exports.user = {
     'EVENTS:VIEW', 'EVENTS:MANAGE',
     'PROGRAMS:VIEW', 'PROGRAMS:MANAGE'
   ]
+};
+
+exports['messenger/client:controller'] = {
+  pubHost: '127.0.0.1',
+  pubPort: 5050,
+  repHost: '127.0.0.1',
+  repPort: 5051,
+  responseTimeout: 15000
+};
+
+exports.controller = {
+  messengerClientId: 'messenger/client:controller'
 };
