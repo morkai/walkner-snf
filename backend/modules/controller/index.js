@@ -149,7 +149,7 @@ exports.start = function startControllerModule(app, module)
     var user = socket.handshake.user;
 
     if (!user.super
-      && (!Array.isArray(user.privileges) || user.privileges.indexOf('SETTINGS:MANAGE') === -1))
+      && (!Array.isArray(user.privileges) || user.privileges.indexOf('DIAGNOSTICS:MANAGE') === -1))
     {
       return reply({
         message: "Not allowed.",
