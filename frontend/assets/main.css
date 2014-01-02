@@ -5,6 +5,7 @@
 @import url("../app/core/assets/main.css");
 @import url("../app/events/assets/main.css");
 @import url("../app/users/assets/main.css");
+@import url("../app/diagnostics/assets/main.css");
 
 #app-loading {
   position: absolute;

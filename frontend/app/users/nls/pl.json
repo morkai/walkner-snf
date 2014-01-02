@@ -50,5 +50,7 @@
   "PRIVILEGE:USERS:VIEW": "Użytkownicy: przeglądanie",
   "PRIVILEGE:USERS:MANAGE": "Użytkownicy: zarządzanie",
   "PRIVILEGE:PROGRAMS:VIEW": "Programy: przeglądanie",
-  "PRIVILEGE:PROGRAMS:MANAGE": "Programy: zarządzanie"
+  "PRIVILEGE:PROGRAMS:MANAGE": "Programy: zarządzanie",
+  "PRIVILEGE:DIAGNOSTICS:VIEW": "Diagnostyka: przeglądanie",
+  "PRIVILEGE:DIAGNOSTICS:MANAGE": "Diagnostyka: zarządzanie"
 }
