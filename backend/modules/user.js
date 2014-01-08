@@ -12,12 +12,13 @@ exports.DEFAULT_CONFIG = {
   root: {
     password: '$2a$10$qSJWcm1LtN0OzlSHkSRl..ZezbqHAjW2ZuHzBd.F0CTQoWBvf0uQi'
   },
-  guest: {}
+  guest: {},
+  localAddresses: null
 };
 
 exports.start = function startUserModule(app, module)
 {
-  var localAddresses = getLocalAddresses();
+  var localAddresses = module.config.localAddresses || getLocalAddresses();
 
   module.root = lodash.merge(module.config.root, {
     loggedIn: true,
