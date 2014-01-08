@@ -72,6 +72,21 @@ exports.start = function startUserModule(app, module)
   }
 
   /**
+   * @private
+   * @param {string} ipAddress
+   * @returns {object}
+   */
+  function createGuestData(ipAddress)
+  {
+    var user = lodash.cloneDeep(module.guest);
+
+    user.ipAddress = ipAddress;
+    user.local = isLocalIpAddress(ipAddress);
+
+    return user;
+  }
+
+  /**
    * @returns {function(object, object, function)}
    */
   function createAuthMiddleware()
@@ -92,21 +107,21 @@ exports.start = function startUserModule(app, module)
 
     return function(req, res, next)
     {
-      if (!req.session.user)
-      {
-        req.session.user = module.config.guest;
-      }
-
       var user = req.session.user;
 
-      if (!user || !user.privileges)
+      if (!user)
       {
-        return res.send(401);
+        user = req.session.user = createGuestData(req.socket.remoteAddress);
       }
 
       if (user.super)
       {
         return next();
+      }
+
+      if (!user.privileges)
+      {
+        return res.send(401);
       }
 
       for (var i = 0, l = anyPrivileges.length; i < l; ++i)
@@ -149,7 +164,7 @@ exports.start = function startUserModule(app, module)
       if (typeof sessionCookie !== 'string')
       {
         handshakeData.sessionId = String(Date.now() + Math.random());
-        handshakeData.user = module.guest;
+        handshakeData.user = createGuestData(handshakeData.address.address);
 
         return done(null, true);
       }
@@ -166,7 +181,7 @@ exports.start = function startUserModule(app, module)
         }
 
         handshakeData.sessionId = sessionId;
-        handshakeData.user = session.user || module.guest;
+        handshakeData.user = session.user || createGuestData(handshakeData.address.address);
 
         done(null, true);
       });
@@ -232,7 +247,7 @@ exports.start = function startUserModule(app, module)
       sockets.forEach(function(socket)
       {
         socket.handshake.sessionId = message.newSessionId;
-        socket.handshake.user = module.guest;
+        socket.handshake.user = createGuestData(socket.handshake.address.address);
 
         if (socket.id !== message.socketId)
         {
