@@ -30,6 +30,7 @@
     "ejs-amd": "~0.0.4",
     "socket.io": "~0.9.16",
     "lodash": "~2.0.0",
+    "csv": "~0.3.6",
     "messageformat": "~0.1.6",
     "messageformat-amd": "git+http://github.com/morkai/messageformat-amd.git",
     "h5.step": "~0.1.0",
