@@ -9,6 +9,7 @@ exports.modules = [
   'user',
   'express',
   'users',
+  'programs',
   {id: 'messenger/client', name: 'messenger/client:controller'},
   'controller',
   'httpServer',
@@ -77,7 +78,8 @@ exports.express = {
   },
   cookieSecret: '1ee7\\/\\/snf',
   ejsAmdHelpers: {
-    t: 'app/i18n'
+    t: 'app/i18n',
+    time: 'app/time'
   }
 };
 

@@ -3,6 +3,7 @@
 module.exports = [
 
   'event',
-  'user'
+  'user',
+  'program'
 
 ];

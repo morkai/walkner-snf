@@ -1,0 +1,15 @@
+<div class="well">
+  <form id="<%- idPrefix %>-form" class="filter-form">
+    <div class="form-group">
+      <label for="<%- idPrefix %>-name"><%- t('programs', 'PROPERTY:name') %></label>
+      <input id="<%- idPrefix %>-name" class="form-control" name="name" type="text" placeholder="<%- t('programs', 'FILTER:PLACEHOLDER:name') %>">
+    </div><div
+      class="form-group">
+      <label for="<%- idPrefix %>-limit"><%- t('programs', 'FILTER:LIMIT') %></label>
+      <input id="<%- idPrefix %>-limit" class="form-control" name="limit" type="number" value="25" min="5" max="100" step="1">
+    </div><div
+      class="form-group filter-actions">
+      <input type="submit" class="btn btn-primary" value="<%= t('programs', 'FILTER:BUTTON') %>">
+    </div>
+  </form>
+</div>

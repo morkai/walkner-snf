@@ -32,7 +32,15 @@ module.exports = function startCoreRoutes(app, express)
         LOCALE: JSON.stringify(locale),
         GUEST_USER: JSON.stringify(app.user.guest),
         PRIVILEGES: JSON.stringify(app.user.config.privileges),
-        TAG_VALUES: JSON.stringify(app.controller.values)
+        TAG_VALUES: JSON.stringify(app.controller.values),
+        PROGRAM_OPTIONS: JSON.stringify({
+          kinds: getProgramEnumValues('kind'),
+          lightSourceTypes: getProgramEnumValues('lightSourceType'),
+          bulbPowers: getProgramEnumValues('bulbPower'),
+          ballasts: getProgramEnumValues('ballast'),
+          ignitrons: getProgramEnumValues('ignitron'),
+          interlocks: getProgramEnumValues('interlock')
+        })
       }
     });
   }
@@ -57,5 +65,10 @@ module.exports = function startCoreRoutes(app, express)
     {
       res.send(404);
     }
+  }
+
+  function getProgramEnumValues(path)
+  {
+    return app.mongoose.model('Program').schema.path(path).enumValues;
   }
 };
