@@ -1,3 +1,7 @@
 {
+  "assignPrograms:pageAction": "Przypisz programy",
+  "assignPrograms:dialogTitle": "Przypisywanie programów",
 
+  "currentProgram:noProgram": "Brak przypisanego programu",
+  "currentProgram:tester": "TESTER"
 }

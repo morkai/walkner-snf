@@ -1,6 +1,7 @@
 'use strict';
 
 var lodash = require('lodash');
+var ProgramChanger = require('./ProgramChanger');
 
 exports.DEFAULT_CONFIG = {
   modbusId: 'modbus'
@@ -52,9 +53,6 @@ exports.start = function startProgramModule(app, module)
 
   function init()
   {
-    app.timeout(1337, function()
-    {
-      // TODO
-    });
+    module.programChanger = new ProgramChanger(app);
   }
 };

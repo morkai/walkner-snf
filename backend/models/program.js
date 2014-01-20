@@ -103,5 +103,18 @@ module.exports = function setupProgramModel(app, mongoose)
 
   programSchema.statics.TOPIC_PREFIX = 'programs';
 
+  programSchema.methods.getContactors = function()
+  {
+    return {
+      testerK12: this.testerK12,
+      ballast400W1: this.ballast400W1,
+      ballast400W2: this.ballast400W2,
+      ballast2000W: this.ballast2000W,
+      ignitron400W1: this.ignitron400W1,
+      ignitron400W2: this.ignitron400W2,
+      ignitron2000W: this.ignitron2000W
+    };
+  };
+
   mongoose.model('Program', programSchema);
 };

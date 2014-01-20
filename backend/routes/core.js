@@ -40,7 +40,8 @@ module.exports = function startCoreRoutes(app, express)
           ballasts: getProgramEnumValues('ballast'),
           ignitrons: getProgramEnumValues('ignitron'),
           interlocks: getProgramEnumValues('interlock')
-        })
+        }),
+        PROGRAMS: JSON.stringify(app.programs.models)
       }
     });
   }

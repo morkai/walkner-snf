@@ -149,6 +149,7 @@ exports.start = function startControllerModule(app, module)
     var user = socket.handshake.user;
 
     if (!user.super
+      && !user.local
       && (!Array.isArray(user.privileges) || user.privileges.indexOf('DIAGNOSTICS:MANAGE') === -1))
     {
       return reply({

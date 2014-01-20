@@ -1,3 +1,16 @@
 <div>
   <h1>WIP</h1>
+  <div id="<%- idPrefix %>-camera" class="panel panel-default dashboard-camera-panel">
+    <div class="panel-body">
+      <video id="<%- idPrefix %>-video" width="320" height="240" autoplay></video>
+      <canvas id="<%- idPrefix %>-snapshot"></canvas>
+      <div class="dashboard-lums">
+        <button id="<%- idPrefix %>-control" class="btn btn-default"><i class="fa fa-pause"></i></button>
+        <button id="<%- idPrefix %>-grayscale" class="btn btn-default" data-toggle="button">Grayscale</button>
+        <p id="<%- idPrefix %>-lum1">?</p>
+        <p id="<%- idPrefix %>-lum2">?</p>
+        <p id="<%- idPrefix %>-lum3">?</p>
+      </div>
+    </div>
+  </div>
 </div>

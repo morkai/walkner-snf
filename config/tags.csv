@@ -1,0 +1,58 @@
+name,description,master,kind,unit,address,readable,writable,type,rawMin,rawMax,scaleUnit,scaleFunction,scaleMin,scaleMax,noise,archive,valueMap
+,I/O,,,,,,,,,,,,,,,,
+tester.status,Tester zaświecenia lampa zielona styk pomocniczy stycznika S3,snfPlc,input,1,X0,1,0,bool,-,-,-,-,-,-,-,-,-
+tester.redLed,Czerwona lampa testera,snfPlc,input,1,X16,1,0,bool,-,-,-,-,-,-,-,-,-
+tester.greenLed,Zielona lampa testera,snfPlc,input,1,X17,1,0,bool,-,-,-,-,-,-,-,-,-
+estop,Układ bezpieczeństwa E-Stop,snfPlc,input,1,X11,1,0,bool,-,-,-,-,-,-,-,-,-
+start,Przycisk rozpoczęcia pracy (START),snfPlc,input,1,X1,1,0,bool,-,-,-,-,-,-,-,-,-
+stop,Przycisk zakończenia pracy (STOP),snfPlc,input,1,X2,1,0,bool,-,-,-,-,-,-,-,-,-
+lampSwitch,Wyłącznik krańcowy w lampie,snfPlc,input,1,X3,1,0,bool,-,-,-,-,-,-,-,-,-
+programStart.count,Kluczyk typu uruchomienia programu,snfPlc,input,1,X10,1,0,bool,-,-,-,-,-,-,-,-,-
+programStart.left,Przycisk uruchomienia programu (lewy),snfPlc,input,1,X4,1,0,bool,-,-,-,-,-,-,-,-,-
+programStart.right,Przycisk uruchomienia programu (prawy),snfPlc,input,1,X5,1,0,bool,-,-,-,-,-,-,-,-,-
+interlock.mnh,Blokada MNH,snfPlc,input,1,X27,1,0,bool,-,-,-,-,-,-,-,-,-
+interlock.e40Left,Blokada sonda E40 (lewa),snfPlc,input,1,X26,1,0,bool,-,-,-,-,-,-,-,-,-
+interlock.e40Right,Blokada sonda E40 (prawa),snfPlc,input,1,X21,1,0,bool,-,-,-,-,-,-,-,-,-
+temperature.max,Czujnik maks. temperatury,snfPlc,input,1,X12,1,0,bool,-,-,-,-,-,-,-,-,-
+testKind.1,Rodzaj testu (bit 1),snfPlc,input,1,X13,1,0,bool,-,-,-,-,-,-,-,-,-
+testKind.2,Rodzaj testu (bit 2),snfPlc,input,1,X14,1,0,bool,-,-,-,-,-,-,-,-,-
+fan,Wentylator: wyłączenie,snfPlc,output,1,Y0,1,1,bool,-,-,-,-,-,-,-,-,-
+transformer.1,SSR TRAFO 1,snfPlc,output,1,Y3,1,1,bool,-,-,-,-,-,-,-,-,-
+transformer.2,SSR TRAFO 2,snfPlc,output,1,Y4,1,1,bool,-,-,-,-,-,-,-,-,-
+redLed,Czerwona lampa,snfPlc,output,1,Y6,1,1,bool,-,-,-,-,-,-,-,-,-
+greenLed,Zielona lampa,snfPlc,output,1,Y7,1,1,bool,-,-,-,-,-,-,-,-,-
+buzzer,Buzer,snfPlc,output,1,Y10,1,1,bool,-,-,-,-,-,-,-,-,-
+contactors.1,Stycznik główny S1,snfPlc,output,1,Y11,1,1,bool,-,-,-,-,-,-,-,-,-
+contactors.2,Stycznik S2 Tester,snfPlc,output,1,Y12,1,1,bool,-,-,-,-,-,-,-,-,-
+contactors.3,Stycznik S3 Tester,snfPlc,output,1,Y13,1,1,bool,-,-,-,-,-,-,-,-,-
+test.1.status,Test 1 OK 230 V opcja,snfPlc,input,1,X22,1,0,bool,-,-,-,-,-,-,-,-,-
+test.2.status,Test 2 OK 230 V opcja,snfPlc,input,1,X23,1,0,bool,-,-,-,-,-,-,-,-,-
+voltage.switch.230,Przełącznik 230V,snfPlc,input,1,X24,1,0,bool,-,-,-,-,-,-,-,-,-
+voltage.switch.400,Przełacznik 400V,snfPlc,input,1,X25,1,0,bool,-,-,-,-,-,-,-,-,-
+contactors.testerK12,Stycznik Testera K12,snfPlc,output,1,Y21,1,1,bool,-,-,-,-,-,-,-,-,-
+contactors.ballast400W1,Stycznik S6 Balast 1 0.4kW,snfPlc,output,1,Y22,1,1,bool,-,-,-,-,-,-,-,-,-
+contactors.ballast400W2,Stycznik S7 Balast 2 0.4kW,snfPlc,output,1,Y23,1,1,bool,-,-,-,-,-,-,-,-,-
+contactors.ballast2000W,Stycznik S8 Balast 2kW,snfPlc,output,1,Y24,1,1,bool,-,-,-,-,-,-,-,-,-
+contactors.ignitron400W1,Stycznik S9 Ignitron 1 0.4kW,snfPlc,output,1,Y25,1,1,bool,-,-,-,-,-,-,-,-,-
+contactors.ignitron400W2,Stycznik S10 Ignitron 2 0.4kW,snfPlc,output,1,Y26,1,1,bool,-,-,-,-,-,-,-,-,-
+contactors.ignitron2000W,Stycznik S11 Ignitron 2kW,snfPlc,output,1,Y27,1,1,bool,-,-,-,-,-,-,-,-,-
+bcd.1,Wybór programu (BCD1),snfPlc,input,1,X30,1,0,bool,-,-,-,-,-,-,-,-,-
+bcd.2,Wybór programu (BCD2),snfPlc,input,1,X31,1,0,bool,-,-,-,-,-,-,-,-,-
+bcd.3,Wybór programu (BCD3),snfPlc,input,1,X32,1,0,bool,-,-,-,-,-,-,-,-,-
+bcd.4,Wybór programu (BCD4),snfPlc,input,1,X33,1,0,bool,-,-,-,-,-,-,-,-,-
+bcd.5,Wybór programu (BCD5) 1 cyfra,snfPlc,input,1,X34,1,0,bool,-,-,-,-,-,-,-,-,-
+arrow.left,Strzałka czarna na kasecie (lewa),snfPlc,input,1,X36,1,0,bool,-,-,-,-,-,-,-,-,-
+arrow.right,Strzałka czarna na kasecie (prawa),snfPlc,input,1,X37,1,0,bool,-,-,-,-,-,-,-,-,-
+temperature,Wartość czujnika temperatury,snfPlc,input register,1,-,0,0,uint16,-,-,-,-,-,-,-,-,-
+lightSensor.1,Wartość czujnika światła 1,snfPlc,input register,1,-,0,0,uint16,-,-,-,-,-,-,-,-,-
+lightSensor.2,Wartość czujnika światła 2,snfPlc,input register,1,-,0,0,uint16,-,-,-,-,-,-,-,-,-
+current,Wartość prądu,snfPlc,input register,1,-,0,0,uint16,-,-,-,-,-,-,-,-,-
+voltage,Wartość napięcia,snfPlc,input register,1,-,0,0,uint16,-,-,-,-,-,-,-,-,-
+,Programy,,,,,,,,,,,,,,,,
+programs.pc.30s,ID programu przypisanego do testu 30s,-,setting,-,-,0,1,string,-,-,-,-,-,-,-,-,-
+programs.pc.hrs,ID programu przypisanego do testu HRS,-,setting,-,-,0,1,string,-,-,-,-,-,-,-,-,-
+,Inne,,,,,,,,,,,,,,,,
+watchdog,Watchdog,snfPlc,register,1,-,0,0,uint16,-,-,-,-,-,-,-,-,-
+,Stany połączenia z urządzeniami,,,,,,,,,,,,,,,,
+masters.controlProcess,Stan połączenia z urządzeniami sterowania (snfPlc),-,virtual,-,-,0,0,bool,-,-,-,-,-,-,-,-,-
+masters.snfPlc,Stan połączenia ze sterownikiem delta,snfPlc,virtual,-,-,0,0,bool,-,-,-,-,-,-,0,-,-

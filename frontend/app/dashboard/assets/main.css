@@ -1,0 +1,11 @@
+.dashboard-camera-panel {
+  position: relative;
+}
+.dashboard-camera-panel video {
+  display: none;
+}
+.dashboard-lums {
+  position: absolute;
+  top: 1em;
+  right: 1em;
+}
