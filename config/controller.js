@@ -3,7 +3,7 @@
 exports.id = 'controller';
 
 exports.modules = [
-  'mongodb',
+  'mongoose',
   'events',
   'modbus',
   'messenger/server',
@@ -11,7 +11,7 @@ exports.modules = [
 ];
 
 exports.events = {
-  mongooseId: null,
+  collection: function(app) { return app.mongoose.model('Event').collection; },
   userId: null,
   expressId: null,
   insertDelay: 1000,
@@ -40,13 +40,20 @@ exports['messenger/server'] = {
   broadcastTopics: ['events.saved']
 };
 
-exports.mongodb = require('./mongodb');
+exports.mongoose = {
+  maxConnectTries: 10,
+  connectAttemptDelay: 500,
+  uri: require('./mongodb').uri,
+  options: {}
+};
 
 exports.program = {
 
 };
 
 exports.modbus = {
+  dbId: 'mongoose',
+  settingsCollection: function(app) { return app.mongoose.connection.db.collection('settings'); },
   writeAllTheThings: 'sim',
   maxReadQuantity: 25,
   ignoredErrors: [
