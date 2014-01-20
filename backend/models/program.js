@@ -69,31 +69,31 @@ module.exports = function setupProgramModel(app, mongoose)
       enum: ['1', '1+2', 'mnh'],
       default: '1'
     },
-    contactor4: {
+    testerK12: {
       type: Boolean,
       default: false
     },
-    contactor5: {
+    ballast400W1: {
       type: Boolean,
       default: false
     },
-    contactor6: {
+    ballast400W2: {
       type: Boolean,
       default: false
     },
-    contactor7: {
+    ballast2000W: {
       type: Boolean,
       default: false
     },
-    contactor8: {
+    ignitron400W1: {
       type: Boolean,
       default: false
     },
-    contactor9: {
+    ignitron400W2: {
       type: Boolean,
       default: false
     },
-    contactor10: {
+    ignitron2000W: {
       type: Boolean,
       default: false
     }

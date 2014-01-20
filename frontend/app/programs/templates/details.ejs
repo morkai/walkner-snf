@@ -96,8 +96,8 @@
         <div class="prop">
           <div class="prop-name"><%- t('programs', 'PROPERTY:contactors') %></div>
           <div class="prop-value">
-            <% [4, 5, 6, 7, 8, 9, 10].forEach(function(i) { %>
-            <span class="label label-<%- model['contactor' + i] ? 'success' : 'danger' %>"><%- t('programs', 'PROPERTY:contactor' + i) %></span>
+            <% contactors.forEach(function(contactor) { %>
+            <span class="label label-<%- model[contactor] ? 'success' : 'danger' %>"><%- t('programs', 'PROPERTY:' + contactor) %></span>
             <% }) %>
           </div>
         </div>

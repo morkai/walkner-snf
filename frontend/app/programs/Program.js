@@ -21,11 +21,37 @@ define([
 
     defaults: {
       name: '',
+      kind: '30s',
+      lightSourceType: '100',
+      bulbPower: '100',
+      ballast: '400',
+      ignitron: 'outside',
       lightSensors: 1,
+      plcProgram: 0,
       waitForStartTime: '10s',
       illuminationTime: '30s',
-      interlock: '1'
+      hrsInterval: '0s',
+      hrsTime: '0s',
+      hrsCount: 0,
+      interlock: '1',
+      testerK12: false,
+      ballast400W1: false,
+      ballast400W2: false,
+      ballast2000W: false,
+      ignitron400W1: false,
+      ignitron400W2: false,
+      ignitron2000W: false
     }
 
+  }, {
+    CONTACTORS: [
+      'testerK12',
+      'ballast400W1',
+      'ballast400W2',
+      'ballast2000W',
+      'ignitron400W1',
+      'ignitron400W2',
+      'ignitron2000W'
+    ]
   });
 });

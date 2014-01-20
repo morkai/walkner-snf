@@ -9,8 +9,8 @@ define([
   '../core/pages/EditFormPage',
   '../core/pages/ActionFormPage',
   './pages/ProgramListPage',
+  './views/ProgramDetailsView',
   './views/ProgramFormView',
-  'app/programs/templates/details',
   'i18n!app/nls/programs'
 ], function(
   router,
@@ -23,8 +23,8 @@ define([
   EditFormPage,
   ActionFormPage,
   ProgramListPage,
-  ProgramFormView,
-  detailsTemplate
+  ProgramDetailsView,
+  ProgramFormView
 ) {
   'use strict';
 
@@ -39,7 +39,7 @@ define([
   router.map('/programs/:id', function(req)
   {
     viewport.showPage(new DetailsPage({
-      detailsTemplate: detailsTemplate,
+      DetailsView: ProgramDetailsView,
       model: new Program({_id: req.params.id})
     }));
   });

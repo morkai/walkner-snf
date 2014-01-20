@@ -97,27 +97,11 @@
         </div>
         <div class="col-md-2 form-group">
           <label class="control-label"><%- t('programs', 'PROPERTY:contactors') %></label>
+          <% contactors.forEach(function(contactor) { %>
           <div class="checkbox">
-            <label><input type="checkbox" name="contactor4"> <%- t('programs', 'PROPERTY:contactor4') %></label>
+            <label><input type="checkbox" name="<%- contactor %>"> <%- t('programs', 'PROPERTY:' + contactor) %></label>
           </div>
-          <div class="checkbox">
-            <label><input type="checkbox" name="contactor5"> <%- t('programs', 'PROPERTY:contactor5') %></label>
-          </div>
-          <div class="checkbox">
-            <label><input type="checkbox" name="contactor6"> <%- t('programs', 'PROPERTY:contactor6') %></label>
-          </div>
-          <div class="checkbox">
-            <label><input type="checkbox" name="contactor7"> <%- t('programs', 'PROPERTY:contactor7') %></label>
-          </div>
-          <div class="checkbox">
-            <label><input type="checkbox" name="contactor8"> <%- t('programs', 'PROPERTY:contactor8') %></label>
-          </div>
-          <div class="checkbox">
-            <label><input type="checkbox" name="contactor9"> <%- t('programs', 'PROPERTY:contactor9') %></label>
-          </div>
-          <div class="checkbox">
-            <label><input type="checkbox" name="contactor10"> <%- t('programs', 'PROPERTY:contactor10') %></label>
-          </div>
+          <% }) %>
         </div>
       </div>
     </div>

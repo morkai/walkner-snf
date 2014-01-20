@@ -3,12 +3,14 @@ define([
   'app/time',
   'app/core/views/FormView',
   'app/data/programOptions',
+  '../Program',
   'app/programs/templates/form'
 ], function(
   _,
   time,
   FormView,
   programOptions,
+  Program,
   formTemplate
 ) {
   'use strict';
@@ -19,16 +21,6 @@ define([
     'hrsInterval',
     'hrsTime'
   ];
-
-  var CONTACTOR_DEFAULTS = {
-    contactor4: false,
-    contactor5: false,
-    contactor6: false,
-    contactor7: false,
-    contactor8: false,
-    contactor9: false,
-    contactor10: false
-  };
 
   return FormView.extend({
 
@@ -47,7 +39,9 @@ define([
 
     serialize: function()
     {
-      return _.extend(FormView.prototype.serialize.call(this), programOptions);
+      return _.extend(FormView.prototype.serialize.call(this), programOptions, {
+        contactors: Program.CONTACTORS
+      });
     },
 
     serializeToForm: function()
@@ -69,7 +63,12 @@ define([
         formData[timeProperty] = time.toSeconds(formData[timeProperty]);
       });
 
-      return _.defaults(formData, CONTACTOR_DEFAULTS);
+      Program.CONTACTORS.forEach(function(contactor)
+      {
+        formData[contactor] = !!formData[contactor];
+      });
+
+      return formData;
     },
 
     afterRender: function()
