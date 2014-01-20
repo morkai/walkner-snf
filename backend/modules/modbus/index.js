@@ -8,7 +8,7 @@ var Tag = require('./Tag');
 
 exports.DEFAULT_CONFIG = {
   messengerServerId: 'messenger/server',
-  mongodbId: 'mongodb',
+  dbId: 'mongodb',
   programId: 'program',
   settingsCollection: function(app)
   {
@@ -53,7 +53,7 @@ exports.start = function startModbusModule(app, module, done)
     setUpTags();
     setUpReadTransactions();
 
-    app.onModuleReady(module.config.mongodbId, setUpSettingsTags);
+    app.onModuleReady(module.config.dbId, setUpSettingsTags);
 
     require('./virtuals')(app, module);
     require('./safeGuards')(app, module);
