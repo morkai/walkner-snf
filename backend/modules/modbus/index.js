@@ -382,14 +382,22 @@ exports.start = function startModbusModule(app, module, done)
           quantity: tInfo.quantity
         };
         var unit = tInfo.unit;
+        var transaction;
 
-        var transaction = master.execute({
-          request: request,
-          unit: unit,
-          maxRetries: 0,
-          interval: module.config.masters[masterName].interval
-            || (25 + Math.round(Math.random() * 25))
-        });
+        try
+        {
+          transaction = master.execute({
+            request: request,
+            unit: unit,
+            maxRetries: 0,
+            interval: module.config.masters[masterName].interval
+              || (25 + Math.round(Math.random() * 25))
+          });
+        }
+        catch (err)
+        {
+          return module.warn("Invalid transaction info %s: %s", JSON.stringify(tInfo), err.stack);
+        }
 
         transaction.on('complete', function(err, res)
         {
