@@ -12,8 +12,7 @@ define([
 ) {
   'use strict';
 
-  var canView = user.auth('DIAGNOSTICS_VIEW');
-  var canViewSettings = user.auth(['DIAGNOSTICS_VIEW', 'SETTINGS_VIEW']);
+  var canViewSettings = user.auth(['DIAGNOSTICS:VIEW', 'SETTINGS:VIEW']);
 
   router.map('/diagnostics/tags', canViewSettings, function()
   {
