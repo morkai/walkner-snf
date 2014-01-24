@@ -29,7 +29,7 @@
   </div>
   <% } else { %>
   <div class="panel-details row">
-    <div class="col-md-4">
+    <div class="col-md-3">
       <div class="props first">
         <div class="prop">
           <div class="prop-name"><%- t('programs', 'PROPERTY:name') %></div>
@@ -83,8 +83,12 @@
         <% } %>
       </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-5">
       <div class="props">
+        <div class="prop">
+          <div class="prop-name"><%- t('programs', 'PROPERTY:limitSwitch') %></div>
+          <div class="prop-value"><%- t('core', 'BOOL:' + model.limitSwitch) %></div>
+        </div>
         <div class="prop">
           <div class="prop-name"><%- t('programs', 'PROPERTY:lightSensors') %></div>
           <div class="prop-value"><%- t('programs', 'lightSensors:' + model.lightSensors) %></div>
@@ -99,6 +103,16 @@
             <% contactors.forEach(function(contactor) { %>
             <span class="label label-<%- model[contactor] ? 'success' : 'danger' %>"><%- t('programs', 'PROPERTY:' + contactor) %></span>
             <% }) %>
+          </div>
+        </div>
+        <div class="prop">
+          <div class="prop-name"><%- t('programs', 'PROPERTY:currentBoundries') %></div>
+          <div class="prop-value">
+          <% if (model.minCurrent === 0 && model.maxCurrent === 0) { %>
+          <%- t('programs', 'current:noBoundries') %>
+          <% } else { %>
+          <%- t('programs', 'current:boundries', {min: model.minCurrent, max: model.maxCurrent}) %>
+          <% } %>
           </div>
         </div>
       </div>

@@ -74,34 +74,53 @@
         </div>
       </div>
       <div class="row">
-        <div class="col-md-2 form-group">
-          <label for="<%- idPrefix %>-lightSensors" class="control-label"><%- t('programs', 'PROPERTY:lightSensors') %></label>
-          <div class="radio">
-            <label><input id="<%- idPrefix %>-lightSensors" type="radio" name="lightSensors" value="1"> <%- t('programs', 'lightSensors:1') %></label>
+        <div class="col-md-4">
+          <div class="form-group">
+            <div class="checkbox">
+              <label><input id="<%- idPrefix %>-limitSwitch" type="checkbox" name="limitSwitch" value="true"> <%- t('programs', 'PROPERTY:limitSwitch') %></label>
+            </div>
           </div>
-          <div class="radio">
-            <label><input type="radio" name="lightSensors" value="2"> <%- t('programs', 'lightSensors:2') %></label>
+          <div class="form-group">
+            <label for="<%- idPrefix %>-lightSensors" class="control-label"><%- t('programs', 'PROPERTY:lightSensors') %></label>
+            <div class="radio">
+              <label><input id="<%- idPrefix %>-lightSensors" type="radio" name="lightSensors" value="1"> <%- t('programs', 'lightSensors:1') %></label>
+            </div>
+            <div class="radio">
+              <label><input type="radio" name="lightSensors" value="2"> <%- t('programs', 'lightSensors:2') %></label>
+            </div>
+          </div>
+          <div class="form-group form-group-last">
+            <label for="<%- idPrefix %>-interlock" class="control-label"><%- t('programs', 'PROPERTY:interlock') %></label>
+            <div class="radio">
+              <label><input id="<%- idPrefix %>-interlock" type="radio" name="interlock" value="1"> <%- t('programs', 'interlock:1') %></label>
+            </div>
+            <div class="radio">
+              <label><input id="<%- idPrefix %>-interlock" type="radio" name="interlock" value="1+2"> <%- t('programs', 'interlock:1+2') %></label>
+            </div>
+            <div class="radio">
+              <label><input id="<%- idPrefix %>-interlock" type="radio" name="interlock" value="mnh"> <%- t('programs', 'interlock:mnh') %></label>
+            </div>
           </div>
         </div>
-        <div class="col-md-2 form-group">
-          <label for="<%- idPrefix %>-interlock" class="control-label"><%- t('programs', 'PROPERTY:interlock') %></label>
-          <div class="radio">
-            <label><input id="<%- idPrefix %>-interlock" type="radio" name="interlock" value="1"> <%- t('programs', 'interlock:1') %></label>
-          </div>
-          <div class="radio">
-            <label><input id="<%- idPrefix %>-interlock" type="radio" name="interlock" value="1+2"> <%- t('programs', 'interlock:1+2') %></label>
-          </div>
-          <div class="radio">
-            <label><input id="<%- idPrefix %>-interlock" type="radio" name="interlock" value="mnh"> <%- t('programs', 'interlock:mnh') %></label>
-          </div>
-        </div>
-        <div class="col-md-2 form-group">
+        <div class="col-md-4 form-group">
           <label class="control-label"><%- t('programs', 'PROPERTY:contactors') %></label>
           <% contactors.forEach(function(contactor) { %>
           <div class="checkbox">
             <label><input type="checkbox" name="<%- contactor %>"> <%- t('programs', 'PROPERTY:' + contactor) %></label>
           </div>
           <% }) %>
+        </div>
+        <div class="col-md-4 form-group">
+          <div class="row">
+            <div class="col-md-6 form-group">
+              <label for="<%- idPrefix %>-minCurrent" class="control-label"><%- t('programs', 'PROPERTY:minCurrent') %></label>
+              <input id="<%- idPrefix %>-minCurrent" class="form-control" type="number" name="minCurrent" min="0" max="100">
+            </div>
+            <div class="col-md-6 form-group">
+              <label for="<%- idPrefix %>-maxCurrent" class="control-label"><%- t('programs', 'PROPERTY:minCurrent') %></label>
+              <input id="<%- idPrefix %>-maxCurrent" class="form-control" type="number" name="maxCurrent" min="0" max="100">
+            </div>
+          </div>
         </div>
       </div>
     </div>

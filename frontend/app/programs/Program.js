@@ -28,10 +28,10 @@ define([
       ignitron: 'outside',
       lightSensors: 1,
       plcProgram: 0,
-      waitForStartTime: '10s',
-      illuminationTime: '30s',
-      hrsInterval: '0s',
-      hrsTime: '0s',
+      waitForStartTime: 10,
+      illuminationTime: 30,
+      hrsInterval: 0,
+      hrsTime: 0,
       hrsCount: 0,
       interlock: '1',
       testerK12: false,
@@ -40,7 +40,10 @@ define([
       ballast2000W: false,
       ignitron400W1: false,
       ignitron400W2: false,
-      ignitron2000W: false
+      ignitron2000W: false,
+      limitSwitch: false,
+      minCurrent: 0,
+      maxCurrent: 0
     }
 
   }, {

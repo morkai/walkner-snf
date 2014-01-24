@@ -96,6 +96,22 @@ module.exports = function setupProgramModel(app, mongoose)
     ignitron2000W: {
       type: Boolean,
       default: false
+    },
+    limitSwitch: {
+      type: Boolean,
+      default: false
+    },
+    minCurrent: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 100
+    },
+    maxCurrent: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 100
     }
   }, {
     id: false

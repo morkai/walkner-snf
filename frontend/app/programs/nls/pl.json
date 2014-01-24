@@ -52,6 +52,13 @@
   "PROPERTY:hrsInterval": "Czas odstępu HRS",
   "PROPERTY:hrsTime": "Czas świecenia HRS",
   "PROPERTY:hrsCount": "Ilość powtórzeń HRS",
+  "PROPERTY:limitSwitch": "Krańcówka w lampie?",
+  "PROPERTY:currentBoundries": "Tolerancja prądu",
+  "PROPERTY:minCurrent": "Prąd minimalny",
+  "PROPERTY:maxCurrent": "Prąd maksymalny",
+
+  "current:noBoundries": "Nie sprawdzana",
+  "current:boundries": "od <em>{min}A</em> do <em>{max}A</em>",
 
   "kind:30s": "30 sekund",
   "kind:hrs": "Hot Restrike",
