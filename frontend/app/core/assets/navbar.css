@@ -1,3 +1,6 @@
+.navbar-nav.navbar-right:last-child {
+  margin-right: 0;
+}
 .navbar-brand {
   padding: 0;
   font-size: 2em;
