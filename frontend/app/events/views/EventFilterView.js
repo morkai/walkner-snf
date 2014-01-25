@@ -39,6 +39,12 @@ define([
       this.idPrefix = _.uniqueId('eventFilter');
     },
 
+    destroy: function()
+    {
+      this.$id('type').select2('destroy');
+      this.$id('user').select2('destroy');
+    },
+
     serialize: function()
     {
       return {
@@ -55,12 +61,12 @@ define([
 
       this.toggleSeverity(formData.severity);
 
-      this.$('#' + this.idPrefix + '-type').select2({
+      this.$id('type').select2({
         width: 'resolve',
         allowClear: true
       });
 
-      this.$('#' + this.idPrefix + '-user').select2({
+      this.$id('user').select2({
         width: '200px',
         allowClear: true,
         minimumInputLength: 3,

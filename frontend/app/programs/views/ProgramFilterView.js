@@ -3,15 +3,12 @@ define([
   'js2form',
   'app/i18n',
   'app/core/View',
-  'app/core/util/fixTimeRange',
-  'app/programs/templates/filter',
-  'select2'
+  'app/programs/templates/filter'
 ], function(
   _,
   js2form,
   t,
   View,
-  fixTimeRange,
   filterTemplate
 ) {
   'use strict';

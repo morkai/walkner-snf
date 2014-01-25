@@ -30,6 +30,13 @@ define([
       this.idPrefix = _.uniqueId('assignPrograms');
     },
 
+    destroy: function()
+    {
+      this.$id('30s').select2('destroy');
+      this.$id('hrs').select2('destroy');
+      this.$id('tester').select2('destroy');
+    },
+
     serialize: function()
     {
       return {

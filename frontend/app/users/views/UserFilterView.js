@@ -2,21 +2,15 @@ define([
   'underscore',
   'moment',
   'js2form',
-  'reltime',
   'app/i18n',
   'app/core/View',
-  'app/core/util/fixTimeRange',
-  'app/users/templates/filter',
-  'i18n!app/nls/users',
-  'select2'
+  'app/users/templates/filter'
 ], function(
   _,
   moment,
   js2form,
-  reltime,
   t,
   View,
-  fixTimeRange,
   filterTemplate
 ) {
   'use strict';

@@ -37,6 +37,15 @@ define([
       'change [name=kind]': 'onKindChange'
     },
 
+    destroy: function()
+    {
+      this.$id('kind').select2('destroy');
+      this.$id('lightSourceType').select2('destroy');
+      this.$id('bulbPower').select2('destroy');
+      this.$id('ballast').select2('destroy');
+      this.$id('ignitron').select2('destroy');
+    },
+
     serialize: function()
     {
       return _.extend(FormView.prototype.serialize.call(this), programOptions, {
