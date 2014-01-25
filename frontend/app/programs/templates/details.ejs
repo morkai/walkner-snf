@@ -2,32 +2,6 @@
   <div class="panel-heading">
     <%- t('programs', 'PANEL:TITLE:details') %>
   </div>
-  <% if (model.kind === 'tester') { %>
-  <div class="panel-details">
-    <div class="props first">
-      <div class="prop">
-        <div class="prop-name"><%- t('programs', 'PROPERTY:name') %></div>
-        <div class="prop-value"><%= model.name %></div>
-      </div>
-      <div class="prop">
-        <div class="prop-name"><%- t('programs', 'PROPERTY:kind') %></div>
-        <div class="prop-value"><%- t('programs', 'kind:' + model.kind) %></div>
-      </div>
-      <div class="prop">
-        <div class="prop-name"><%- t('programs', 'PROPERTY:interlock') %></div>
-        <div class="prop-value"><%- t('programs', 'interlock:' + model.interlock) %></div>
-      </div>
-      <div class="prop">
-        <div class="prop-name"><%- t('programs', 'PROPERTY:contactors') %></div>
-        <div class="prop-value">
-          <% [4, 5, 6, 7, 8, 9, 10].forEach(function(i) { %>
-          <span class="label label-<%- model['contactor' + i] ? 'success' : 'danger' %>"><%- t('programs', 'PROPERTY:contactor' + i) %></span>
-          <% }) %>
-        </div>
-      </div>
-    </div>
-  </div>
-  <% } else { %>
   <div class="panel-details row">
     <div class="col-md-3">
       <div class="props first">
@@ -118,5 +92,4 @@
       </div>
     </div>
   </div>
-  <% } %>
 </div>
