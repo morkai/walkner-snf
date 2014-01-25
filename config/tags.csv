@@ -140,8 +140,9 @@ predef.16.hrsCount,Ilość powtórzeń HRS 16,snfPlc,register,1,D315,0,1,uint16,
 predef.16.current.min,Dolna tolerancja prądu 16,snfPlc,register,1,D331,0,1,uint16,-,-,-,-,-,-,-,-,-
 predef.16.current.max,Górna tolerancja prądu 16,snfPlc,register,1,D347,0,1,uint16,-,-,-,-,-,-,-,-,-
 ,Programy,,,,,,,,,,,,,,,,
-programs.pc.30s,ID programu przypisanego do testu 30s,-,setting,-,-,0,1,string,-,-,-,-,-,-,-,-,-
-programs.pc.hrs,ID programu przypisanego do testu HRS,-,setting,-,-,0,1,string,-,-,-,-,-,-,-,-,-
+programs.30s,ID programu przypisanego do testu 30s,-,setting,-,-,0,1,string,-,-,-,-,-,-,-,-,-
+programs.hrs,ID programu przypisanego do testu HRS,-,setting,-,-,0,1,string,-,-,-,-,-,-,-,-,-
+programs.tester,ID programu przypisanego do testu Tester,-,setting,-,-,0,1,string,-,-,-,-,-,-,-,-,-
 ,Inne,,,,,,,,,,,,,,,,
 watchdog,Watchdog,snfPlc,output,1,M8,0,1,bool,-,-,-,-,-,-,-,-,-
 ,Stany połączenia z urządzeniami,,,,,,,,,,,,,,,,

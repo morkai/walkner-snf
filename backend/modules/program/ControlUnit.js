@@ -235,7 +235,10 @@ ControlUnit.prototype.lock = function(id)
  */
 ControlUnit.prototype.debug = function()
 {
-  arguments[0] = '[' + this.tagPrefix + '] ' + arguments[0];
+  if (this.tagPrefix)
+  {
+    arguments[0] = '[' + this.tagPrefix + '] ' + arguments[0];
+  }
 
   this.program.debug.apply(null, arguments);
 };
@@ -245,7 +248,10 @@ ControlUnit.prototype.debug = function()
  */
 ControlUnit.prototype.warn = function()
 {
-  arguments[0] = '[' + this.tagPrefix + '] ' + arguments[0];
+  if (this.tagPrefix)
+  {
+    arguments[0] = '[' + this.tagPrefix + '] ' + arguments[0];
+  }
 
   this.program.warn.apply(null, arguments);
 };
@@ -255,7 +261,10 @@ ControlUnit.prototype.warn = function()
  */
 ControlUnit.prototype.error = function()
 {
-  arguments[0] = '[' + this.tagPrefix + '] ' + arguments[0];
+  if (this.tagPrefix)
+  {
+    arguments[0] = '[' + this.tagPrefix + '] ' + arguments[0];
+  }
 
   this.program.error.apply(null, arguments);
 };

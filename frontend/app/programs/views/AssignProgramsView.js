@@ -34,8 +34,9 @@ define([
     {
       return {
         idPrefix: this.idPrefix,
-        program30s: controller.getValue('programs.pc.30s'),
-        programHrs: controller.getValue('programs.pc.hrs')
+        program30s: controller.getValue('programs.30s'),
+        programHrs: controller.getValue('programs.hrs'),
+        programTester: controller.getValue('programs.tester')
       };
     },
 
@@ -43,6 +44,7 @@ define([
     {
       var programs30s = [];
       var programsHrs = [];
+      var programsTester = [];
 
       programs.forEach(function(program)
       {
@@ -58,7 +60,7 @@ define([
         }
         else
         {
-          return;
+          programList = programsTester;
         }
 
         programList.push({
@@ -76,6 +78,11 @@ define([
         allowClear: true,
         data: programsHrs
       });
+
+      this.$id('tester').select2({
+        allowClear: true,
+        data: programsTester
+      });
     },
 
     onDialogShown: function()
@@ -91,12 +98,13 @@ define([
       var $submit = this.$('.btn-primary').attr('disabled', true);
       var programmed30s = false;
       var programmedHrs = false;
+      var programmedTester = false;
 
       this.setProgramTag('30s', this.$id('30s').val(), function()
       {
         programmed30s = true;
 
-        if (programmedHrs)
+        if (programmedHrs && programmedTester)
         {
           done();
         }
@@ -106,7 +114,17 @@ define([
       {
         programmedHrs = true;
 
-        if (programmed30s)
+        if (programmed30s && programmedTester)
+        {
+          done();
+        }
+      });
+
+      this.setProgramTag('tester', this.$id('tester').val(), function()
+      {
+        programmedTester = true;
+
+        if (programmed30s && programmedHrs)
         {
           done();
         }
@@ -125,14 +143,14 @@ define([
 
     setProgramTag: function(kind, newProgramId, done)
     {
-      if (newProgramId === controller.getValue('programs.pc.' + kind))
+      if (newProgramId === controller.getValue('programs.' + kind))
       {
         return done();
       }
 
       var unassign = newProgramId === '';
 
-      controller.setValue('programs.pc.' + kind, newProgramId, function(err)
+      controller.setValue('programs.' + kind, newProgramId, function(err)
       {
         var msgSuffix = unassign ? ':unassign' : '';
 

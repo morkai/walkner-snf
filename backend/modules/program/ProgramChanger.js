@@ -22,7 +22,7 @@ function ProgramChanger(app)
 
   this.Program = app.mongoose.model('Program');
 
-  this.watch(['programs.pc.*', 'testKind.*'], 'manageProgram');
+  this.watch(['programs.*', 'testKind.*'], 'manageProgram');
 }
 
 util.inherits(ProgramChanger, ControlUnit);
@@ -49,7 +49,7 @@ ProgramChanger.prototype.manageProgram = function()
   }
   else
   {
-    this.changeProgram(null);
+    this.changeProgram('tester');
   }
 };
 
@@ -73,7 +73,7 @@ ProgramChanger.prototype.changeProgram = function(which)
 
   var me = this;
 
-  this.Program.findById(this.getTagValue('programs.pc.' + which), function(err, program)
+  this.Program.findById(this.getTagValue('programs.' + which), function(err, program)
   {
     me.setContactors(program ? program.getContactors() : CLOSED_CONTACTORS, lock);
   });

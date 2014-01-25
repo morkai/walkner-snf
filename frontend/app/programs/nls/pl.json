@@ -97,8 +97,9 @@
   "interlock:1+2": "Wyłącz sondę 2",
   "interlock:mnh": "Podłącz sondę MNH",
 
-  "assignPrograms:30s": "Program na pozycji 1 (test 30s):",
-  "assignPrograms:hrs": "Program na pozycji 2 (test HRS):",
+  "assignPrograms:30s": "Program na pozycji 1 (30s):",
+  "assignPrograms:hrs": "Program na pozycji 2 (Hot Restrike):",
+  "assignPrograms:tester": "Program na pozycji 3 (Tester):",
   "assignPrograms:placeholder": "Wybierz program...",
   "assignPrograms:submit": "Przypisz programy",
   "assignPrograms:failure": "Nie udało się przypisać programu na pozycję {kind, select, kind30s{30s} kindhrs{HRS} other{{kind}}}: <em>{error}</em>",
