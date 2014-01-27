@@ -107,7 +107,6 @@ define([
       this.$id('bulbPower').select2('readonly', isTester);
       this.$id('ballast').select2('readonly', isTester);
       this.$id('ignitron').select2('readonly', isTester);
-      this.$('input[name=lightSensors]').attr('disabled', isTester);
     }
 
   });

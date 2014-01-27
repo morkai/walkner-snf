@@ -14,6 +14,7 @@ exports.paths = {
   'moment-timezone': 'vendor/moment/moment-timezone',
   'moment-timezone-data': 'vendor/moment/moment-timezone-data',
   'bootstrap': 'vendor/bootstrap/js/bootstrap',
+  'bootstrap-colorpicker': 'vendor/bootstrap-colorpicker/js/bootstrap-colorpicker',
   'socket.io': 'vendor/socket.io',
   'h5.pubsub': 'vendor/h5.pubsub',
   'h5.rql': 'vendor/h5.rql',
@@ -23,7 +24,9 @@ exports.paths = {
   'select2': 'vendor/select2/select2',
   'select2-lang': 'vendor/select2-lang',
   'd3': 'vendor/d3.v3',
-  'visibly': 'vendor/visibly'
+  'visibly': 'vendor/visibly',
+  'highcharts': 'vendor/highcharts/js/highcharts.src',
+  'highcharts-noData': 'vendor/highcharts/js/modules/no-data-to-display.src'
 };
 
 exports.shim = {
@@ -36,6 +39,7 @@ exports.shim = {
     exports: 'Backbone'
   },
   'bootstrap': ['jquery'],
+  'bootstrap-colorpicker': ['bootstrap'],
   'reltime': {
     exports: 'reltime'
   },
@@ -48,6 +52,13 @@ exports.shim = {
   },
   'visibly': {
     exports: 'visibly'
+  },
+  'highcharts': {
+    deps: ['jquery'],
+    exports: 'Highcharts'
+  },
+  'highcharts-noData': {
+    deps: ['highcharts']
   }
 };
 

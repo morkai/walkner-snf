@@ -6,16 +6,21 @@ tester.greenLed,Zielona lampa testera,snfPlc,input,1,X17,1,0,bool,-,-,-,-,-,-,-,
 estop,Układ bezpieczeństwa E-Stop,snfPlc,input,1,X11,1,0,bool,-,-,-,-,-,-,-,-,-
 start,Przycisk rozpoczęcia pracy (START),snfPlc,input,1,X1,1,0,bool,-,-,-,-,-,-,-,-,-
 stop,Przycisk zakończenia pracy (STOP),snfPlc,input,1,X2,1,0,bool,-,-,-,-,-,-,-,-,-
-test.success,Flaga powodzenia testu,snfPlc,output,1,M9,1,0,bool,-,-,-,-,-,-,-,-,-
-test.failure,Flaga niepowodzenia testu,snfPlc,output,1,M10,1,0,bool,-,-,-,-,-,-,-,-,-
+test.success,Flaga powodzenia testu,snfPlc,output,1,M10,1,0,bool,-,-,-,-,-,-,-,-,-
+test.failure,Flaga niepowodzenia testu,snfPlc,output,1,M9,1,0,bool,-,-,-,-,-,-,-,-,-
 test.failure.current,Porażka: pobór mocy,snfPlc,output,1,M13,1,0,bool,-,-,-,-,-,-,-,-,-
 test.failure.light,Porażka: za słabe światło,snfPlc,output,1,M14,1,0,bool,-,-,-,-,-,-,-,-,-
 test.failure.time,Porażka: test zakończony przed czasem,snfPlc,output,1,M15,1,0,bool,-,-,-,-,-,-,-,-,-
-test.elapsedTime,Aktualny czas testu,snfPlc,register,1,T100,1,0,uint16,-,-,-,div(10),-,-,-,-,-
-test.hrsElapsedTime,Aktualny czas iteracji HRS,snfPlc,register,1,T101,1,0,uint16,-,-,-,div(10),-,-,-,-,-
-test.hrsIteration,Aktualna iteracja HRS,snfPlc,register,1,D4,1,0,uint16,-,-,-,-,-,-,-,-,-
+test.elapsedTime,Aktualny czas testu,snfPlc,register,1,T100,1,0,uint16,-,-,-,div(10); floor,-,-,-,-,-
+test.hrsIntervalTime,Aktualny czas odstępu HRS,snfPlc,register,1,T103,1,0,uint16,-,-,-,div(10); floor,-,-,-,-,-
+test.hrsElapsedTime,Aktualny czas iteracji HRS,snfPlc,register,1,T101,1,0,uint16,-,-,-,div(10); floor,-,-,-,-,-
+test.hrsIteration,Aktualna iteracja HRS,snfPlc,register,1,C3,1,0,uint16,-,-,-,-,-,-,-,-,-
 test.schleich,Pozwolenie testu Schleich,snfPlc,output,1,M11,1,0,bool,-,-,-,-,-,-,-,-,-
+program.30s,ID programu przypisanego do testu 30s,-,setting,-,-,0,1,string,-,-,-,-,-,-,-,-,-
+program.hrs,ID programu przypisanego do testu HRS,-,setting,-,-,0,1,string,-,-,-,-,-,-,-,-,-
+program.tester,ID programu przypisanego do testu Tester,-,setting,-,-,0,1,string,-,-,-,-,-,-,-,-,-
 program.lampCount,Ilość lamp,snfPlc,output,1,M6,1,1,bool,-,-,-,-,-,-,-,-,-
+program.lightSensors,Czujniki światła aktywne?,snfPlc,output,1,M16,1,1,bool,-,-,-,-,-,-,-,-,-
 program.hrsCount.plc,Ilość powtórzeń HRS (PLC),snfPlc,register,1,D4,1,0,uint16,-,-,-,-,-,-,-,-,-
 program.hrsCount.pc,Ilość powtórzeń HRS (PC),snfPlc,register,1,D5,1,1,uint16,-,-,-,-,-,-,-,-,-
 program.hrsDuration,Czas trwania HRS,snfPlc,register,1,D6,1,1,uint16,-,-,-,div(10),-,-,-,-,-
@@ -26,8 +31,8 @@ program.timeToShine,Czas oczekiwania na zaświecenie,snfPlc,register,1,D234,1,1,
 program.hrsInterval.plc,Czas odstępu HRS (PLC),snfPlc,register,1,D11,1,1,uint16,-,-,-,div(10),-,-,-,-,-
 program.hrsInterval.pc,Czas odstępu HRS (PC),snfPlc,register,1,D12,1,1,uint16,-,-,-,div(10),-,-,-,-,-
 program.contactors,Konfiguracja styczników,snfPlc,register,1,D0,1,1,uint16,-,-,-,-,-,-,-,-,-
-program.current.min,Dolna tolerancja prądu,snfPlc,register,1,D232,1,1,uint16,-,-,-,-,-,-,-,-,-
-program.current.max,Górna tolerancja prądu,snfPlc,register,1,D233,1,1,uint16,-,-,-,-,-,-,-,-,-
+program.current.min,Dolna tolerancja prądu,snfPlc,register,1,D232,1,1,uint16,-,-,-,div(10),-,-,-,-,-
+program.current.max,Górna tolerancja prądu,snfPlc,register,1,D233,1,1,uint16,-,-,-,div(10),-,-,-,-,-
 limitSwitch,Wyłącznik krańcowy w lampie,snfPlc,input,1,X3,1,0,bool,-,-,-,-,-,-,-,-,-
 programStart.count,Kluczyk typu uruchomienia programu,snfPlc,input,1,X10,1,0,bool,-,-,-,-,-,-,-,-,-
 programStart.left,Przycisk uruchomienia programu (lewy),snfPlc,input,1,X4,1,0,bool,-,-,-,-,-,-,-,-,-
@@ -65,15 +70,15 @@ bcd.4,Wybór programu (BCD4),snfPlc,input,1,X33,0,0,bool,-,-,-,-,-,-,-,-,-
 bcd.5,Wybór programu (BCD5) 1 cyfra,snfPlc,input,1,X34,0,0,bool,-,-,-,-,-,-,-,-,-
 arrow.left,Strzałka czarna na kasecie (lewa),snfPlc,input,1,X36,1,0,bool,-,-,-,-,-,-,-,-,-
 arrow.right,Strzałka czarna na kasecie (prawa),snfPlc,input,1,X37,1,0,bool,-,-,-,-,-,-,-,-,-
-temperature,Wartość czujnika temperatury,snfPlc,register,1,D1,1,0,uint16,-,-,-,-,-,-,-,-,-
-current,Wartość prądu,snfPlc,register,1,D2,1,0,uint16,-,-,-,div(10),-,-,-,-,-
-voltage,Wartość napięcia,snfPlc,register,1,D3,1,0,uint16,-,-,-,-,-,-,-,-,-
-light.1,Wartość czujnika światła 1,snfPlc,register,1,D7,1,0,uint16,-,-,-,-,-,-,-,-,-
-light.2,Wartość czujnika światła 2,snfPlc,register,1,D8,1,0,uint16,-,-,-,-,-,-,-,-,-
-light.1.min.plc,Min. wartość czujnika światła 1 (PLC),snfPlc,register,1,D230,1,1,uint16,-,-,-,-,-,-,-,-,-
-light.2.min.plc,Min. wartość czujnika światła 2 (PLC),snfPlc,register,1,D231,1,1,uint16,-,-,-,-,-,-,-,-,-
-light.1.min.pc,Min. wartość czujnika światła 1 (PC),-,setting,-,-,0,1,uint16,-,-,-,-,-,-,-,-,-
-light.2.min.pc,Min. wartość czujnika światła 2 (PC),-,setting,-,-,0,1,uint16,-,-,-,-,-,-,-,-,-
+temperature,Wartość czujnika temperatury,snfPlc,register,1,D1,1,0,int16,-,-,-,-,-,-,-,-,-
+current,Wartość prądu,snfPlc,register,1,D2,1,0,int16,-,-,-,div(10),-,-,-,-,-
+voltage,Wartość napięcia,snfPlc,register,1,D3,1,0,int16,-,-,-,-,-,-,-,-,-
+light.1,Wartość czujnika światła 1,snfPlc,register,1,D7,1,0,int16,-,-,-,-,-,-,-,-,-
+light.2,Wartość czujnika światła 2,snfPlc,register,1,D8,1,0,int16,-,-,-,-,-,-,-,-,-
+light.1.min.plc,Min. wartość czujnika światła 1 (PLC),snfPlc,register,1,D230,1,1,uint16,0,2000,-,-,-,-,-,-,-
+light.2.min.plc,Min. wartość czujnika światła 2 (PLC),snfPlc,register,1,D231,1,1,uint16,0,2000,-,-,-,-,-,-,-
+light.1.min.pc,Min. wartość czujnika światła 1 (PC),-,setting,-,-,0,1,uint16,0,2000,-,-,-,-,-,-,-
+light.2.min.pc,Min. wartość czujnika światła 2 (PC),-,setting,-,-,0,1,uint16,0,2000,-,-,-,-,-,-,-
 ,Wartości predefiniowane,,,,,,,,,,,,,,,,
 predef.1.contactors,Konfiguracja styczników 1,snfPlc,register,1,D200,0,1,uint16,-,-,-,-,-,-,-,-,-
 predef.1.hrsCount,Ilość powtórzeń HRS 1,snfPlc,register,1,D300,0,1,uint16,-,-,-,-,-,-,-,-,-
@@ -139,12 +144,8 @@ predef.16.contactors,Konfiguracja styczników 16,snfPlc,register,1,D215,0,1,uint
 predef.16.hrsCount,Ilość powtórzeń HRS 16,snfPlc,register,1,D315,0,1,uint16,-,-,-,-,-,-,-,-,-
 predef.16.current.min,Dolna tolerancja prądu 16,snfPlc,register,1,D331,0,1,uint16,-,-,-,-,-,-,-,-,-
 predef.16.current.max,Górna tolerancja prądu 16,snfPlc,register,1,D347,0,1,uint16,-,-,-,-,-,-,-,-,-
-,Programy,,,,,,,,,,,,,,,,
-programs.30s,ID programu przypisanego do testu 30s,-,setting,-,-,0,1,string,-,-,-,-,-,-,-,-,-
-programs.hrs,ID programu przypisanego do testu HRS,-,setting,-,-,0,1,string,-,-,-,-,-,-,-,-,-
-programs.tester,ID programu przypisanego do testu Tester,-,setting,-,-,0,1,string,-,-,-,-,-,-,-,-,-
 ,Inne,,,,,,,,,,,,,,,,
-watchdog,Watchdog,snfPlc,output,1,M8,0,1,bool,-,-,-,-,-,-,-,-,-
+watchdog,Watchdog,snfPlc,output,1,M8,1,1,bool,-,-,-,-,-,-,-,-,-
 ,Stany połączenia z urządzeniami,,,,,,,,,,,,,,,,
 masters.controlProcess,Stan połączenia z urządzeniami sterowania (snfPlc),-,virtual,-,-,0,0,bool,-,-,-,-,-,-,-,-,-
 masters.snfPlc,Stan połączenia ze sterownikiem delta,snfPlc,virtual,-,-,0,0,bool,-,-,-,-,-,-,0,-,-

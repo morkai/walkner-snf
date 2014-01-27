@@ -32,6 +32,14 @@ var SCALE_FUNCTIONS = {
     };
   },
 
+  'floor': function(tag, args)
+  {
+    return {
+      rawValueToValue: Math.floor,
+      valueToRawValue: Math.floor
+    };
+  },
+
   'div': function(tag, args)
   {
     var divisor = typeof args[0] === 'number' ? args[0] : 1;

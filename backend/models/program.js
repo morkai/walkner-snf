@@ -33,11 +33,15 @@ module.exports = function setupProgramModel(app, mongoose)
       enum: ['outside', 'fitting', 'tin'],
       default: 'outside'
     },
-    lightSensors: {
+    lampCount: {
       type: Number,
       min: 1,
       max: 2,
       default: 1
+    },
+    lightSensors: {
+      type: Boolean,
+      default: true
     },
     plcProgram: {
       type: Number,
@@ -119,17 +123,46 @@ module.exports = function setupProgramModel(app, mongoose)
 
   programSchema.statics.TOPIC_PREFIX = 'programs';
 
-  programSchema.methods.getContactors = function()
+  programSchema.methods.getContactorsByte = function()
   {
-    return {
-      testerK12: this.testerK12,
-      ballast400W1: this.ballast400W1,
-      ballast400W2: this.ballast400W2,
-      ballast2000W: this.ballast2000W,
-      ignitron400W1: this.ignitron400W1,
-      ignitron400W2: this.ignitron400W2,
-      ignitron2000W: this.ignitron2000W
-    };
+    var contactorsByte = this.ballast400W1 ? 1 : 0;
+
+    if (this.ballast400W2)
+    {
+      contactorsByte |= 2;
+    }
+
+    if (this.ballast2000W)
+    {
+      contactorsByte |= 4;
+    }
+
+    if (this.ignitron400W1)
+    {
+      contactorsByte |= 8;
+    }
+
+    if (this.ignitron400W2)
+    {
+      contactorsByte |= 16;
+    }
+
+    if (this.ignitron2000W)
+    {
+      contactorsByte |= 32;
+    }
+
+    if (this.kind === 'hrs')
+    {
+      contactorsByte |= 64;
+    }
+
+    if (this.limitSwitch)
+    {
+      contactorsByte |= 128;
+    }
+
+    return contactorsByte;
   };
 
   mongoose.model('Program', programSchema);

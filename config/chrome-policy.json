@@ -1,0 +1,12 @@
+{
+  "HomepageLocation": "http://localhost/",
+  "RestoreOnStartup": 4,
+  "RestoreOnStartupURLs": ["http://localhost/"],
+  "TranslateEnabled": false,
+  "SpellCheckServiceEnabled": false,
+  "AutoFillEnabled": false,
+  "AudioCaptureAllowed": true,
+  "AudioCaptureAllowedUrls": ["*://localhost:*/*"],
+  "VideoCaptureAllowed": true,
+  "VideoCaptureAllowedUrls": ["*://localhost:*/*"]
+}

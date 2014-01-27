@@ -40,6 +40,7 @@
 
   "NAVBAR:TOGGLE": "Pokaż menu",
   "NAVBAR:DASHBOARD": "Dashboard",
+  "NAVBAR:TESTS": "Testy",
   "NAVBAR:EVENTS": "Zdarzenia",
   "NAVBAR:USERS": "Użytkownicy",
   "NAVBAR:MY_ACCOUNT": "Moje konto",
@@ -56,5 +57,15 @@
   "ACTION_FORM:BUTTON:delete": "Usuń",
   "ACTION_FORM:BUTTON:cancel": "Anuluj",
   "ACTION_FORM:MESSAGE": "Czy na pewno chcesz wykonać żądaną akcję?",
-  "ACTION_FORM:MESSAGE:failure": "Wykonywanie akcji nie powiodło się :("
+  "ACTION_FORM:MESSAGE:failure": "Wykonywanie akcji nie powiodło się :(",
+
+  "highcharts:decimalPoint": ",",
+  "highcharts:thousandsSep": ".",
+  "highcharts:noData": "Brak danych :(",
+  "highcharts:resetZoom": "1:1",
+  "highcharts:resetZoomTitle": "Ustaw poziom przybliżenia na 1:1",
+  "highcharts:loading": "Ładowanie...",
+  "highcharts:months": "Styczeń_Luty_Marzec_Kwiecień_Maj_Czerwiec_Lipiec_Sierpień_Wrzesień_Październik_Listopad_Grudzień",
+  "highcharts:shortMonths": "Sty_Lut_Mar_Kwi_Maj_Cze_Lip_Sie_Wrz_Paź_Lis_Gru",
+  "highcharts:weekdays": "Niedziela_Poniedziałek_Wtorek_Środa_Czwartek_Piątek_Sobota"
 }

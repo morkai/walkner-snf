@@ -41,9 +41,9 @@ define([
     {
       return {
         idPrefix: this.idPrefix,
-        program30s: controller.getValue('programs.30s'),
-        programHrs: controller.getValue('programs.hrs'),
-        programTester: controller.getValue('programs.tester')
+        program30s: controller.getValue('program.30s'),
+        programHrs: controller.getValue('program.hrs'),
+        programTester: controller.getValue('program.tester')
       };
     },
 
@@ -150,14 +150,14 @@ define([
 
     setProgramTag: function(kind, newProgramId, done)
     {
-      if (newProgramId === controller.getValue('programs.' + kind))
+      if (newProgramId === controller.getValue('program.' + kind))
       {
         return done();
       }
 
       var unassign = newProgramId === '';
 
-      controller.setValue('programs.' + kind, newProgramId, function(err)
+      controller.setValue('program.' + kind, newProgramId, function(err)
       {
         var msgSuffix = unassign ? ':unassign' : '';
 

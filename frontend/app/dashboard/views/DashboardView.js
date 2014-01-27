@@ -1,6 +1,7 @@
 define([
   'underscore',
   'jquery',
+  'app/viewport',
   'app/i18n',
   'app/user',
   'app/controller',
@@ -10,6 +11,7 @@ define([
 ], function(
   _,
   $,
+  viewport,
   t,
   user,
   controller,
@@ -86,49 +88,11 @@ define([
       {
         this.$id('camera').remove();
       }
-
-      this.updateProgramTitle();
     },
 
     updateState: function(newValue, tagName)
     {
-      switch (tagName)
-      {
-        case 'programs.pc.30s':
-        case 'programs.pc.hrs':
-        case 'testKind.1':
-        case 'testKind.2':
-          this.updateProgramTitle();
-          break;
-      }
-    },
 
-    updateProgramTitle: function()
-    {
-      var testKind1 = controller.getValue('testKind.1');
-      var testKind2 = controller.getValue('testKind.2');
-      var programTitle = t('dashboard', 'currentProgram:noProgram');
-      var program;
-
-      if (testKind1 && !testKind2)
-      {
-        program = programs.get(controller.getValue('programs.pc.30s'));
-      }
-      else if (!testKind1 && !testKind2)
-      {
-        program = programs.get(controller.getValue('programs.pc.hrs'));
-      }
-      else
-      {
-        programTitle = t('dashboard', 'currentProgram:tester');
-      }
-
-      if (program)
-      {
-        programTitle = program.getLabel();
-      }
-
-      this.$('h1').text(programTitle);
     },
 
     setUpCamera: function()
@@ -164,6 +128,12 @@ define([
       stream = null;
 
       console.error(e);
+
+      viewport.msg.show({
+        type: 'error',
+        time: 5000,
+        text: '[CAMERA:' + e.name + ']' + (e.message.length ? (' ' + e.message) : '')
+      });
     },
 
     setUpVideo: function()

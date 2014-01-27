@@ -4,6 +4,7 @@ module.exports = [
 
   'event',
   'user',
-  'program'
+  'program',
+  'test'
 
 ];

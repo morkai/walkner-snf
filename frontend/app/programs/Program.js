@@ -26,7 +26,8 @@ define([
       bulbPower: '100',
       ballast: '400',
       ignitron: 'outside',
-      lightSensors: 1,
+      lampCount: 1,
+      lightSensors: true,
       plcProgram: 0,
       waitForStartTime: 10,
       illuminationTime: 30,
@@ -44,6 +45,12 @@ define([
       limitSwitch: false,
       minCurrent: 0,
       maxCurrent: 0
+    },
+
+    getTotalDuration: function()
+    {
+      return this.get('illuminationTime')
+        + (this.get('hrsInterval') + this.get('hrsTime')) * this.get('hrsInterval');
     }
 
   }, {

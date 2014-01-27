@@ -4,24 +4,58 @@ define([
   'app/viewport',
   'app/data/programs',
   'app/core/View',
+  'app/core/Model',
   'app/programs/views/AssignProgramsView',
-  '../views/DashboardView'
+  'app/tests/views/TestListView',
+  'app/tests/TestCollection',
+  '../views/CameraView',
+  '../views/CurrentProgramView',
+  '../views/CurrentStateView',
+  '../Dashboard',
+  'app/tests/Test',
+  'app/dashboard/templates/dashboard'
 ], function(
   t,
   user,
   viewport,
   programs,
   View,
+  Model,
   AssignProgramsView,
-  DashboardView
+  TestListView,
+  TestCollection,
+  CameraView,
+  CurrentProgramView,
+  CurrentStateView,
+  Dashboard,
+  Test,
+  dashboardTemplate
 ) {
   'use strict';
 
   return View.extend({
 
+    template: dashboardTemplate,
+
     layoutName: 'page',
 
     pageId: 'dashboard',
+
+    remoteTopics: {
+      'tests.started': function(test)
+      {
+        this.model.set('currentTest', test ? new Test(test) : null);
+        this.model.update();
+      },
+      'tests.finished': function(test)
+      {
+        this.model.set({
+          currentTest: null,
+          lastTest: test ? new Test(test) : null
+        });
+        this.model.update();
+      }
+    },
 
     actions: function()
     {
@@ -41,7 +75,44 @@ define([
 
     initialize: function()
     {
-      this.view = new DashboardView();
+      this.model = new Dashboard();
+
+      this.tests = new TestCollection(null, {
+        paginate: false,
+        rqlQuery: 'select(startedAt,finishedAt,program.name,result)&sort(-finishedAt)&limit(7)'
+      });
+
+      this.currentProgramView = new CurrentProgramView({model: this.model});
+
+      this.currentStateView = new CurrentStateView();
+
+      this.testListView = new TestListView({
+        collection: this.tests,
+        columns: ['program', 'startedAt', 'duration']
+      });
+
+      this.setView('.currentProgram-container', this.currentProgramView);
+      this.setView('.currentState-container', this.currentStateView);
+      this.setView('.dashboard-tests-container', this.testListView);
+
+      if (user.data.local)
+      {
+        this.cameraView = new CameraView();
+
+        this.setView('.dashboard-camera-container', this.cameraView);
+      }
+    },
+
+    serialize: function()
+    {
+      return {
+        local: !!user.data.local
+      };
+    },
+
+    load: function(when)
+    {
+      return when(this.model.fetch(), this.tests.fetch({reset: true}));
     },
 
     showAssignProgramsDialog: function(e)

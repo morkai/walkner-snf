@@ -12,9 +12,9 @@ define([
 ) {
   'use strict';
 
-  var canViewSettings = user.auth(['DIAGNOSTICS:VIEW', 'SETTINGS:VIEW']);
+  var canView = user.auth('DIAGNOSTICS:VIEW');
 
-  router.map('/diagnostics/tags', canViewSettings, function()
+  router.map('/diagnostics/tags', canView, function()
   {
     viewport.showPage(new TagsPage());
   });

@@ -7,6 +7,7 @@ exports.modules = [
   'events',
   'modbus',
   'messenger/server',
+  {id: 'messenger/client', name: 'messenger/client:frontend'},
   'program'
 ];
 
@@ -37,7 +38,15 @@ exports['messenger/server'] = {
   pubPort: 5050,
   repHost: '0.0.0.0',
   repPort: 5051,
-  broadcastTopics: ['events.saved']
+  broadcastTopics: ['events.saved', 'tests.started', 'tests.finished']
+};
+
+exports['messenger/client:frontend'] = {
+  pubHost: '127.0.0.1',
+  pubPort: 5052,
+  repHost: '127.0.0.1',
+  repPort: 5053,
+  responseTimeout: 15000
 };
 
 exports.mongoose = {

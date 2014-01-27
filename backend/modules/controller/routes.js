@@ -7,7 +7,7 @@ module.exports = function startTagsRoutes(app, controllerModule)
   var express = app[controllerModule.config.expressId];
   var user = app[controllerModule.config.userId];
 
-  var canView = user.auth();
+  var canView = user.auth('DIAGNOSTICS:VIEW');
 
   express.get('/tags', canView, browseRoute);
 

@@ -3,5 +3,9 @@
   "assignPrograms:dialogTitle": "Przypisywanie programów",
 
   "currentProgram:noProgram": "Brak przypisanego programu",
-  "currentProgram:tester": "TESTER"
+  "currentProgram:title:idle": "Wybrany program",
+  "currentProgram:title:testing": "Wykonywany program",
+
+  "camera:title": "Kamera",
+  "tests:title": "Ostatnie testy"
 }

@@ -252,7 +252,7 @@ exports.start = function startUserModule(app, module)
 
         if (socket.id !== message.socketId)
         {
-          socket.emit('user.reload', module.guest);
+          socket.emit('user.reload', socket.handshake.user);
         }
       });
     });

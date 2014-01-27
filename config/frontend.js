@@ -10,8 +10,10 @@ exports.modules = [
   'express',
   'users',
   'programs',
+  'tests',
   {id: 'messenger/client', name: 'messenger/client:controller'},
   'controller',
+  'messenger/server',
   'httpServer',
   'httpsServer',
   'sio'
@@ -88,6 +90,7 @@ exports.user = {
     'USERS:VIEW', 'USERS:MANAGE',
     'EVENTS:VIEW', 'EVENTS:MANAGE',
     'PROGRAMS:VIEW', 'PROGRAMS:MANAGE',
+    'TESTS:VIEW',
     'DIAGNOSTICS:VIEW', 'DIAGNOSTICS:MANAGE'
   ]
 };
@@ -100,6 +103,18 @@ exports['messenger/client:controller'] = {
   responseTimeout: 15000
 };
 
+exports.tests = {
+  messengerClientId: 'messenger/client:controller'
+};
+
 exports.controller = {
   messengerClientId: 'messenger/client:controller'
+};
+
+exports['messenger/server'] = {
+  pubHost: '0.0.0.0',
+  pubPort: 5052,
+  repHost: '0.0.0.0',
+  repPort: 5053,
+  broadcastTopics: ['programs.edited', 'programs.deleted']
 };

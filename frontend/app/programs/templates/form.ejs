@@ -79,14 +79,17 @@
             <div class="checkbox">
               <label><input id="<%- idPrefix %>-limitSwitch" type="checkbox" name="limitSwitch" value="true"> <%- t('programs', 'PROPERTY:limitSwitch') %></label>
             </div>
+            <div class="checkbox">
+              <label><input id="<%- idPrefix %>-lightSensors" type="checkbox" name="lightSensors" value="true"> <%- t('programs', 'PROPERTY:lightSensors') %></label>
+            </div>
           </div>
           <div class="form-group">
-            <label for="<%- idPrefix %>-lightSensors" class="control-label"><%- t('programs', 'PROPERTY:lightSensors') %></label>
+            <label for="<%- idPrefix %>-lampCount" class="control-label"><%- t('programs', 'PROPERTY:lampCount') %></label>
             <div class="radio">
-              <label><input id="<%- idPrefix %>-lightSensors" type="radio" name="lightSensors" value="1"> <%- t('programs', 'lightSensors:1') %></label>
+              <label><input id="<%- idPrefix %>-lampCount" type="radio" name="lampCount" value="1"> <%- t('programs', 'lampCount:1') %></label>
             </div>
             <div class="radio">
-              <label><input type="radio" name="lightSensors" value="2"> <%- t('programs', 'lightSensors:2') %></label>
+              <label><input type="radio" name="lampCount" value="2"> <%- t('programs', 'lampCount:2') %></label>
             </div>
           </div>
           <div class="form-group form-group-last">

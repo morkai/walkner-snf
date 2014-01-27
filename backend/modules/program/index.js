@@ -1,10 +1,13 @@
 'use strict';
 
 var lodash = require('lodash');
-var ProgramChanger = require('./ProgramChanger');
+var Watchdog = require('./Watchdog');
+var ProgramManager = require('./ProgramManager');
+var TestManager = require('./TestManager');
 
 exports.DEFAULT_CONFIG = {
-  modbusId: 'modbus'
+  modbusId: 'modbus',
+  messengerServerId: 'messenger/server'
 };
 
 exports.start = function startProgramModule(app, module)
@@ -38,21 +41,65 @@ exports.start = function startProgramModule(app, module)
     execQueue[name || func.name] = func;
   };
 
+  app.onModuleReady(module.config.messengerServerId, function()
+  {
+    app[module.config.messengerServerId].handle('tests.getData', function(data, reply)
+    {
+      if (module.testManager)
+      {
+        reply({
+          currentTest: module.testManager.currentTest,
+          lastTest: module.testManager.lastTest
+        });
+      }
+      else
+      {
+        reply({
+          currentTest: null,
+          lastTest: null
+        });
+      }
+    });
+  });
+
   var masterStatusTag = 'masters.controlProcess';
+  var initProgramSub = null;
 
   if (config.simulate || modbus.values[masterStatusTag])
   {
-    init();
+    initWatchdog();
   }
   else
   {
     app.broker
-      .subscribe('tagValueChanged.' + masterStatusTag, init)
+      .subscribe('tagValueChanged.' + masterStatusTag, initWatchdog)
       .setLimit(1);
   }
 
-  function init()
+  function initWatchdog()
   {
-    module.programChanger = new ProgramChanger(app);
+    module.watchdog = new Watchdog(app);
+
+    if (modbus.values['watchdog'])
+    {
+      return initProgram();
+    }
+
+    initProgramSub = app.broker.subscribe('tagValueChanged.watchdog', initProgram);
+  }
+
+  function initProgram(message)
+  {
+    if (!message || message.newValue)
+    {
+      if (initProgramSub)
+      {
+        initProgramSub.cancel();
+        initProgramSub = null;
+      }
+
+      module.programManager = new ProgramManager(app);
+      module.testManager = new TestManager(app);
+    }
   }
 };

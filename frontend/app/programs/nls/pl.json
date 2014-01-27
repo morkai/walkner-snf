@@ -37,7 +37,8 @@
   "PROPERTY:bulbPower": "Moc żarówki",
   "PROPERTY:ballast": "Balast",
   "PROPERTY:ignitron": "Ignitron",
-  "PROPERTY:lightSensors": "Czujniki światła",
+  "PROPERTY:lightSensors": "Czujniki światła aktywne?",
+  "PROPERTY:lampCount": "Ilość lamp",
   "PROPERTY:waitForStartTime": "Czas oczekiwania na zaświecenie",
   "PROPERTY:illuminationTime": "Czas świecenia",
   "PROPERTY:contactors": "Styczniki",
@@ -90,8 +91,11 @@
   "ignitron:fitting": "W oprawie",
   "ignitron:tin": "W puszce",
 
-  "lightSensors:1": "Jeden",
-  "lightSensors:2": "Dwa",
+  "lightSensors:true": "Włączone",
+  "lightSensors:false": "Wyłączone",
+
+  "lampCount:1": "Jedna",
+  "lampCount:2": "Dwie",
 
   "interlock:1": "Podłącz sondę 1",
   "interlock:1+2": "Wyłącz sondę 2",
@@ -102,8 +106,8 @@
   "assignPrograms:tester": "Program na pozycji 3 (Tester):",
   "assignPrograms:placeholder": "Wybierz program...",
   "assignPrograms:submit": "Przypisz programy",
-  "assignPrograms:failure": "Nie udało się przypisać programu na pozycję {kind, select, kind30s{30s} kindhrs{HRS} other{{kind}}}: <em>{error}</em>",
-  "assignPrograms:failure:unassign": "Nie udało się usunąć przypisania programu na pozycji {kind, select, kind30s{30s} kindhrs{HRS} other{{kind}}}: <em>{error}</em>",
-  "assignPrograms:success": "Przypisano program na pozycję {kind, select, kind30s{30s} kindhrs{HRS} other{{kind}}}: <em>{program}</em>",
-  "assignPrograms:success:unassign": "Usunięto przypisanie programu na pozycji {kind, select, kind30s{30s} kindhrs{HRS} other{{kind}}}!"
+  "assignPrograms:failure": "Nie udało się przypisać programu na pozycję {kind, select, kind30s{30s} kindhrs{HRS} kindtester{Tester} other{{kind}}}: <em>{error}</em>",
+  "assignPrograms:failure:unassign": "Nie udało się usunąć przypisania programu na pozycji {kind, select, kind30s{30s} kindhrs{HRS} kindtester{Tester} other{{kind}}}: <em>{error}</em>",
+  "assignPrograms:success": "Przypisano program na pozycję {kind, select, kind30s{30s} kindhrs{HRS} kindtester{Tester} other{{kind}}}: <em>{program}</em>",
+  "assignPrograms:success:unassign": "Usunięto przypisanie programu na pozycji {kind, select, kind30s{30s} kindhrs{HRS} kindtester{Tester} other{{kind}}}!"
 }
