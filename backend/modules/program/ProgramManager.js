@@ -20,6 +20,7 @@ function ProgramManager(app)
     [
       '.30s', '.hrs', '.tester',
       'testKind.*',
+      '.mnh',
       '.lampCount',
       '.lightSensors',
       '.limitSwitch',
@@ -126,6 +127,7 @@ ProgramManager.prototype.updateProgramTags = function(program, lock)
   step(
     function setTagsStep()
     {
+      controlUnit.setTagValue('.mnh', program.lampCount === 3, this.parallel());
       controlUnit.setTagValue('.lampCount', program.lampCount === 2, this.parallel());
       controlUnit.setTagValue('.lightSensors', !!program.lightSensors, this.parallel());
       controlUnit.setTagValue('.limitSwitch', program.limitSwitch === true, this.parallel());

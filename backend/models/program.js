@@ -36,7 +36,7 @@ module.exports = function setupProgramModel(app, mongoose)
     lampCount: {
       type: Number,
       min: 1,
-      max: 2,
+      max: 3,
       default: 1
     },
     lightSensors: {
