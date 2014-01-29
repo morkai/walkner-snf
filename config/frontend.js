@@ -88,7 +88,7 @@ exports.express = {
 exports.user = {
   privileges: [
     'USERS:VIEW', 'USERS:MANAGE',
-    'EVENTS:VIEW', 'EVENTS:MANAGE',
+    'EVENTS:VIEW',
     'PROGRAMS:VIEW', 'PROGRAMS:MANAGE',
     'TESTS:VIEW',
     'DIAGNOSTICS:VIEW', 'DIAGNOSTICS:MANAGE'
