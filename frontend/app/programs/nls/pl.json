@@ -39,6 +39,7 @@
   "PROPERTY:ignitron": "Ignitron",
   "PROPERTY:lightSensors": "Czujniki światła aktywne?",
   "PROPERTY:lampCount": "Ilość lamp",
+  "PROPERTY:lampBulb": "Żarówka w lampie?",
   "PROPERTY:waitForStartTime": "Czas oczekiwania na zaświecenie",
   "PROPERTY:illuminationTime": "Czas świecenia",
   "PROPERTY:contactors": "Styczniki",

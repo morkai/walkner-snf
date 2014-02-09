@@ -16,9 +16,9 @@ test.hrsIntervalTime,Aktualny czas odstępu HRS,snfPlc,register,1,T103,1,0,uint1
 test.hrsElapsedTime,Aktualny czas iteracji HRS,snfPlc,register,1,T101,1,0,uint16,-,-,-,div(10); floor,-,-,-,-,-
 test.hrsIteration,Aktualna iteracja HRS,snfPlc,register,1,C3,1,0,uint16,-,-,-,-,-,-,-,-,-
 test.schleich,Pozwolenie testu Schleich,snfPlc,output,1,M11,1,0,bool,-,-,-,-,-,-,-,-,-
-test.probe.son1,Test: jedna sonda SON/HPI,snfPlc,output,1,M11,1,0,bool,-,-,-,-,-,-,-,-,-
-test.probe.son2,Test: dwie sondy SON/HPI,snfPlc,output,1,M11,1,0,bool,-,-,-,-,-,-,-,-,-
-test.probe.mnh,Test: jedna sonda SON/HPI,snfPlc,output,1,M11,1,0,bool,-,-,-,-,-,-,-,-,-
+test.probe.son1,Test: jedna sonda SON/HPI,snfPlc,output,1,M18,1,0,bool,-,-,-,-,-,-,-,-,-
+test.probe.son2,Test: dwie sondy SON/HPI,snfPlc,output,1,M19,1,0,bool,-,-,-,-,-,-,-,-,-
+test.probe.mnh,Test: jedna sonda SON/HPI,snfPlc,output,1,M20,1,0,bool,-,-,-,-,-,-,-,-,-
 program.30s,ID programu przypisanego do testu 30s,-,setting,-,-,0,1,string,-,-,-,-,-,-,-,-,-
 program.hrs,ID programu przypisanego do testu HRS,-,setting,-,-,0,1,string,-,-,-,-,-,-,-,-,-
 program.tester,ID programu przypisanego do testu Tester,-,setting,-,-,0,1,string,-,-,-,-,-,-,-,-,-
@@ -28,7 +28,8 @@ program.lightSensors,Czujniki światła aktywne?,snfPlc,output,1,M16,1,1,bool,-,
 program.hrsCount.plc,Ilość powtórzeń HRS (PLC),snfPlc,register,1,D4,1,0,uint16,-,-,-,-,-,-,-,-,-
 program.hrsCount.pc,Ilość powtórzeń HRS (PC),snfPlc,register,1,D5,1,1,uint16,-,-,-,-,-,-,-,-,-
 program.hrsDuration,Czas trwania HRS,snfPlc,register,1,D6,1,1,uint16,-,-,-,div(10),-,-,-,-,-
-program.limitSwitch,Czy sprawdzać wyłącznik krańcowy w lampie,snfPlc,output,1,M22,1,1,bool,-,-,-,-,-,-,-,-,-
+program.limitSwitch,Sprawdzać wyłącznik krańcowy w lampie?,snfPlc,output,1,M22,1,1,bool,-,-,-,-,-,-,-,-,-
+program.lampBulb,Żarówka w lampie?,snfPlc,output,1,M24,1,1,bool,-,-,-,-,-,-,-,-,-
 program.duration.plc,Czas trwania testu (PLC),snfPlc,register,1,D10,1,1,uint16,-,-,-,div(10),-,-,-,-,-
 program.duration.pc,Czas trwania testu (PC),snfPlc,register,1,D9,1,1,uint16,-,-,-,div(10),-,-,-,-,-
 program.timeToShine,Czas oczekiwania na zaświecenie,snfPlc,register,1,D234,1,1,uint16,-,-,-,div(10),-,-,-,-,-

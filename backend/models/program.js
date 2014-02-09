@@ -39,6 +39,10 @@ module.exports = function setupProgramModel(app, mongoose)
       max: 3,
       default: 1
     },
+    lampBulb: {
+      type: Boolean,
+      default: false
+    },
     lightSensors: {
       type: Boolean,
       default: true

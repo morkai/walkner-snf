@@ -22,6 +22,7 @@ function ProgramManager(app)
       'testKind.*',
       '.mnh',
       '.lampCount',
+      '.lampBulb',
       '.lightSensors',
       '.limitSwitch',
       '.hrsCount.pc',
@@ -129,6 +130,7 @@ ProgramManager.prototype.updateProgramTags = function(program, lock)
     {
       controlUnit.setTagValue('.mnh', program.lampCount === 3, this.parallel());
       controlUnit.setTagValue('.lampCount', program.lampCount === 2, this.parallel());
+      controlUnit.setTagValue('.lampBulb', program.lampBulb, this.parallel());
       controlUnit.setTagValue('.lightSensors', !!program.lightSensors, this.parallel());
       controlUnit.setTagValue('.limitSwitch', program.limitSwitch === true, this.parallel());
       controlUnit.setTagValue('.hrsCount.pc', program.hrsCount || 0, this.parallel());
