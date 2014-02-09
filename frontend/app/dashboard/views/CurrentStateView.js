@@ -106,14 +106,18 @@ define([
 
       var $value = this.$tag(tagName).find('.currentState-tag-value');
       var suffix = $value.attr('data-suffix');
-      var decimals = parseInt($value.attr('data-decimals'));
+      var decimals = parseInt($value.attr('data-decimals') || 0);
 
-      if (!isNaN(decimals) && typeof tagValue === 'number')
+      if (isNaN(tagValue) && typeof tagValue === 'number')
+      {
+        tagValue = '?';
+      }
+      else if (decimals > 0)
       {
         tagValue = tagValue.toFixed(decimals);
       }
-
-      if (suffix && suffix.length)
+      console.log(tagName, tagValue);
+      if (tagValue !== '?' && suffix && suffix.length)
       {
         tagValue += suffix;
       }
