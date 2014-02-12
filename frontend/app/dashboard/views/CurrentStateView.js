@@ -116,7 +116,7 @@ define([
       {
         tagValue = tagValue.toFixed(decimals);
       }
-      console.log(tagName, tagValue);
+
       if (tagValue !== '?' && suffix && suffix.length)
       {
         tagValue += suffix;
