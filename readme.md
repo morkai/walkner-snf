@@ -52,4 +52,4 @@ TODO
 
 walkner-snf is released under the [CC BY-NC-SA-4.0 License](https://github.com/morkai/walkner-snf/blob/master/license.md).
 
-Copyright (c) 2014, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
+Copyright (c) 2014, Łukasz Walukiewicz (lukasz@walukiewicz.eu). Some Rights Reserved.
