@@ -6,6 +6,11 @@
 
 module.exports = function setupProgramModel(app, mongoose)
 {
+  var IO = {
+    type: Boolean,
+    default: false
+  };
+
   var programSchema = mongoose.Schema({
     name: {
       type: String,
@@ -81,38 +86,21 @@ module.exports = function setupProgramModel(app, mongoose)
       enum: ['1', '1+2', 'mnh'],
       default: '1'
     },
-    testerK12: {
-      type: Boolean,
-      default: false
-    },
-    ballast400W1: {
-      type: Boolean,
-      default: false
-    },
-    ballast400W2: {
-      type: Boolean,
-      default: false
-    },
-    ballast2000W: {
-      type: Boolean,
-      default: false
-    },
-    ignitron400W1: {
-      type: Boolean,
-      default: false
-    },
-    ignitron400W2: {
-      type: Boolean,
-      default: false
-    },
-    ignitron2000W: {
-      type: Boolean,
-      default: false
-    },
-    limitSwitch: {
-      type: Boolean,
-      default: false
-    },
+    testerK12: IO,
+    ballast400W1: IO,
+    ballast400W2: IO,
+    ballast2000W: IO,
+    ignitron400W1: IO,
+    ignitron400W2: IO,
+    ignitron2000W: IO,
+    limitSwitch: IO,
+    k15: IO,
+    k16: IO,
+    k17: IO,
+    k18: IO,
+    k19: IO,
+    k20: IO,
+    k21: IO,
     minCurrent: {
       type: Number,
       default: 0,
@@ -131,46 +119,71 @@ module.exports = function setupProgramModel(app, mongoose)
 
   programSchema.statics.TOPIC_PREFIX = 'programs';
 
-  programSchema.methods.getContactorsByte = function()
+  programSchema.methods.getContactorsBytes = function()
   {
-    var contactorsByte = this.ballast400W1 ? 1 : 0;
+    var contactorsBytes = this.ballast400W1 ? 1 : 0;
 
     if (this.ballast400W2)
     {
-      contactorsByte |= 2;
+      contactorsBytes |= 2;
     }
 
     if (this.ballast2000W)
     {
-      contactorsByte |= 4;
+      contactorsBytes |= 4;
     }
 
     if (this.ignitron400W1)
     {
-      contactorsByte |= 8;
+      contactorsBytes |= 8;
     }
 
     if (this.ignitron400W2)
     {
-      contactorsByte |= 16;
+      contactorsBytes |= 16;
     }
 
     if (this.ignitron2000W)
     {
-      contactorsByte |= 32;
+      contactorsBytes |= 32;
     }
 
-    if (this.kind === 'hrs')
+    if (this.k15)
     {
-      contactorsByte |= 64;
+      contactorsBytes |= 64;
     }
 
-    if (this.limitSwitch)
+    if (this.k16)
     {
-      contactorsByte |= 128;
+      contactorsBytes |= 128;
     }
 
-    return contactorsByte;
+    if (this.k17)
+    {
+      contactorsBytes |= 256;
+    }
+
+    if (this.k18)
+    {
+      contactorsBytes |= 512;
+    }
+
+    if (this.k19)
+    {
+      contactorsBytes |= 1024;
+    }
+
+    if (this.k20)
+    {
+      contactorsBytes |= 2048;
+    }
+
+    if (this.k21)
+    {
+      contactorsBytes |= 4096;
+    }
+
+    return contactorsBytes;
   };
 
   mongoose.model('Program', programSchema);

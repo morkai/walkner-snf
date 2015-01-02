@@ -47,6 +47,13 @@ define([
       ignitron400W2: false,
       ignitron2000W: false,
       limitSwitch: false,
+      k15: false,
+      k16: false,
+      k17: false,
+      k18: false,
+      k19: false,
+      k20: false,
+      k21: false,
       minCurrent: 0,
       maxCurrent: 0
     },
@@ -65,7 +72,14 @@ define([
       'ballast2000W',
       'ignitron400W1',
       'ignitron400W2',
-      'ignitron2000W'
+      'ignitron2000W',
+      'k15',
+      'k16',
+      'k17',
+      'k18',
+      'k19',
+      'k20',
+      'k21'
     ]
   });
 });

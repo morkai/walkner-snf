@@ -1,14 +1,20 @@
 [
   {
-    "name"     : "controller",
-    "script"   : "./backend/main.js",
-    "args"     : "['../config/production/controller.js']",
-    "instances": "1"
+    "name": "controller",
+    "script": "./backend/main.js",
+    "args": ["../config/production/controller.js"],
+    "exec_mode": "fork_mode",
+    "env": {
+      "NODE_ENV": "production"
+    }
   },
   {
-    "name"     : "frontend",
-    "script"   : "./backend/main.js",
-    "args"     : "['../config/production/frontend.js']",
-    "instances": "1"
+    "name": "frontend",
+    "script": "./backend/main.js",
+    "args": ["../config/production/frontend.js"],
+    "exec_mode": "fork_mode",
+    "env": {
+      "NODE_ENV": "production"
+    }
   }
 ]

@@ -41,20 +41,18 @@
           <div class="prop-name"><%- t('programs', 'PROPERTY:illuminationTime') %></div>
           <div class="prop-value"><%- time.toString(model.illuminationTime) %></div>
         </div>
-        <% if (model.kind === 'hrs') { %>
         <div class="prop">
           <div class="prop-name"><%- t('programs', 'PROPERTY:hrsInterval') %></div>
-          <div class="prop-value"><%- time.toString(model.hrsInterval) %></div>
+          <div class="prop-value"><%- model.kind === 'hrs' ? time.toString(model.hrsInterval) : '-' %></div>
         </div>
         <div class="prop">
           <div class="prop-name"><%- t('programs', 'PROPERTY:hrsTime') %></div>
-          <div class="prop-value"><%- time.toString(model.hrsTime) %></div>
+          <div class="prop-value"><%- model.kind === 'hrs' ? time.toString(model.hrsTime) : '-' %></div>
         </div>
         <div class="prop">
           <div class="prop-name"><%- t('programs', 'PROPERTY:hrsCount') %></div>
-          <div class="prop-value"><%- model.hrsCount %></div>
+          <div class="prop-value"><%- model.kind === 'hrs' ? model.hrsCount : '-' %></div>
         </div>
-        <% } %>
       </div>
     </div>
     <div class="col-md-5">

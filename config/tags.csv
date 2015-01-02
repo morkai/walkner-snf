@@ -48,7 +48,7 @@ interlock.e40Right,Blokada sonda E40 (prawa),snfPlc,input,1,X21,1,0,bool,-,-,-,-
 temperature.max,Czujnik maks. temperatury,snfPlc,input,1,X12,1,0,bool,-,-,-,-,-,-,-,-,-
 testKind.1,Rodzaj testu (bit 1),snfPlc,input,1,X13,1,0,bool,-,-,-,-,-,-,-,-,-
 testKind.2,Rodzaj testu (bit 2),snfPlc,input,1,X14,1,0,bool,-,-,-,-,-,-,-,-,-
-fan,Wentylator: wyłączenie,snfPlc,output,1,Y0,1,1,bool,-,-,-,-,-,-,-,-,-
+fan,Wentylator: wyłączenie,snfPlc,output,1,Y5,1,1,bool,-,-,-,-,-,-,-,-,-
 transformer.1,SSR TRAFO 1,snfPlc,output,1,Y3,1,1,bool,-,-,-,-,-,-,-,-,-
 transformer.2,SSR TRAFO 2,snfPlc,output,1,Y4,1,1,bool,-,-,-,-,-,-,-,-,-
 redLed,Czerwona lampa,snfPlc,output,1,Y6,1,1,bool,-,-,-,-,-,-,-,-,-
@@ -68,6 +68,13 @@ contactors.ballast2000W,Stycznik S8 Balast 2kW,snfPlc,output,1,Y24,1,1,bool,-,-,
 contactors.ignitron400W1,Stycznik S9 Ignitron 1 0.4kW,snfPlc,output,1,Y25,1,1,bool,-,-,-,-,-,-,-,-,-
 contactors.ignitron400W2,Stycznik S10 Ignitron 2 0.4kW,snfPlc,output,1,Y26,1,1,bool,-,-,-,-,-,-,-,-,-
 contactors.ignitron2000W,Stycznik S11 Ignitron 2kW,snfPlc,output,1,Y27,1,1,bool,-,-,-,-,-,-,-,-,-
+contactors.k15,Stycznik Lampy K15,snfPlc,output,1,Y34,1,1,bool,-,-,-,-,-,-,-,-,-
+contactors.k16,Stycznik Lampy K16,snfPlc,output,1,Y35,1,1,bool,-,-,-,-,-,-,-,-,-
+contactors.k17,Stycznik Lampy K17,snfPlc,output,1,Y36,1,1,bool,-,-,-,-,-,-,-,-,-
+contactors.k18,Stycznik Lampy K18,snfPlc,output,1,Y37,1,1,bool,-,-,-,-,-,-,-,-,-
+contactors.k19,Stycznik Lampy K19,snfPlc,output,1,Y0,1,1,bool,-,-,-,-,-,-,-,-,-
+contactors.k20,Stycznik Lampy K20,snfPlc,output,1,Y1,1,1,bool,-,-,-,-,-,-,-,-,-
+contactors.k21,Stycznik Lampy K21,snfPlc,output,1,Y2,1,1,bool,-,-,-,-,-,-,-,-,-
 bcd.1,Wybór programu (BCD1),snfPlc,input,1,X30,0,0,bool,-,-,-,-,-,-,-,-,-
 bcd.2,Wybór programu (BCD2),snfPlc,input,1,X31,0,0,bool,-,-,-,-,-,-,-,-,-
 bcd.3,Wybór programu (BCD3),snfPlc,input,1,X32,0,0,bool,-,-,-,-,-,-,-,-,-
