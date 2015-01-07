@@ -183,6 +183,11 @@ module.exports = function setupProgramModel(app, mongoose)
       contactorsBytes |= 4096;
     }
 
+    if (this.testerK12)
+    {
+      contactorsBytes |= 8192;
+    }
+
     return contactorsBytes;
   };
 
