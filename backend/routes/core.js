@@ -1,16 +1,39 @@
-// Copyright (c) 2014, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
+// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
 // Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
 // Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
 
 'use strict';
 
-var requirejsConfig = require('../../config/require');
+var lodash = require('lodash');
 
 module.exports = function startCoreRoutes(app, express)
 {
   var appCache = app.options.env === 'production';
-  var requirejsPaths = JSON.stringify(requirejsConfig.paths);
-  var requirejsShim = JSON.stringify(requirejsConfig.shim);
+  var updaterModule = app[app.options.updaterId || 'updater'];
+  var userModule = app[app.options.userId || 'user'];
+  var requirejsPaths;
+  var requirejsShim;
+
+  var ROOT_USER = JSON.stringify(lodash.omit(userModule.root, 'password'));
+  var GUEST_USER = JSON.stringify(userModule.guest);
+  var PRIVILEGES = JSON.stringify(userModule.config.privileges);
+  var MODULES = JSON.stringify(app.options.modules.map(function(module)
+  {
+    return module.id || module;
+  }));
+  var DASHBOARD_URL_AFTER_LOG_IN = JSON.stringify(app.options.dashboardUrlAfterLogIn || '/');
+
+  app.broker.subscribe('updater.newVersion', reloadRequirejsConfig).setFilter(function(message)
+  {
+    return message.service === app.options.id;
+  });
+
+  reloadRequirejsConfig();
+
+  if (updaterModule && app.options.dictionaryModules)
+  {
+    Object.keys(app.options.dictionaryModules).forEach(setUpFrontendVersionUpdater);
+  }
 
   express.get('/', showIndex);
 
@@ -19,34 +42,58 @@ module.exports = function startCoreRoutes(app, express)
     res.send(Date.now().toString());
   });
 
-  express.get('/config.js', sendRequireJsConfig);
+  express.get('/ping', function(req, res)
+  {
+    res.type('text/plain');
+    res.send('pong');
+  });
 
-  express.get('/snf.appcache', sendAppCacheManifest);
+  express.get('/config.js', sendRequireJsConfig);
 
   function showIndex(req, res)
   {
     var sessionUser = req.session.user;
     var locale = sessionUser && sessionUser.locale ? sessionUser.locale : 'pl';
+    var appData = {
+      VERSIONS: JSON.stringify(updaterModule ? updaterModule.getVersions() : {}),
+      TIME: JSON.stringify(Date.now()),
+      LOCALE: JSON.stringify(locale),
+      ROOT_USER: ROOT_USER,
+      GUEST_USER: GUEST_USER,
+      PRIVILEGES: PRIVILEGES,
+      MODULES: MODULES,
+      DASHBOARD_URL_AFTER_LOG_IN: DASHBOARD_URL_AFTER_LOG_IN
+    };
 
-    // TODO: Add caching
-    res.render('index', {
-      appCache: appCache,
-      appData: {
-        TIME: JSON.stringify(Date.now()),
-        LOCALE: JSON.stringify(locale),
-        GUEST_USER: JSON.stringify(app.user.guest),
-        PRIVILEGES: JSON.stringify(app.user.config.privileges),
-        TAG_VALUES: JSON.stringify(app.controller.values),
-        PROGRAM_OPTIONS: JSON.stringify({
-          kinds: getProgramEnumValues('kind'),
-          lightSourceTypes: getProgramEnumValues('lightSourceType'),
-          bulbPowers: getProgramEnumValues('bulbPower'),
-          ballasts: getProgramEnumValues('ballast'),
-          ignitrons: getProgramEnumValues('ignitron'),
-          interlocks: getProgramEnumValues('interlock')
-        }),
-        PROGRAMS: JSON.stringify(app.programs.models)
+    lodash.forEach(app.options.dictionaryModules, function(appDataKey, moduleName)
+    {
+      var models = app[moduleName].models;
+
+      if (models.length === 0)
+      {
+        appData[appDataKey] = '[]';
+
+        return;
       }
+
+      if (typeof models[0].toDictionaryObject !== 'function')
+      {
+        appData[appDataKey] = JSON.stringify(models);
+
+        return;
+      }
+
+      appData[appDataKey] = JSON.stringify(lodash.invoke(models, 'toDictionaryObject'));
+    });
+
+    app.broker.publish('app.prepareFrontendData', appData);
+
+    res.render('index', {
+      title: require(app.pathTo('../package.json')).name,
+      appCache: appCache,
+      appData: appData,
+      mainJsFile: app.options.mainJsFile || 'main.js',
+      mainCssFile: app.options.mainCssFile || 'assets/main.css'
     });
   }
 
@@ -59,21 +106,22 @@ module.exports = function startCoreRoutes(app, express)
     });
   }
 
-  function sendAppCacheManifest(req, res)
+  function reloadRequirejsConfig()
   {
-    if (appCache)
-    {
-      res.type('text/cache-manifest');
-      res.sendfile('snf.appcache', {root: express.get('static path')});
-    }
-    else
-    {
-      res.send(404);
-    }
+    var configPath = require.resolve('../../config/require');
+
+    delete require.cache[configPath];
+
+    var requirejsConfig = require(configPath);
+
+    requirejsPaths = JSON.stringify(requirejsConfig.paths);
+    requirejsShim = JSON.stringify(requirejsConfig.shim);
   }
 
-  function getProgramEnumValues(path)
+  function setUpFrontendVersionUpdater(topicPrefix)
   {
-    return app.mongoose.model('Program').schema.path(path).enumValues;
+    app.broker.subscribe(topicPrefix + '.added', updaterModule.updateFrontendVersion);
+    app.broker.subscribe(topicPrefix + '.edited', updaterModule.updateFrontendVersion);
+    app.broker.subscribe(topicPrefix + '.deleted', updaterModule.updateFrontendVersion);
   }
 };

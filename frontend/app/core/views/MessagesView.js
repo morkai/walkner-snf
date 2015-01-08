@@ -1,4 +1,4 @@
-// Copyright (c) 2014, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
+// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
 // Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
 // Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
 
@@ -8,8 +8,7 @@ define([
   'app/i18n',
   '../View',
   'app/core/templates/messages',
-  'app/core/templates/message',
-  'i18n!app/nls/core'
+  'app/core/templates/message'
 ], function(
   _,
   $,
@@ -29,7 +28,7 @@ define([
     events: {
       'click .message': function(e)
       {
-        if (e.currentTarget.parentNode === this.el)
+        if (e.currentTarget.parentNode === this.el && e.currentTarget.getAttribute('data-view') === this.idPrefix)
         {
           this.hide($(e.currentTarget));
         }
@@ -98,7 +97,7 @@ define([
       this.hideTimers = null;
     }
 
-    this.$('.message').remove();
+    this.$('.message[data-view="' + this.idPrefix + '"]').remove();
   };
 
   /**
@@ -112,7 +111,7 @@ define([
       text: options.text
     }));
 
-    this.$el.append($message);
+    this.$el.append($message.attr('data-view', this.idPrefix));
 
     this.moveDown($message);
 
@@ -142,7 +141,7 @@ define([
   {
     if (!$message)
     {
-      $message = this.$('.message');
+      $message = this.$('.message[data-view="' + this.idPrefix + '"]');
 
       this.$loadingMessage = null;
     }
@@ -259,7 +258,7 @@ define([
   MessagesView.prototype.moveDown = function($newMessage)
   {
     this.moveTopBy(
-      this.$('.message'),
+      this.$('.message[data-view="' + this.idPrefix + '"]'),
       $newMessage,
       this.getMoveOffset($newMessage)
     );

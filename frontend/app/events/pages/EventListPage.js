@@ -1,9 +1,8 @@
-// Copyright (c) 2014, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
+// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
 // Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
 // Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
 
 define([
-  'jquery',
   'app/viewport',
   'app/i18n',
   'app/core/util/bindLoadingMessage',
@@ -12,10 +11,8 @@ define([
   '../EventTypeCollection',
   '../views/EventListView',
   '../views/EventFilterView',
-  'app/events/templates/listPage',
-  'i18n!app/nls/events'
+  'app/core/templates/listPage'
 ], function(
-  $,
   viewport,
   t,
   bindLoadingMessage,
@@ -46,7 +43,7 @@ define([
       this.defineViews();
 
       this.setView('.filter-container', this.filterView);
-      this.setView('.events-list-container', this.listView);
+      this.setView('.list-container', this.listView);
     },
 
     defineModels: function()
@@ -86,7 +83,7 @@ define([
     {
       this.eventList.rqlQuery = newRqlQuery;
 
-      this.listView.refreshCollection(null, true);
+      this.listView.refreshCollectionNow();
 
       this.broker.publish('router.navigate', {
         url: this.eventList.genClientUrl() + '?' + newRqlQuery,

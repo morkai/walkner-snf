@@ -1,16 +1,14 @@
-// Copyright (c) 2014, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
+// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
 // Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
 // Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
 
 define([
-  'jquery',
   'underscore',
   'form2js',
   'js2form',
   'app/viewport',
   '../View'
 ], function(
-  $,
   _,
   form2js,
   js2form,
@@ -25,18 +23,18 @@ define([
       'submit': 'submitForm'
     },
 
-    idPrefix: 'formView',
-
     $errorMessage: null,
 
     initialize: function()
     {
-      this.idPrefix = _.uniqueId(this.idPrefix);
       this.$errorMessage = null;
 
-      this.listenTo(this.model, 'change', function(model)
+      this.listenTo(this.model, 'change', function()
       {
-        js2form(this.el, this.serializeToForm());
+        if (this.isRendered())
+        {
+          js2form(this.el, this.serializeToForm());
+        }
       });
     },
 
@@ -48,6 +46,7 @@ define([
     serialize: function()
     {
       return {
+        editMode: !!this.options.editMode,
         idPrefix: this.idPrefix,
         formMethod: this.options.formMethod,
         formAction: this.options.formAction,
@@ -81,9 +80,16 @@ define([
         return false;
       }
 
+      var formData = this.serializeForm(form2js(this.el));
+
+      if (!this.checkValidity(formData))
+      {
+        return false;
+      }
+
       var $submitEl = this.$('[type="submit"]').attr('disabled', true);
 
-      var req = this.promised(this.model.save(this.serializeForm(form2js(this.el)), {
+      var req = this.promised(this.model.save(formData, {
         wait: true
       }));
 
@@ -91,19 +97,20 @@ define([
 
       req.done(function()
       {
-        view.broker.publish('router.navigate', {
-          url: view.model.genClientUrl(),
-          trigger: true
-        });
+        if (typeof view.options.done === 'function')
+        {
+          view.options.done(true);
+        }
+        else
+        {
+          view.broker.publish('router.navigate', {
+            url: view.model.genClientUrl(),
+            trigger: true
+          });
+        }
       });
 
-      req.fail(function()
-      {
-        view.$errorMessage = viewport.msg.show({
-          type: 'error',
-          text: view.options.failureText
-        });
-      });
+      req.fail(this.handleFailure.bind(this));
 
       req.always(function()
       {
@@ -121,6 +128,19 @@ define([
 
         this.$errorMessage = null;
       }
+    },
+
+    checkValidity: function(formData)
+    {
+      return !!formData;
+    },
+
+    handleFailure: function()
+    {
+      this.$errorMessage = viewport.msg.show({
+        type: 'error',
+        text: this.options.failureText
+      });
     }
 
   });

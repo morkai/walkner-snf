@@ -1,4 +1,4 @@
-// Copyright (c) 2014, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
+// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
 // Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
 // Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
 
@@ -7,11 +7,14 @@
 var path = require('path');
 var lodash = require('lodash');
 var express = require('express');
+var bodyParser = require('body-parser');
 var ejsAmd = require('ejs-amd');
 var messageFormatAmd = require('messageformat-amd');
 var MongoStore = require('./MongoStore')(express.session.Store);
 var wrapAmd = require('./wrapAmd');
 var rqlMiddleware = require('./rqlMiddleware');
+var errorHandlerMiddleware = require('./errorHandlerMiddleware');
+var crud = require('./crud');
 
 exports.DEFAULT_CONFIG = {
   mongooseId: 'mongoose',
@@ -23,59 +26,89 @@ exports.DEFAULT_CONFIG = {
     path: '/',
     httpOnly: true
   },
-  cookieSecret: 'sec~1ee7~ret',
-  ejsAmdHelpers: {}
+  cookieSecret: null,
+  ejsAmdHelpers: {},
+  title: 'express',
+  jsonBody: {},
+  textBody: {},
+  urlencodedBody: {}
 };
 
 exports.start = function startExpressModule(app, module, done)
 {
   var mongoose = app[module.config.mongooseId];
 
-  if (!mongoose)
-  {
-    return done(new Error("express module requires the mongoose module!"));
-  }
-
   module = app[module.name] = lodash.merge(express(), module);
+
+  module.createHttpError = function(message, statusCode)
+  {
+    var httpError = new Error(message);
+    httpError.status = statusCode || 400;
+
+    return httpError;
+  };
+
+  module.crud = crud;
 
   var production = app.options.env === 'production';
   var staticPath = module.config[production ? 'staticBuildPath' : 'staticPath'];
 
+  module.set('trust proxy', true);
   module.set('views', app.pathTo('templates'));
   module.set('view engine', 'ejs');
   module.set('static path', staticPath);
+
+  app.broker.publish('express.beforeMiddleware', {
+    module: module,
+    express: express
+  });
 
   if (!production)
   {
     setUpDevMiddleware(staticPath);
   }
 
-  module.sessionStore = new MongoStore(mongoose.connection.db);
+  if (module.config.cookieSecret)
+  {
+    module.use(express.cookieParser(module.config.cookieSecret));
+  }
 
-  module.use(express.cookieParser(module.config.cookieSecret));
-  module.use(express.session({
-    store: module.sessionStore,
-    key: module.config.sessionCookieKey,
-    cookie: module.config.sessionCookie
-  }));
-  module.use(express.json());
-  module.use(express.urlencoded());
-  module.use(express.methodOverride());
+  if (mongoose)
+  {
+    module.sessionStore = new MongoStore(mongoose.connection.db);
+
+    module.use(express.session({
+      store: module.sessionStore,
+      key: module.config.sessionCookieKey,
+      cookie: module.config.sessionCookie,
+      secret: module.config.cookieSecret
+    }));
+  }
+
+  module.use(bodyParser.json(module.config.jsonBody));
+  module.use(bodyParser.urlencoded(lodash.extend({extended: false}, module.config.urlencodedBody)));
+  module.use(bodyParser.text(lodash.defaults({type: 'text/*'}, module.config.textBody)));
   module.use(rqlMiddleware());
+
+  app.broker.publish('express.beforeRouter', {
+    module: module,
+    express: express
+  });
+
   module.use(module.router);
   module.use(express.static(staticPath));
 
-  if (production)
-  {
-    module.use(express.errorHandler());
-  }
-  else
-  {
-    module.use(express.errorHandler({
-      dumpExceptions: true,
-      showStack: true
-    }));
-  }
+  var errorHandlerOptions = {
+    title: module.config.title,
+    basePath: path.resolve(__dirname, '../../../')
+  };
+
+  module.use(errorHandlerMiddleware(module, errorHandlerOptions));
+
+  app.broker.publish('express.beforeRoutes', {
+    module: module,
+    express: express
+  });
 
   app.loadDir(app.pathTo('routes'), [app, module], done);
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2014, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
+// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
 // Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
 // Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
 
@@ -22,8 +22,8 @@ function(
     'auto connect': false,
     'connect timeout': 5000,
     'reconnect': true,
-    'reconnection delay': _.random(100, 200),
-    'reconnection limit': _.random(2000, 3000),
+    'reconnection delay': _.random(100, 500),
+    'reconnection limit': _.random(4000, 8000),
     'max reconnection attempts': Infinity
   }));
 

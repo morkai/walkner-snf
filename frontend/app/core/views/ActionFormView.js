@@ -1,19 +1,16 @@
-// Copyright (c) 2014, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
+// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
 // Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
 // Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
 
 define([
   'underscore',
-  'jquery',
   'app/i18n',
   'app/viewport',
   'app/router',
   '../View',
-  'app/core/templates/actionForm',
-  'i18n!app/nls/core'
+  'app/core/templates/actionForm'
 ], function(
   _,
-  $,
   t,
   viewport,
   router,
@@ -126,7 +123,7 @@ define([
         data = JSON.stringify(data);
       }
 
-      var req = $.ajax({
+      var req = this.ajax({
         type: options.formMethod,
         url: options.formAction,
         data: data
@@ -237,7 +234,10 @@ define([
 
       var dialogView = new ActionFormView(options);
 
-      dialogView.on('success', viewport.closeDialog);
+      dialogView.on('success', function()
+      {
+        viewport.closeDialog();
+      });
 
       viewport.showDialog(dialogView, dialogTitle);
 

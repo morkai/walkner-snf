@@ -1,4 +1,4 @@
-// Copyright (c) 2014, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
+// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
 // Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
 // Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
 
@@ -16,7 +16,16 @@ define([
     events: {
       'click .dialog-answer': function(e)
       {
-        var answer = this.$(e.target).closest('.dialog-answer').attr('data-answer');
+        var $answer = this.$(e.target).closest('.dialog-answer');
+
+        if ($answer.prop('disabled'))
+        {
+          return;
+        }
+
+        $answer.prop('disabled', true);
+
+        var answer = $answer.attr('data-answer');
 
         if (_.isString(answer) && answer.length > 0)
         {

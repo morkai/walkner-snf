@@ -1,15 +1,13 @@
-// Copyright (c) 2014, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
+// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
 // Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
 // Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
 
 define([
-  'app/viewport',
-  'app/i18n',
-  '../View'
+  '../View',
+  '../util/onModelDeleted'
 ], function(
-  viewport,
-  t,
-  View
+  View,
+  onModelDeleted
 ) {
   'use strict';
 
@@ -29,8 +27,29 @@ define([
     serialize: function()
     {
       return {
-        model: this.model.toJSON()
+        idPrefix: this.idPrefix,
+        model: this.serializeDetails(this.model)
       };
+    },
+
+    serializeDetails: function(model)
+    {
+      if (typeof model.serializeDetails === 'function')
+      {
+        return model.serializeDetails();
+      }
+
+      if (typeof model.serialize === 'function')
+      {
+        return model.serialize();
+      }
+
+      return model.toJSON();
+    },
+
+    beforeRender: function()
+    {
+      this.stopListening(this.collection, 'change', this.render);
     },
 
     afterRender: function()
@@ -50,30 +69,7 @@ define([
 
     onModelDeleted: function(message)
     {
-      var remoteModel = message.model;
-
-      if (!remoteModel || remoteModel._id !== this.model.id)
-      {
-        return;
-      }
-
-      var localModel = this.model;
-
-      this.broker.subscribe('router.executing').setLimit(1).on('message', function()
-      {
-        viewport.msg.show({
-          type: 'warning',
-          time: 5000,
-          text: t(localModel.getNlsDomain() || 'core', 'MSG:DELETED', {
-            label: localModel.getLabel()
-          })
-        });
-      });
-
-      this.broker.publish('router.navigate', {
-        url: localModel.genClientUrl('base'),
-        trigger: true
-      });
+      onModelDeleted(this.broker, this.model, message);
     }
 
   });

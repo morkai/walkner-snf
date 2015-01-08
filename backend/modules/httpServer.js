@@ -1,4 +1,4 @@
-// Copyright (c) 2014, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
+// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
 // Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
 // Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
 
@@ -34,7 +34,7 @@ exports.start = function startHttpServerModule(app, module, done)
 
   serverDomain.run(function()
   {
-    app.httpServer = http.createServer(function onRequest(req, res)
+    module.server = http.createServer(function onRequest(req, res)
     {
       var reqDomain = domain.create();
 
@@ -45,7 +45,7 @@ exports.start = function startHttpServerModule(app, module, done)
       {
         if (err.code !== 'ECONNRESET')
         {
-          module.error(err.message);
+          module.error(err.stack);
         }
 
         reqDomain.dispose();
@@ -59,15 +59,16 @@ exports.start = function startHttpServerModule(app, module, done)
       }
       else
       {
-        res.send(503);
+        res.writeHead(503);
+        res.end();
       }
     });
 
-    app.httpServer.once('error', onFirstServerError);
+    module.server.once('error', onFirstServerError);
 
-    app.httpServer.listen(module.config.port, module.config.host, function()
+    module.server.listen(module.config.port, module.config.host, function()
     {
-      app.httpServer.removeListener('error', onFirstServerError);
+      module.server.removeListener('error', onFirstServerError);
 
       module.debug("Listening on port %d...", module.config.port);
 

@@ -1,17 +1,17 @@
 [
   {
-    "name": "controller",
+    "name": "snf-controller",
     "script": "./backend/main.js",
-    "args": ["../config/production/controller.js"],
+    "args": ["../config/production/snf-controller.js"],
     "exec_mode": "fork_mode",
     "env": {
       "NODE_ENV": "production"
     }
   },
   {
-    "name": "frontend",
+    "name": "snf-frontend",
     "script": "./backend/main.js",
-    "args": ["../config/production/frontend.js"],
+    "args": ["../config/production/snf-frontend.js"],
     "exec_mode": "fork_mode",
     "env": {
       "NODE_ENV": "production"

@@ -1,4 +1,4 @@
-// Copyright (c) 2014, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
+// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
 // Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
 // Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
 
@@ -30,7 +30,8 @@ define([
     this.model = {
       id: null,
       actions: [],
-      breadcrumbs: []
+      breadcrumbs: [],
+      title: null
     };
 
     /**
@@ -63,6 +64,13 @@ define([
     this.$actions = null;
   };
 
+  PageLayout.prototype.serialize = function()
+  {
+    return _.extend(View.prototype.serialize.call(this), {
+      version: this.options.version || '0.0.0'
+    });
+  };
+
   PageLayout.prototype.afterRender = function()
   {
     if (this.el.ownerDocument)
@@ -87,6 +95,8 @@ define([
   PageLayout.prototype.reset = function()
   {
     this.setId(null);
+
+    this.model.title = null;
 
     if (this.$header)
     {
@@ -120,6 +130,10 @@ define([
     if (page.breadcrumbs)
     {
       this.setBreadcrumbs(page.breadcrumbs, page);
+    }
+    else if (page.title)
+    {
+      this.setTitle(page.title, page);
     }
     else
     {
@@ -164,7 +178,7 @@ define([
 
     if (typeof breadcrumbs === 'function')
     {
-      breadcrumbs = breadcrumbs.call(context);
+      breadcrumbs = breadcrumbs.call(context, this);
     }
 
     if (!Array.isArray(breadcrumbs))
@@ -200,6 +214,35 @@ define([
   };
 
   /**
+   * @param {function|string|Array.<string>} title
+   * @param {object} [context]
+   * @returns {PageLayout}
+   */
+  PageLayout.prototype.setTitle = function(title, context)
+  {
+    if (title == null)
+    {
+      return this;
+    }
+
+    if (typeof title === 'function')
+    {
+      title = title.call(context, this);
+    }
+
+    if (!Array.isArray(title))
+    {
+      title = [title];
+    }
+
+    this.model.title = title;
+
+    this.changeTitle();
+
+    return this;
+  };
+
+  /**
    * @param {function|object|string|Array.<object|string>} actions
    * @param {string} actions.label
    * @param {string} [actions.type]
@@ -218,7 +261,7 @@ define([
 
     if (typeof actions === 'function')
     {
-      actions = actions.call(context);
+      actions = actions.call(context, this);
     }
 
     if (!actions)
@@ -255,14 +298,16 @@ define([
 
     if (typeof action.href === 'string')
     {
-      if (action.href[0] !== '#')
+      var firstChar = action.href.charAt(0);
+
+      if (firstChar !== '#' && firstChar !== '/')
       {
         action.href = '#' + action.href;
       }
     }
     else
     {
-      action.href = '#';
+      action.href = null;
     }
 
     if (typeof action.icon === 'string')
@@ -326,11 +371,19 @@ define([
     {
       var action = actions[i];
 
-      if (action.privileges
-        && ((_.isFunction(action.privileges) && !action.privileges())
-          || !user.isAllowedTo(action.privileges)))
+      if (action.privileges)
       {
-        continue;
+        if (_.isFunction(action.privileges))
+        {
+          if (!action.privileges())
+          {
+            continue;
+          }
+        }
+        else if (!user.isAllowedTo(action.privileges))
+        {
+          continue;
+        }
       }
 
       if (typeof action.callback === 'function')
@@ -351,15 +404,21 @@ define([
       }
       else
       {
-        html +=
-          '<a class="' + action.className + '" href="' + action.href + '">';
+        if (action.href === null)
+        {
+          html += '<button class="' + action.className + '">';
+        }
+        else
+        {
+          html += '<a class="' + action.className + '" href="' + action.href + '">';
+        }
 
         if (typeof action.icon === 'string')
         {
           html += '<i class="fa ' + action.icon + '"></i>';
         }
 
-        html += '<span>' + action.label + '</span></a>';
+        html += '<span>' + action.label + '</span>' + (action.href ? '</a>' : '</button>');
       }
     }
 
@@ -387,9 +446,11 @@ define([
   {
     if (this.isRendered())
     {
-      this.broker.publish(
-        'page.titleChanged', _.pluck(this.model.breadcrumbs, 'label')
-      );
+      var newTitle = Array.isArray(this.model.title)
+        ? [].concat(this.model.title)
+        : _.pluck(this.model.breadcrumbs, 'label');
+
+      this.broker.publish('page.titleChanged', newTitle);
     }
   };
 

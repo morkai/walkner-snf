@@ -1,18 +1,16 @@
-// Copyright (c) 2014, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
+// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
 // Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
 // Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
 
 define([
-  'jquery',
   'underscore',
-  './i18n',
-  './broker',
-  './socket',
-  './viewport',
-  './core/pages/ErrorPage'
+  'app/i18n',
+  'app/broker',
+  'app/socket',
+  'app/viewport',
+  'app/core/pages/ErrorPage'
 ],
 function(
-  $,
   _,
   t,
   broker,
@@ -45,7 +43,7 @@ function(
   });
 
   user.data = _.extend(window.GUEST_USER || {}, {
-    name: t('core', 'GUEST_USER_NAME')
+    name: t.bound('core', 'GUEST_USER_NAME')
   });
 
   delete window.GUEST_USER;
@@ -66,7 +64,7 @@ function(
     {
       if (userData.loggedIn === false)
       {
-        userData.name = t('core', 'GUEST_USER_NAME');
+        userData.name = t.bound('core', 'GUEST_USER_NAME');
       }
 
       user.data = userData;
@@ -77,6 +75,10 @@ function(
     if (wasLoggedIn && !user.isLoggedIn())
     {
       broker.publish('user.loggedOut');
+    }
+    else if (!wasLoggedIn && user.isLoggedIn())
+    {
+      broker.publish('user.loggedIn');
     }
   };
 
@@ -95,7 +97,7 @@ function(
   {
     if (user.data.name)
     {
-      return user.data.name;
+      return String(user.data.name);
     }
 
     if (user.data.lastName && user.data.firstName)
@@ -119,10 +121,6 @@ function(
     };
   };
 
-  /**
-   * @param {string|Array.<string>} [privilege]
-   * @returns {boolean}
-   */
   user.isAllowedTo = function(privilege)
   {
     if (user.data.super)
@@ -131,54 +129,55 @@ function(
     }
 
     var userPrivileges = user.data.privileges;
+    var anyPrivileges = (arguments.length === 1 ? [privilege] : Array.prototype.slice.call(arguments)).map(function(p)
+    {
+      return Array.isArray(p) ? p : [p];
+    });
+
+    if (anyPrivileges.length
+      && user.data.local
+      && anyPrivileges[0].some(function(privilege) { return privilege === 'LOCAL'; }))
+    {
+      return true;
+    }
 
     if (!userPrivileges)
     {
       return false;
     }
 
-    if (!privilege || privilege.length === 0)
+    if (!anyPrivileges.length)
     {
       return user.isLoggedIn();
     }
 
-    var privileges = [].concat(privilege);
-    var matches = 0;
-
-    for (var i = 0, l = privileges.length; i < l; ++i)
+    for (var i = 0, l = anyPrivileges.length; i < l; ++i)
     {
-      privilege = privileges[i];
+      var allPrivileges = anyPrivileges[i];
+      var actualMatches = 0;
+      var requiredMatches = allPrivileges.length;
 
-      if (typeof privilege !== 'string')
+      for (var ii = 0; ii < requiredMatches; ++ii)
       {
-        continue;
+        actualMatches += userPrivileges.indexOf(allPrivileges[ii]) === -1 ? 0 : 1;
       }
 
-      var privilegeRe = new RegExp('^' + privilege.replace('*', '.*?') + '$');
-
-      for (var ii = 0, ll = userPrivileges.length; ii < ll; ++ii)
+      if (actualMatches === requiredMatches)
       {
-        if (privilegeRe.test(userPrivileges[ii]))
-        {
-          ++matches;
-
-          break;
-        }
+        return true;
       }
     }
 
-    return matches === privileges.length;
+    return false;
   };
 
-  /**
-   * @param {string|Array.<string>} privilege
-   * @returns {function(app.core.Router, string, function)}
-   */
-  user.auth = function(privilege)
+  user.auth = function()
   {
+    var anyPrivileges = Array.prototype.slice.call(arguments);
+
     return function(req, referer, next)
     {
-      if (user.isAllowedTo(privilege))
+      if (user.isAllowedTo.apply(user, anyPrivileges))
       {
         next();
       }
@@ -186,6 +185,18 @@ function(
       {
         viewport.showPage(new ErrorPage({code: 401, req: req, referer: referer}));
       }
+    };
+  };
+
+  user.getRootUserData = function()
+  {
+    return window.ROOT_USER || {
+      id: null,
+      login: 'root',
+      name: 'root',
+      loggedIn: true,
+      super: true,
+      privileges: []
     };
   };
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2014, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
+// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
 // Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
 // Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
 
@@ -6,6 +6,22 @@
 
 module.exports = function setupProgramModel(app, mongoose)
 {
+  var KINDS = ['30s', 'hrs', 'tester'];
+  var LIGHT_SOURCE_TYPES = ['100', '2x100', '400', '2x400', '2000'];
+  var BULB_POWERS = ['100', '2x100', '150', '250', '2x250', '400', '2x400', '600', '2x600', '1000', '2000'];
+  var BALLASTS = ['400', '2x400', '2000'];
+  var IGNITRONS = ['outside', 'fitting', 'tin'];
+  var INTERLOCKS = ['1', '1+2', 'mnh'];
+
+  var PROGRAM_OPTIONS = JSON.stringify({
+    kinds: KINDS,
+    lightSourceTypes: LIGHT_SOURCE_TYPES,
+    bulbPowers: BULB_POWERS,
+    ballasts: BALLASTS,
+    ignitrons: IGNITRONS,
+    interlocks: INTERLOCKS
+  });
+
   var IO = {
     type: Boolean,
     default: false
@@ -19,27 +35,27 @@ module.exports = function setupProgramModel(app, mongoose)
     },
     kind: {
       type: String,
-      enum: ['30s', 'hrs', 'tester'],
+      enum: KINDS,
       default: '30s'
     },
     lightSourceType: {
       type: String,
-      enum: ['100', '2x100', '400', '2x400', '2000'],
+      enum: LIGHT_SOURCE_TYPES,
       default: '100'
     },
     bulbPower: {
       type: String,
-      enum: ['100', '2x100', '150', '250', '2x250', '400', '2x400', '600', '2x600', '1000', '2000'],
+      enum: BULB_POWERS,
       default: '100'
     },
     ballast: {
       type: String,
-      enum: ['400', '2x400', '2000'],
+      enum: BALLASTS,
       default: '400'
     },
     ignitron: {
       type: String,
-      enum: ['outside', 'fitting', 'tin'],
+      enum: IGNITRONS,
       default: 'outside'
     },
     lampCount: {
@@ -83,7 +99,7 @@ module.exports = function setupProgramModel(app, mongoose)
     },
     interlock: {
       type: String,
-      enum: ['1', '1+2', 'mnh'],
+      enum: INTERLOCKS,
       default: '1'
     },
     testerK12: IO,
@@ -192,4 +208,9 @@ module.exports = function setupProgramModel(app, mongoose)
   };
 
   mongoose.model('Program', programSchema);
+
+  app.broker.subscribe('app.prepareFrontendData', function(appData)
+  {
+    appData.PROGRAM_OPTIONS = PROGRAM_OPTIONS;
+  });
 };

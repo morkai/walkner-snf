@@ -1,18 +1,15 @@
 {
-  "MSG:LOADING_FAILURE": "Ładowanie testów nie powiodło się :(",
-  "MSG:LOADING_SINGLE_FAILURE": "Ładowanie testu nie powiodło się :(",
+  "MSG:LOADING_FAILURE": "Ładowanie historii nie powiodło się :(",
+  "MSG:LOADING_SINGLE_FAILURE": "Ładowanie wyniku nie powiodło się :(",
 
-  "BREADCRUMBS:browse": "Testy",
-  "BREADCRUMBS:details": "Test",
+  "BREADCRUMBS:browse": "Historia",
+  "BREADCRUMBS:details": "Wynik",
 
-  "PANEL:TITLE:details": "Szczegóły testu",
+  "PANEL:TITLE:details": "Szczegóły wyniku",
   "PANEL:TITLE:charts": "Wykresy",
 
-  "FILTER:DATE:FROM": "Od",
-  "FILTER:DATE:TO": "Do",
-  "FILTER:PLACEHOLDER:program": "Dowolny program",
-  "FILTER:LIMIT": "Limit",
-  "FILTER:BUTTON": "Filtruj testy",
+  "filter:placeholder:program": "Dowolny program",
+  "filter:submit": "Filtruj historię",
 
   "PROPERTY:program": "Program",
   "PROPERTY:result": "Wynik",

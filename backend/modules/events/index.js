@@ -1,4 +1,4 @@
-// Copyright (c) 2014, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
+// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
 // Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
 // Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
 
@@ -14,6 +14,7 @@ exports.DEFAULT_CONFIG = {
   collection: function(app) { return app.mongodb.db.collection('events'); },
   insertDelay: 1000,
   topics: ['events.**'],
+  blacklist: [],
   print: []
 };
 
@@ -133,17 +134,35 @@ exports.start = function startEventsModule(app, module)
       return fetchAllTypes();
     }
 
+    if (module.config.blacklist.indexOf(topic) !== -1)
+    {
+      return;
+    }
+
+    var user = null;
+
+    if (lodash.isObject(data.user))
+    {
+      user = {
+        _id: String(data.user._id),
+        name: data.user.lastName && data.user.firstName
+          ? (data.user.lastName + ' ' + data.user.firstName)
+          : data.user.login,
+        login: data.user.login,
+        ipAddress: data.user.ipAddress
+      };
+    }
+
     if (!lodash.isObject(data))
     {
       data = {};
     }
     else
     {
-      data = lodash.cloneDeep(data);
+      data = JSON.parse(JSON.stringify(data));
     }
 
     var type = topic.replace(/^events\./, '');
-    var user = null;
 
     if (lodash.isString(data.severity))
     {
@@ -152,14 +171,8 @@ exports.start = function startEventsModule(app, module)
       delete data.severity;
     }
 
-    if (lodash.isObject(data.user))
+    if (user !== null)
     {
-      user = {
-        _id: data.user._id,
-        login: data.user.login,
-        ipAddress: data.user.ipAddress
-      };
-
       delete data.user;
     }
 

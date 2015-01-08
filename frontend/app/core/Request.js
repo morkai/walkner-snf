@@ -1,13 +1,11 @@
-// Copyright (c) 2014, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
+// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
 // Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
 // Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
 
 define([
-  'underscore',
   'h5.rql/index',
   './util'
 ], function(
-  _,
   rql,
   util
 ) {
@@ -104,7 +102,7 @@ define([
     for (var i = 0, l = queryParts.length; i < l; ++i)
     {
       var queryPart = queryParts[i];
-      var eqPos = _.indexOf(queryPart, '=');
+      var eqPos = queryPart.indexOf('=');
 
       if (eqPos === -1)
       {

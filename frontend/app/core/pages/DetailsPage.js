@@ -1,4 +1,4 @@
-// Copyright (c) 2014, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
+// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
 // Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
 // Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
 
@@ -23,37 +23,57 @@ define([
 
     pageId: 'details',
 
+    modelProperty: 'model',
+
     breadcrumbs: function()
     {
+      var model = this[this.modelProperty];
+
       return [
         {
-          label: t.bound(this.model.nlsDomain, 'BREADCRUMBS:browse'),
-          href: this.model.genClientUrl('base')
+          label: t.bound(model.nlsDomain, 'BREADCRUMBS:browse'),
+          href: model.genClientUrl('base')
         },
-        this.model.getLabel()
+        model.getLabel()
       ];
     },
 
     actions: function()
     {
+      var model = this[this.modelProperty];
+
       return [
-        pageActions.edit(this.model, this.model.privilegePrefix + ':MANAGE'),
-        pageActions.delete(this.model, this.model.privilegePrefix + ':MANAGE')
+        pageActions.edit(model, model.privilegePrefix + ':MANAGE'),
+        pageActions.delete(model, model.privilegePrefix + ':MANAGE')
       ];
     },
 
     initialize: function()
     {
-      this.model = bindLoadingMessage(this.options.model, this);
+      this.defineModels();
+      this.defineViews();
+    },
 
-      var DetailsViewClass = this.options.DetailsView || DetailsView;
-      var options = {
-        model: this.model
-      };
+    defineModels: function()
+    {
+      this[this.modelProperty] = bindLoadingMessage(this.options[this.modelProperty], this);
+    },
 
-      if (typeof this.options.detailsTemplate === 'function')
+    defineViews: function()
+    {
+      var DetailsViewClass = this.DetailsView || DetailsView;
+      var options = {};
+
+      options[this.modelProperty] = this[this.modelProperty];
+
+      if (typeof this.detailsTemplate === 'function')
       {
-        options.template = this.options.detailsTemplate;
+        options.template = this.detailsTemplate;
+      }
+
+      if (typeof this.serializeDetails === 'function')
+      {
+        options.serializeDetails = this.serializeDetails;
       }
 
       this.view = new DetailsViewClass(options);
@@ -61,7 +81,7 @@ define([
 
     load: function(when)
     {
-      return when(this.model.fetch(this.options.fetchOptions));
+      return when(this[this.modelProperty].fetch(this.fetchOptions));
     }
 
   });

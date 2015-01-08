@@ -15,7 +15,7 @@
       </div>
       <div class="row">
         <div class="col-md-6 form-group">
-          <label for="<%- idPrefix %>-login" class="control-label"><%- t('users', 'PROPERTY:login') %></label>
+          <label for="<%- idPrefix %>-login" class="control-label is-required"><%- t('users', 'PROPERTY:login') %></label>
           <input id="<%- idPrefix %>-login" class="form-control" type="text" name="login" required maxlength="50">
         </div>
         <div class="col-md-6 form-group">
@@ -25,24 +25,22 @@
       </div>
       <div class="row">
         <div class="col-md-6 form-group">
-          <label for="<%- idPrefix %>-password" class="control-label"><%- t('users', 'PROPERTY:password') %></label>
-          <input id="<%- idPrefix %>-password" class="form-control" type="password" name="password">
+          <label for="<%- idPrefix %>-password" class="control-label <%- editMode ? '' : 'is-required' %>"><%- t('users', 'PROPERTY:password') %></label>
+          <input id="<%- idPrefix %>-password" class="form-control" type="password" name="password" <%- editMode ? '' : 'required' %>>
         </div>
         <div class="col-md-6 form-group">
-          <label for="<%- idPrefix %>-password2" class="control-label"><%- t('users', 'PROPERTY:password2') %></label>
-          <input id="<%- idPrefix %>-password2" class="form-control" type="password">
+          <label for="<%- idPrefix %>-password2" class="control-label <%- editMode ? '' : 'is-required' %>"><%- t('users', 'PROPERTY:password2') %></label>
+          <input id="<%- idPrefix %>-password2" class="form-control" type="password" <%- editMode ? '' : 'required' %>>
         </div>
       </div>
       <div class="form-group">
-        <label class="control-label"><%- t('users', 'PROPERTY:privileges') %></label>
-        <% privileges.forEach(function(privilege) { %>
-        <div class="checkbox">
-          <label>
-            <input type="checkbox" name="privileges[]" value="<%- privilege %>">
-            <%- t('users', 'PRIVILEGE:' + privilege) %>
-          </label>
+        <label for="<%- idPrefix %>-privileges" class="control-label"><%- t('users', 'PROPERTY:privileges') %></label>
+        <div class="input-group">
+          <input id="<%- idPrefix %>-privileges" type="text" name="privileges">
+          <span class="input-group-btn">
+            <button id="<%- idPrefix %>-copyPrivileges" class="btn btn-default" type="button"><i class="fa fa-copy"></i></button>
+          </span>
         </div>
-        <% }) %>
       </div>
     </div>
     <div class="panel-footer">

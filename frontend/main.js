@@ -1,6 +1,13 @@
-// Copyright (c) 2014, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
+// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
 // Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
 // Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
+
+if (!window.location.origin)
+{
+  window.location.origin = window.location.protocol + '//'
+    + window.location.hostname
+    + (window.location.port ? (':' + window.location.port) : '');
+}
 
 (function()
 {
@@ -75,219 +82,32 @@
     }
   };
 
-  function startApp(
-    domReady,
-    $,
-    Backbone,
-    Layout,
-    moment,
-    broker,
-    i18n,
-    socket,
-    controller,
-    router,
-    viewport,
-    PageLayout,
-    PrintLayout,
-    BlankLayout,
-    NavbarView,
-    LogInFormView)
+  if (!navigator.onLine || !document.getElementsByTagName('html')[0].hasAttribute('manifest'))
   {
-    monkeyPatch(Backbone, $);
-
-    socket.connect();
-
-    moment.lang(window.LOCALE || 'pl');
-
-    var startBroker = broker.sandbox();
-
-    startBroker.subscribe('socket.connected', function()
-    {
-      startBroker.subscribe('user.reloaded', doStartApp);
-    });
-
-    startBroker.subscribe('socket.connectFailed', doStartApp);
-
-    broker.subscribe('page.titleChanged', function(newTitle)
-    {
-      newTitle.unshift(i18n('core', 'TITLE'));
-
-      document.title = newTitle.reverse().join(' < ');
-    });
-
-    $.ajaxSetup({
-      dataType: 'json',
-      accepts: {
-        json: 'application/json',
-        text: 'text/plain'
-      },
-      contentType: 'application/json'
-    });
-
-    Layout.configure({
-      manage: true,
-      el: false,
-      keep: true
-    });
-
-    viewport.registerLayout('page', function createPageLayout()
-    {
-      return new PageLayout({
-        views: {
-          '.navbar': createNavbarView()
-        }
-      });
-    });
-
-    viewport.registerLayout('print', function createPrintLayout()
-    {
-      return new PrintLayout();
-    });
-
-    viewport.registerLayout('blank', function createBlankLayout()
-    {
-      return new BlankLayout();
-    });
-
-    function createNavbarView()
-    {
-      var req = router.getCurrentRequest();
-      var navbarView = new NavbarView({
-        currentPath: req === null ? '/' : req.path
-      });
-
-      navbarView.on('logIn', function()
-      {
-        viewport.showDialog(
-          new LogInFormView(), i18n('core', 'LOG_IN_FORM:DIALOG_TITLE')
-        );
-      });
-
-      navbarView.on('logOut', function()
-      {
-        $.ajax({
-          type: 'GET',
-          url: '/logout'
-        }).fail(function()
-          {
-            viewport.msg.show({
-              type: 'error',
-              text: i18n('core', 'MSG:LOG_OUT:FAILURE'),
-              time: 5000
-            });
-          });
-      });
-
-      return navbarView;
-    }
-
-    function doStartApp()
-    {
-      startBroker.destroy();
-      startBroker = null;
-
-      broker.subscribe('i18n.reloaded', function()
-      {
-        viewport.render();
-      });
-
-      broker.subscribe('user.reloaded', function()
-      {
-        viewport.render();
-      });
-
-      broker.subscribe('user.loggedOut', function()
-      {
-        viewport.msg.show({
-          type: 'success',
-          text: i18n('core', 'MSG:LOG_OUT:SUCCESS'),
-          time: 2500
-        });
-
-        broker.publish('router.navigate', {
-          url: '/',
-          trigger: true
-        });
-      });
-
-      domReady(function()
-      {
-        $('#app-loading').fadeOut(function() { $(this).remove(); });
-
-        Backbone.history.start({
-          root: '/',
-          hashChange: true,
-          pushState: false
-        });
-      });
-    }
-  }
-
-  function requireApp()
-  {
-    require([
-      'domReady',
-      'jquery',
-      'backbone',
-      'backbone.layout',
-      'moment',
-      'app/broker',
-      'app/i18n',
-      'app/socket',
-      'app/controller',
-      'app/router',
-      'app/viewport',
-      'app/core/layouts/PageLayout',
-      'app/core/layouts/PrintLayout',
-      'app/core/layouts/BlankLayout',
-      'app/core/views/NavbarView',
-      'app/core/views/LogInFormView',
-      'app/time',
-      'app/routes',
-      'app/visibility',
-      'app/data/programs',
-      'bootstrap',
-      'moment-lang/' + (window.LOCALE || 'pl'),
-      'select2-lang/' + (window.LOCALE || 'pl'),
-      'i18n!app/nls/core'
-    ], startApp);
-  }
-
-  if (!document.getElementsByTagName('html')[0].hasAttribute('manifest'))
-  {
-    return requireApp();
+    return window.requireApp();
   }
 
   var appCache = window.applicationCache;
+  var reload = location.reload.bind(location);
+  var reloadTimer = setTimeout(reload, 60000);
 
   function doStartApp()
   {
+    clearTimeout(reloadTimer);
+    reloadTimer = null;
+
     appCache.onnoupdate = null;
     appCache.oncached = null;
     appCache.onerror = null;
     appCache.onobsolete = null;
     appCache.onupdateready = null;
 
-    requireApp();
+    window.requireApp();
   }
 
   appCache.onnoupdate = doStartApp;
   appCache.oncached = doStartApp;
   appCache.onerror = doStartApp;
-  appCache.onobsolete = location.reload.bind(location);
-  appCache.onupdateready = location.reload.bind(location);
-
-  function monkeyPatch(Backbone, $)
-  {
-    var originalSync = Backbone.sync;
-
-    Backbone.sync = function(method, model, options)
-    {
-      options.syncMethod = method;
-
-      return originalSync.call(this, method, model, options);
-    };
-
-    $.fn.modal.Constructor.prototype.enforceFocus = function() {};
-  }
+  appCache.onobsolete = reload;
+  appCache.onupdateready = reload;
 })();

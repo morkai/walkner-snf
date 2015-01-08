@@ -1,4 +1,4 @@
-// Copyright (c) 2014, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
+// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
 // Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
 // Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
 
@@ -111,7 +111,7 @@ define([
     return this;
   };
 
-  Viewport.prototype.loadPage = function(pageModulePath, createPage)
+  Viewport.prototype.loadPage = function(dependencies, createPage)
   {
     this.msg.loading();
 
@@ -122,9 +122,9 @@ define([
 
     var viewport = this;
 
-    require([pageModulePath], function(Page)
+    require([].concat(dependencies), function()
     {
-      viewport.showPage(createPage(Page));
+      viewport.showPage(createPage.apply(null, arguments));
       viewport.msg.loaded();
     });
   };
@@ -213,7 +213,25 @@ define([
       return this;
     }
 
-    dialogView.render();
+    var afterRender = dialogView.afterRender;
+    var viewport = this;
+
+    dialogView.afterRender = function()
+    {
+      var $modalBody = viewport.$dialog.find('.modal-body');
+
+      if ($modalBody.children()[0] !== dialogView.el)
+      {
+        $modalBody.empty().append(dialogView.el);
+      }
+
+      viewport.$dialog.modal('show');
+
+      if (_.isFunction(afterRender))
+      {
+        afterRender.apply(dialogView, arguments);
+      }
+    };
 
     this.currentDialog = dialogView;
 
@@ -229,8 +247,12 @@ define([
       $header.hide();
     }
 
-    this.$dialog.find('.modal-body').empty().append(dialogView.el);
-    this.$dialog.modal('show');
+    if (dialogView.dialogClassName)
+    {
+      this.$dialog.addClass(_.result(dialogView, 'dialogClassName'));
+    }
+
+    dialogView.render();
 
     return this;
   };
@@ -301,6 +323,11 @@ define([
 
   Viewport.prototype.onDialogHidden = function()
   {
+    if (this.currentDialog.dialogClassName)
+    {
+      this.$dialog.removeClass(_.result(this.currentDialog, 'dialogClassName'));
+    }
+
     if (_.isFunction(this.currentDialog.remove))
     {
       this.currentDialog.remove();

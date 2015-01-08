@@ -1,4 +1,4 @@
-// Copyright (c) 2014, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
+// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
 // Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
 // Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
 
@@ -12,6 +12,8 @@ exports.DEFAULT_CONFIG = {
   pubPort: 5050,
   repHost: '0.0.0.0',
   repPort: 5051,
+  pullHost: null,
+  pullPort: 5052,
   broadcastTopics: []
 };
 
@@ -20,6 +22,7 @@ exports.start = function startMessengerServerModule(app, module, done)
   var requestHandlers = {};
   var pubSocket = null;
   var repSocket = null;
+  var pullSocket = null;
 
   module.config.broadcastTopics.forEach(function(broadcastTopic)
   {
@@ -28,6 +31,8 @@ exports.start = function startMessengerServerModule(app, module, done)
       module.broadcast(topic, typeof message === 'undefined' ? null : message);
     });
   });
+
+  createPullSocket();
 
   createPubSocket(function(err, socket)
   {
@@ -118,6 +123,55 @@ exports.start = function startMessengerServerModule(app, module, done)
 
       done(null, rep);
     });
+  }
+
+  /**
+   * @private
+   */
+  function createPullSocket()
+  {
+    if (!module.config.pullHost)
+    {
+      return module.debug("pull socket not used.");
+    }
+
+    var connected = false;
+
+    pullSocket = axon.socket('rep');
+
+    pullSocket.set('hwm', 10);
+    pullSocket.connect(module.config.pullPort, module.config.pullHost);
+
+    pullSocket.on('error', function(err)
+    {
+      module.error("[pull] %s", err.message);
+    });
+
+    pullSocket.on('connect', function()
+    {
+      connected = true;
+
+      module.debug("[pull] Connected on port %d...", module.config.pullPort);
+
+      app.broker.publish('messenger.client.connected', {
+        moduleName: module.name,
+        socketType: 'pull',
+        host: module.config.pullHost,
+        port: module.config.pullPort
+      });
+    });
+
+    pullSocket.on('reconnect attempt', function()
+    {
+      if (connected)
+      {
+        module.debug("[pull] Disconnected. Reconnecting...");
+
+        connected = false;
+      }
+    });
+
+    pullSocket.on('message', handleRequest);
   }
 
   /**

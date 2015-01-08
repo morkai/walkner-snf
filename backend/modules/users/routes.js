@@ -1,14 +1,11 @@
-// Copyright (c) 2014, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
+// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
 // Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
 // Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
-
-/*jshint maxparams:5*/
 
 'use strict';
 
 var lodash = require('lodash');
 var bcrypt = require('bcrypt');
-var crud = require('../express/crud');
 
 module.exports = function setUpUsersRoutes(app, usersModule)
 {
@@ -19,21 +16,15 @@ module.exports = function setUpUsersRoutes(app, usersModule)
   var canView = userModule.auth('USERS:VIEW');
   var canManage = userModule.auth('USERS:MANAGE');
 
-  express.get('/users', crud.browseRoute.bind(null, app, User));
+  express.get('/users', express.crud.browseRoute.bind(null, app, User));
 
-  express.post(
-    '/users', canManage, hashPassword, crud.addRoute.bind(null, app, User)
-  );
+  express.post('/users', canManage, hashPassword, express.crud.addRoute.bind(null, app, User));
 
-  express.get(
-    '/users/:id', canViewDetails, crud.readRoute.bind(null, app, User)
-  );
+  express.get('/users/:id', canViewDetails, express.crud.readRoute.bind(null, app, User));
 
-  express.put(
-    '/users/:id', canManage, hashPassword, crud.editRoute.bind(null, app, User)
-  );
+  express.put('/users/:id', canManage, hashPassword, express.crud.editRoute.bind(null, app, User));
 
-  express.del('/users/:id', canManage, crud.deleteRoute.bind(null, app, User));
+  express.delete('/users/:id', canManage, express.crud.deleteRoute.bind(null, app, User));
 
   express.post('/login', loginRoute);
 
@@ -53,61 +44,25 @@ module.exports = function setUpUsersRoutes(app, usersModule)
 
   function loginRoute(req, res, next)
   {
-    var credentials = req.body;
-
-    if (credentials.login === userModule.root.login)
-    {
-      return authUser(
-        credentials, lodash.merge({}, userModule.root), req, res, next
-      );
-    }
-
-    User.findOne({login: credentials.login}, function(err, user)
+    userModule.authenticate(req.body, function(err, user)
     {
       if (err)
       {
+        if (err.status < 500)
+        {
+          app.broker.publish('users.loginFailure', {
+            severity: 'warning',
+            user: req.session.user,
+            login: String(req.body.login)
+          });
+        }
+
         return next(err);
-      }
-
-      if (!user)
-      {
-        app.broker.publish('users.loginFailure', {
-          severity: 'warning',
-          login: credentials.login
-        });
-
-        return setTimeout(res.send.bind(res, 401), 1000);
-      }
-
-      authUser(credentials, user.toObject(), req, res, next);
-    });
-  }
-
-  function authUser(credentials, user, req, res, next)
-  {
-    var password = String(credentials.password);
-    var hash = user.password;
-
-    bcrypt.compare(password, hash, function(err, result)
-    {
-      if (err)
-      {
-        return next(err);
-      }
-
-      if (!result)
-      {
-        app.broker.publish('users.loginFailure', {
-          severity: 'warning',
-          login: credentials.login
-        });
-
-        return setTimeout(res.send.bind(res, 401), 1000);
       }
 
       var oldSessionId = req.sessionID;
 
-      req.session.regenerate(function(err)
+      req.session.regenerate(function (err)
       {
         if (err)
         {
@@ -117,17 +72,17 @@ module.exports = function setUpUsersRoutes(app, usersModule)
         delete user.password;
 
         user.loggedIn = true;
-        user.ipAddress = req.socket.remoteAddress;
+        user.ipAddress = userModule.getRealIp({}, req);
         user.local = userModule.isLocalIpAddress(user.ipAddress);
 
         req.session.user = user;
 
         res.format({
-          json: function()
+          json: function ()
           {
             res.send(req.session.user);
           },
-          default: function()
+          default: function ()
           {
             res.redirect('/');
           }
@@ -160,7 +115,7 @@ module.exports = function setUpUsersRoutes(app, usersModule)
 
       var guestUser = lodash.merge({}, userModule.guest);
       guestUser.loggedIn = false;
-      guestUser.ipAddress = req.socket.remoteAddress;
+      guestUser.ipAddress = userModule.getRealIp({}, req);
       guestUser.local = userModule.isLocalIpAddress(guestUser.ipAddress);
 
       req.session.user = guestUser;
@@ -178,7 +133,7 @@ module.exports = function setUpUsersRoutes(app, usersModule)
 
       if (user !== null)
       {
-        user.ipAddress = req.socket.remoteAddress;
+        user.ipAddress = guestUser.ipAddress;
 
         app.broker.publish('users.logout', {
           user: user,

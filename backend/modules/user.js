@@ -1,23 +1,28 @@
-// Copyright (c) 2014, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
+// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
 // Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
 // Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
 
 'use strict';
 
 var os = require('os');
-var connect = require('connect');
 var cookie = require('cookie');
+var cookieParser = require('cookie-parser');
 var lodash = require('lodash');
+var bcrypt = require('bcrypt');
+var step = require('h5.step');
+var ObjectId = require('mongoose').Types.ObjectId;
 
 exports.DEFAULT_CONFIG = {
   sioId: 'sio',
   expressId: 'express',
+  mongooseId: 'mongoose',
   privileges: [],
   root: {
     password: '$2a$10$qSJWcm1LtN0OzlSHkSRl..ZezbqHAjW2ZuHzBd.F0CTQoWBvf0uQi'
   },
   guest: {},
-  localAddresses: null
+  localAddresses: null,
+  loginFailureDelay: 1000
 };
 
 exports.start = function startUserModule(app, module)
@@ -41,9 +46,18 @@ exports.start = function startUserModule(app, module)
   });
 
   module.auth = createAuthMiddleware;
+  module.authenticate = authenticate;
+  module.getRealIp = getRealIp;
   module.isLocalIpAddress = isLocalIpAddress;
+  module.isAllowedTo = isAllowedTo;
+  module.createUserInfo = createUserInfo;
 
   app.onModuleReady([module.config.expressId, module.config.sioId], setUpSio);
+
+  app.broker.subscribe('express.beforeRouter').setLimit(1).on('message', function(message)
+  {
+    message.module.use(ensureUserMiddleware);
+  });
 
   /**
    * @private
@@ -73,7 +87,29 @@ exports.start = function startUserModule(app, module)
    */
   function isLocalIpAddress(ipAddress)
   {
-    return localAddresses.indexOf(ipAddress.replace(/\.[0-9]+$/, '')) !== -1;
+    if (ipAddress === '127.0.0.1')
+    {
+      return true;
+    }
+
+    for (var i = 0, l = localAddresses.length; i < l; ++i)
+    {
+      var pattern = localAddresses[i];
+
+      if (typeof pattern === 'string')
+      {
+        if (ipAddress.indexOf(pattern) === 0)
+        {
+          return true;
+        }
+      }
+      else if (pattern.test(ipAddress))
+      {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   /**
@@ -89,6 +125,61 @@ exports.start = function startUserModule(app, module)
     user.local = isLocalIpAddress(ipAddress);
 
     return user;
+  }
+
+  function isAllowedTo(user, anyPrivileges)
+  {
+    if (user.super)
+    {
+      return true;
+    }
+
+    if (anyPrivileges.length
+      && user.local
+      && anyPrivileges[0].some(function(privilege) { return privilege === 'LOCAL'; }))
+    {
+      return true;
+    }
+
+    if (!user.privileges)
+    {
+      return false;
+    }
+
+    if (!anyPrivileges.length)
+    {
+      return true;
+    }
+
+    for (var i = 0, l = anyPrivileges.length; i < l; ++i)
+    {
+      var allPrivileges = anyPrivileges[i];
+      var matches = 0;
+
+      for (var ii = 0, ll = allPrivileges.length; ii < ll; ++ii)
+      {
+        matches += user.privileges.indexOf(allPrivileges[ii]) === -1 ? 0 : 1;
+      }
+
+      if (matches === ll)
+      {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  function ensureUserMiddleware(req, res, next)
+  {
+    var user = req.session.user;
+
+    if (!user)
+    {
+      user = req.session.user = createGuestData(getRealIp({}, req));
+    }
+
+    return next();
   }
 
   /**
@@ -110,46 +201,192 @@ exports.start = function startUserModule(app, module)
       anyPrivileges.push(allPrivileges);
     }
 
-    return function(req, res, next)
+    return function authMiddleware(req, res, next)
     {
       var user = req.session.user;
 
       if (!user)
       {
-        user = req.session.user = createGuestData(req.socket.remoteAddress);
+        user = req.session.user = createGuestData(getRealIp({}, req));
       }
 
-      if (user.super)
+      if (isAllowedTo(user, anyPrivileges))
       {
         return next();
       }
 
-      if (!user.privileges)
-      {
-        return res.send(401);
-      }
+      module.debug(
+        "[auth] %s (%s) tried to access [%s] without sufficient privileges :(",
+        user.login,
+        user.ipAddress,
+        req.url
+      );
 
-      for (var i = 0, l = anyPrivileges.length; i < l; ++i)
-      {
-        var allPrivileges = anyPrivileges[i];
-        var matches = 0;
-
-        for (var ii = 0, ll = allPrivileges.length; ii < ll; ++ii)
-        {
-          matches += user.privileges.indexOf(allPrivileges[ii]) === -1 ? 0 : 1;
-        }
-
-        if (matches === ll)
-        {
-          return next();
-        }
-      }
-
-      var err = new Error('AUTH');
-      err.status = 401;
-
-      return next(err);
+      return res.send(403);
     };
+  }
+
+  function authenticate(credentials, done)
+  {
+    if (!lodash.isString(credentials.login)
+      || lodash.isEmpty(credentials.login)
+      || !lodash.isString(credentials.password)
+      || lodash.isEmpty(credentials.password))
+    {
+      return delayAuthFailure(new Error('INVALID_CREDENTIALS'), 400, done);
+    }
+
+    step(
+      function findUserDataStep()
+      {
+        var next = this.next();
+
+        if (credentials.login === module.root.login)
+        {
+          next(null, lodash.merge({}, module.root));
+        }
+        else
+        {
+          app[module.config.mongooseId].model('User').findOne({login: credentials.login}, next);
+        }
+      },
+      function checkUserDataStep(err, userData)
+      {
+        if (err)
+        {
+          return this.done(delayAuthFailure.bind(null, err, 500, done));
+        }
+
+        if (!userData)
+        {
+          return this.done(delayAuthFailure.bind(null, new Error('INVALID_LOGIN'), 401, done));
+        }
+
+        if (lodash.isFunction(userData.toObject))
+        {
+          userData = userData.toObject();
+        }
+
+        this.userData = userData;
+      },
+      function comparePasswordStep()
+      {
+        bcrypt.compare(credentials.password, this.userData.password, this.next());
+      },
+      function handleComparePasswordResultStep(err, result)
+      {
+        if (err)
+        {
+          return this.done(delayAuthFailure.bind(null, err, 500, done));
+        }
+
+        if (!result)
+        {
+          return this.done(delayAuthFailure.bind(null, new Error('INVALID_PASSWORD'), 401, done));
+        }
+
+        return this.done(done, null, this.userData);
+      }
+    );
+  }
+
+  function delayAuthFailure(err, statusCode, done)
+  {
+    err.status = statusCode;
+
+    setTimeout(done, module.config.loginFailureDelay, err);
+  }
+
+  function createUserInfo(userData, addressData)
+  {
+    /**
+     * @name UserInfo
+     * @type {{id: string, ip: string, label: string}}
+     */
+    var userInfo = {
+      id: null,
+      ip: '',
+      label: ''
+    };
+
+    try
+    {
+      userInfo.id = ObjectId.createFromHexString(String(userData._id || userData.id));
+    }
+    catch (err) {}
+
+    if (typeof userData.label === 'string')
+    {
+      userInfo.label = userData.label;
+    }
+    else if (userData.firstName && userData.lastName)
+    {
+      userInfo.label = userData.lastName + ' ' + userData.firstName;
+    }
+    else
+    {
+      userInfo.label = userData.login || '?';
+    }
+
+    userInfo.ip = getRealIp(userData, addressData);
+
+    return userInfo;
+  }
+
+  function getRealIp(userData, addressData)
+  {
+    var ip = '';
+
+    if (addressData)
+    {
+      if (hasRealIpFromProxyServer(addressData))
+      {
+        ip = (addressData.headers || addressData.handshake.headers)['x-real-ip'];
+      }
+      else if (addressData.socket && typeof addressData.socket.remoteAddress === 'string')
+      {
+        ip = addressData.socket.remoteAddress;
+      }
+      else if (addressData.handshake)
+      {
+        ip = getRealIp(userData, addressData.handshake);
+
+        if (ip === '0.0.0.0' && addressData.handshake.address && addressData.handshake.address.address)
+        {
+          ip = addressData.handshake.address.address;
+        }
+      }
+    }
+
+    if (ip === '')
+    {
+      ip = userData.ip || userData.ipAddress || '0.0.0.0';
+    }
+
+    return ip;
+  }
+
+  function hasRealIpFromProxyServer(addressData)
+  {
+    var handshake = addressData.handshake;
+    var headers = handshake ? handshake.headers : addressData.headers;
+
+    if (!headers || typeof headers['x-real-ip'] !== 'string')
+    {
+      return false;
+    }
+
+    if (addressData.socket && addressData.socket.remoteAddress === '127.0.0.1')
+    {
+      return true;
+    }
+
+    if (handshake && handshake.address && handshake.address.address === '127.0.0.1')
+    {
+      return true;
+    }
+
+    return false;
   }
 
   /**
@@ -169,14 +406,12 @@ exports.start = function startUserModule(app, module)
       if (typeof sessionCookie !== 'string')
       {
         handshakeData.sessionId = String(Date.now() + Math.random());
-        handshakeData.user = createGuestData(handshakeData.address.address);
+        handshakeData.user = createGuestData(getRealIp({}, handshakeData));
 
         return done(null, true);
       }
 
-      var sessionId = connect.utils.parseSignedCookie(
-        sessionCookie, express.config.cookieSecret
-      );
+      var sessionId = cookieParser.signedCookie(sessionCookie, express.config.cookieSecret);
 
       express.sessionStore.get(sessionId, function(err, session)
       {
@@ -186,7 +421,9 @@ exports.start = function startUserModule(app, module)
         }
 
         handshakeData.sessionId = sessionId;
-        handshakeData.user = session.user || createGuestData(handshakeData.address.address);
+        handshakeData.user = session && session.user
+          ? session.user
+          : createGuestData(getRealIp({}, handshakeData));
 
         done(null, true);
       });
@@ -252,7 +489,7 @@ exports.start = function startUserModule(app, module)
       sockets.forEach(function(socket)
       {
         socket.handshake.sessionId = message.newSessionId;
-        socket.handshake.user = createGuestData(socket.handshake.address.address);
+        socket.handshake.user = createGuestData(getRealIp({}, socket));
 
         if (socket.id !== message.socketId)
         {

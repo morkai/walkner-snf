@@ -1,19 +1,18 @@
-// Copyright (c) 2014, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
+// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
 // Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
 // Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
 
 define([
   'underscore',
+  'app/ZeroClipboard',
   'app/i18n',
-  'app/core/Model',
   'app/core/views/FormView',
   'app/data/privileges',
-  'app/users/templates/form',
-  'i18n!app/nls/users'
+  'app/users/templates/form'
 ], function(
   _,
+  ZeroClipboard,
   t,
-  Model,
   FormView,
   privileges,
   formTemplate
@@ -23,8 +22,6 @@ define([
   return FormView.extend({
 
     template: formTemplate,
-
-    idPrefix: 'userForm',
 
     events: {
       'submit': 'submitForm',
@@ -39,6 +36,19 @@ define([
       }
     },
 
+    initialize: function()
+    {
+      FormView.prototype.initialize.call(this);
+    },
+
+    destroy: function()
+    {
+      if (this.privilegesCopyClient)
+      {
+        this.privilegesCopyClient.destroy();
+      }
+    },
+
     afterRender: function()
     {
       FormView.prototype.afterRender.call(this);
@@ -47,20 +57,82 @@ define([
       {
         this.$('input[type="password"]').attr('required', true);
       }
+
+      this.setUpPrivilegesControls();
+    },
+
+    setUpPrivilegesControls: function()
+    {
+      var privilegeMap = {};
+      var privilegeList = [];
+
+      privileges.forEach(function(privilege)
+      {
+        var tag = t('users', 'PRIVILEGE:' + privilege);
+
+        privilegeMap[tag] = privilege;
+        privilegeList.push({
+          id: privilege,
+          text: tag
+        });
+      });
+
+      var $privileges = this.$id('privileges').select2({
+        width: '100%',
+        allowClear: false,
+        tags: privilegeList,
+        tokenSeparators: [';'],
+        createSearchChoice: function(term)
+        {
+          var tag = term.trim();
+          var privilege = privilegeMap[tag];
+
+          return !privilege ? null : {
+            id: privilege,
+            text: tag
+          };
+        }
+      });
+
+      this.privilegesCopyClient = new ZeroClipboard(this.$id('copyPrivileges'));
+
+      this.privilegesCopyClient.on('load', function(client)
+      {
+        client.on('datarequested', function(client)
+        {
+          var selectedOptions = $privileges.select2('data');
+
+          if (selectedOptions.length === 0)
+          {
+            client.setText('');
+          }
+          else
+          {
+            client.setText(
+              selectedOptions.map(function(data) { return data.text; }).join(';') + ';'
+            );
+          }
+        });
+      } );
+
+      this.privilegesCopyClient.on('wrongflash noflash', function()
+      {
+        ZeroClipboard.destroy();
+      });
     },
 
     validatePasswords: function()
     {
-      var password1 = this.el.querySelector('#' + this.idPrefix + '-password');
-      var password2 = this.el.querySelector('#' + this.idPrefix + '-password2');
+      var $password1 = this.$id('password');
+      var $password2 = this.$id('password2');
 
-      if (password1.value === password2.value)
+      if ($password1.val() === $password2.val())
       {
-        password2.setCustomValidity('');
+        $password2[0].setCustomValidity('');
       }
       else
       {
-        password2.setCustomValidity(t('users', 'FORM:ERROR:passwordMismatch'));
+        $password2[0].setCustomValidity(t('users', 'FORM:ERROR:passwordMismatch'));
       }
 
       this.timers.validatePassword = null;
@@ -73,11 +145,25 @@ define([
       });
     },
 
+    serializeToForm: function()
+    {
+      var formData = this.model.toJSON();
+
+      formData.privileges = formData.privileges.join(',');
+
+      return formData;
+    },
+
     serializeForm: function(formData)
     {
       formData = _.defaults(formData, {
         privileges: []
       });
+
+      if (typeof formData.privileges === 'string')
+      {
+        formData.privileges = formData.privileges.split(',');
+      }
 
       return formData;
     }

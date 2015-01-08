@@ -1,17 +1,16 @@
-// Copyright (c) 2014, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
+// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
 // Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
 // Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
 
 define([
   'underscore',
-  'moment',
+  'app/time',
   'app/i18n',
   'app/core/views/ListView',
-  'app/events/templates/list',
-  'i18n!app/nls/events'
+  'app/events/templates/list'
 ], function(
   _,
-  moment,
+  time,
   t,
   ListView,
   listTemplate
@@ -38,7 +37,7 @@ define([
 
           return {
             severity: event.getSeverityClassName(),
-            time: moment(event.get('time')).format('lll'),
+            time: time.format(event.get('time'), 'lll'),
             user: event.get('user'),
             type: t('events', 'TYPE:' + type),
             text: t('events', 'TEXT:' + type, view.flatten(data))

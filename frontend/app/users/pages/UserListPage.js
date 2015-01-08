@@ -1,99 +1,21 @@
-// Copyright (c) 2014, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
+// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
 // Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
 // Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
 
 define([
-  'jquery',
-  'app/i18n',
-  'app/viewport',
-  'app/core/util/bindLoadingMessage',
-  'app/core/util/pageActions',
-  'app/core/View',
-  'app/core/views/ListView',
-  '../UserCollection',
-  '../views/UserFilterView',
-  'app/users/templates/listPage',
-  'i18n!app/nls/users'
-], function(
-  $,
-  t,
-  viewport,
-  bindLoadingMessage,
-  pageActions,
-  View,
-  ListView,
-  UserCollection,
-  UserFilterView,
-  listPageTemplate
-) {
+  'app/core/pages/FilteredListPage',
+  '../views/UserListView',
+  '../views/UserFilterView'
+], function(FilteredListPage,
+            UserListView,
+            UserFilterView)
+{
   'use strict';
 
-  return View.extend({
+  return FilteredListPage.extend({
 
-    template: listPageTemplate,
-
-    layoutName: 'page',
-
-    pageId: 'userList',
-
-    breadcrumbs: [
-      t.bound('users', 'BREADCRUMBS:browse')
-    ],
-
-    actions: function()
-    {
-      return [pageActions.add(this.userList)];
-    },
-
-    initialize: function()
-    {
-      this.defineModels();
-      this.defineViews();
-
-      this.setView('.filter-container', this.filterView);
-      this.setView('.users-list-container', this.listView);
-    },
-
-    defineModels: function()
-    {
-      this.userList = bindLoadingMessage(
-        new UserCollection(null, {rqlQuery: this.options.rql}), this
-      );
-    },
-
-    defineViews: function()
-    {
-      this.listView = new ListView({
-        columns: ['login', 'lastName', 'firstName'],
-        collection: this.userList
-      });
-
-      this.filterView = new UserFilterView({
-        model: {
-          rqlQuery: this.userList.rqlQuery
-        }
-      });
-
-      this.listenTo(this.filterView, 'filterChanged', this.refreshList);
-    },
-
-    load: function(when)
-    {
-      return when(this.userList.fetch({reset: true}));
-    },
-
-    refreshList: function(newRqlQuery)
-    {
-      this.userList.rqlQuery = newRqlQuery;
-
-      this.listView.refreshCollection(null, true);
-
-      this.broker.publish('router.navigate', {
-        url: this.userList.genClientUrl() + '?' + newRqlQuery,
-        trigger: false,
-        replace: true
-      });
-    }
+    FilterView: UserFilterView,
+    ListView: UserListView
 
   });
 });

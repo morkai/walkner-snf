@@ -1,15 +1,15 @@
-// Copyright (c) 2014, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
+// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
 // Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
 // Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
 
 /*global module:false*/
 
+'use strict';
+
 var requirejsConfig = require('./config/require');
 
 module.exports = function(grunt)
 {
-  'use strict';
-
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
     clean: {
@@ -21,6 +21,9 @@ module.exports = function(grunt)
         './build/frontend',
         './frontend-build/**/*.ejs',
         './frontend-build/**/nls/*.json'
+      ],
+      build: [
+        './build'
       ]
     },
     jshint: {
@@ -57,7 +60,7 @@ module.exports = function(grunt)
         dest: './build/frontend',
         ext: '.js',
         options: {
-          helpers: require('./config/frontend').express.ejsAmdHelpers
+          helpers: require('./config/wmes-frontend').express.ejsAmdHelpers
         }
       }
     },
@@ -101,8 +104,16 @@ module.exports = function(grunt)
           baseUrl: './build/frontend',
           dir: './frontend-build',
           optimize: 'uglify2',
+          uglify2: {
+            compress: {
+              drop_console: true
+            }
+          },
           optimizeCss: 'standard',
-          modules: [{name: 'main'}],
+          modules: [
+            {name: 'wmes-main'},
+            {name: 'pos-main'}
+          ],
           paths: requirejsConfig.buildPaths,
           shim: requirejsConfig.buildShim,
           locale: 'pl'

@@ -1,11 +1,10 @@
-// Copyright (c) 2014, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
+// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
 // Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
 // Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
 
 define([
   'moment-timezone',
-  'app/socket',
-  'moment-timezone-data'
+  'app/socket'
 ], function(
   moment,
   socket
@@ -44,9 +43,9 @@ define([
     return moment(Date.now() + time.offset).tz(time.zone);
   };
 
-  time.getMoment = function(date)
+  time.getMoment = function(date, inputFormat)
   {
-    return moment(date).tz(time.zone);
+    return moment(date, inputFormat).tz(time.zone);
   };
 
   time.format = function(date, format)
@@ -101,9 +100,10 @@ define([
   /**
    * @param {number} time
    * @param {boolean} [compact]
+   * @param {boolean} [ms]
    * @returns {string}
    */
-  time.toString = function(time, compact)
+  time.toString = function(time, compact, ms)
   {
     if (typeof time !== 'number' || time <= 0)
     {
@@ -142,6 +142,13 @@ define([
       str += compact
         ? rpad0(Math.round(seconds), 2)
         : (' ' + Math.round(seconds) + 's');
+
+      if (ms && seconds % 1 !== 0)
+      {
+        str += compact
+          ? ('.' + rpad0(Math.round(seconds % 1 * 1000), 3))
+          : (' ' + (Math.round(seconds % 1 * 1000) + 'ms'));
+      }
     }
     else if (seconds > 0 && str === '')
     {

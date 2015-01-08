@@ -1,4 +1,4 @@
-// Copyright (c) 2014, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
+// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
 // Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
 // Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
 
@@ -6,29 +6,29 @@ define([
   '../router',
   '../viewport',
   '../user',
-  './User',
-  './UserCollection',
+  '../core/util/showDeleteFormPage',
   '../core/pages/DetailsPage',
   '../core/pages/AddFormPage',
   '../core/pages/EditFormPage',
-  '../core/pages/ActionFormPage',
+  './User',
+  './UserCollection',
   './pages/UserListPage',
+  './views/UserDetailsView',
   './views/UserFormView',
-  'app/users/templates/details',
   'i18n!app/nls/users'
 ], function(
   router,
   viewport,
   user,
-  User,
-  UserCollection,
+  showDeleteFormPage,
   DetailsPage,
   AddFormPage,
   EditFormPage,
-  ActionFormPage,
+  User,
+  UserCollection,
   UserListPage,
-  UserFormView,
-  detailsTemplate
+  UserDetailsView,
+  UserFormView
 ) {
   'use strict';
 
@@ -37,7 +37,9 @@ define([
 
   router.map('/users', canView, function(req)
   {
-    viewport.showPage(new UserListPage({rql: req.rql}));
+    viewport.showPage(new UserListPage({
+      collection: new UserCollection(null, {rqlQuery: req.rql})
+    }));
   });
 
   router.map(
@@ -56,7 +58,7 @@ define([
     function(req)
     {
       viewport.showPage(new DetailsPage({
-        detailsTemplate: detailsTemplate,
+        DetailsView: UserDetailsView,
         model: new User({_id: req.params.id})
       }));
     }
@@ -78,18 +80,5 @@ define([
     }));
   });
 
-  router.map('/users/:id;delete', canManage, function(req, referer)
-  {
-    var model = new User({_id: req.params.id});
-
-    viewport.showPage(new ActionFormPage({
-      model: model,
-      actionKey: 'delete',
-      successUrl: model.genClientUrl('base'),
-      cancelUrl: referer || model.genClientUrl('base'),
-      formMethod: 'DELETE',
-      formAction: model.url(),
-      formActionSeverity: 'danger'
-    }));
-  });
+  router.map('/users/:id;delete', canManage, showDeleteFormPage.bind(null, User));
 });

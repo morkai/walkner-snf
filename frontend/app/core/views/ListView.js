@@ -1,4 +1,4 @@
-// Copyright (c) 2014, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
+// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
 // Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
 // Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
 
@@ -30,9 +30,12 @@ define([
       var topics = {};
       var topicPrefix = this.collection.getTopicPrefix();
 
-      topics[topicPrefix + '.added'] = 'refreshCollection';
-      topics[topicPrefix + '.edited'] = 'refreshCollection';
-      topics[topicPrefix + '.deleted'] = 'refreshCollection';
+      if (topicPrefix)
+      {
+        topics[topicPrefix + '.added'] = 'refreshCollection';
+        topics[topicPrefix + '.edited'] = 'refreshCollection';
+        topics[topicPrefix + '.deleted'] = 'onModelDeleted';
+      }
 
       return topics;
     },
@@ -50,28 +53,40 @@ define([
     {
       this.lastRefreshAt = 0;
 
+      this.listenTo(this.collection, 'sync', function()
+      {
+        this.lastRefreshAt = Date.now();
+      });
+
       if (this.collection.paginationData)
       {
-        this.setView('.pagination-container', new PaginationView({
+        this.paginationView = new PaginationView({
           model: this.collection.paginationData
-        }));
+        });
+
+        this.setView('.pagination-container', this.paginationView);
 
         this.listenTo(this.collection.paginationData, 'change:page', this.scrollTop);
       }
     },
 
+    destroy: function()
+    {
+      this.paginationView = null;
+    },
+
     serialize: function()
     {
       return {
-        columns: this.serializeColumns(),
+        columns: this.decorateColumns(this.serializeColumns()),
         actions: this.serializeActions(),
-        rows: this.serializeRows()
+        rows: this.serializeRows(),
+        className: this.className
       };
     },
 
     serializeColumns: function()
     {
-      var nlsDomain = this.collection.getNlsDomain();
       var columns;
 
       if (Array.isArray(this.options.columns))
@@ -87,9 +102,26 @@ define([
         columns = [];
       }
 
-      return columns.map(function(propertyName)
+      return columns;
+    },
+
+    decorateColumns: function(columns)
+    {
+      var nlsDomain = this.collection.getNlsDomain();
+
+      return columns.map(function(column)
       {
-        return {id: propertyName, label: t(nlsDomain, 'PROPERTY:' + propertyName)};
+        if (typeof column === 'string')
+        {
+          column = {id: column, label: t(nlsDomain, 'PROPERTY:' + column)};
+        }
+
+        if (!column.label)
+        {
+          column.label = t(nlsDomain, 'PROPERTY:' + column.id);
+        }
+
+        return column;
       });
     },
 
@@ -105,6 +137,16 @@ define([
 
     serializeRow: function(model)
     {
+      if (typeof model.serializeRow === 'function')
+      {
+        return model.serializeRow();
+      }
+
+      if (typeof model.serialize === 'function')
+      {
+        return model.serialize();
+      }
+
       return model.toJSON();
     },
 
@@ -118,27 +160,45 @@ define([
       this.listenToOnce(this.collection, 'reset', this.render);
     },
 
-    refreshCollection: function()
+    onModelDeleted: function(message)
     {
-      var now = Date.now();
-      var diff = now - this.lastRefreshAt;
-
-      if (diff < 1000)
+      if (!message || !message.model || !message.model._id)
       {
-        if (!this.timers.refreshCollection)
-        {
-          this.timers.refreshCollection =
-            setTimeout(this.refreshCollection.bind(this), 1000 - diff);
-        }
+        return;
+      }
+
+      this.$('.list-item[data-id="' + message.model._id + '"]').addClass('is-deleted');
+
+      this.refreshCollection(message);
+    },
+
+    refreshCollection: function(message)
+    {
+      if (message && this.timers.refreshCollection)
+      {
+        return;
+      }
+
+      if (Date.now() - this.lastRefreshAt > 3000)
+      {
+        this.refreshCollectionNow();
       }
       else
       {
-        this.lastRefreshAt = Date.now();
-
-        delete this.timers.refreshCollection;
-
-        this.promised(this.collection.fetch({reset: true}));
+        this.timers.refreshCollection = setTimeout(this.refreshCollectionNow.bind(this), 3000);
       }
+    },
+
+    refreshCollectionNow: function(options)
+    {
+      if (this.timers.refreshCollection)
+      {
+        clearTimeout(this.timers.refreshCollection);
+      }
+
+      delete this.timers.refreshCollection;
+
+      this.promised(this.collection.fetch(options || {reset: true}));
     },
 
     scrollTop: function()
@@ -151,7 +211,10 @@ define([
         y -= $navbar.outerHeight();
       }
 
-      $('html, body').stop(true, false).animate({scrollTop: y});
+      if (window.scrollY > y)
+      {
+        $('html, body').stop(true, false).animate({scrollTop: y});
+      }
     },
 
     getModelFromEvent: function(e)

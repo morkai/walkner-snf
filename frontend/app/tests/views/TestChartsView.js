@@ -1,4 +1,4 @@
-// Copyright (c) 2014, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
+// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
 // Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
 // Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
 
@@ -60,6 +60,9 @@ define([
         },
         title: false,
         noData: {},
+        exporting: {
+          enabled: false
+        },
         xAxis: {
           type: 'linear'
         },
@@ -97,9 +100,9 @@ define([
             $.each(this.points, function(i, point)
             {
               str += '<tr><td style="color: ' + point.series.color + '">'
-                + point.series.name + ':</td><td>'
-                + point.y + (point.series.tooltipOptions.valueSuffix || '')
-                + '</td></tr>';
+              + point.series.name + ':</td><td>'
+              + point.y + (point.series.tooltipOptions.valueSuffix || '')
+              + '</td></tr>';
             });
 
             str += '</table>';

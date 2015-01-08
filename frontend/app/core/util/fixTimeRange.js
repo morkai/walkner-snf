@@ -1,72 +1,154 @@
-// Copyright (c) 2014, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
+// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
 // Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
 // Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
 
 define([
+  'underscore',
   'moment',
-  'reltime'
+  'app/time'
 ], function(
+  _,
   moment,
-  reltime
+  time
 ) {
   'use strict';
 
-  return function fixTimeRange($from, $to, format)
+  var datetimeSupported = document.createElement('input');
+  datetimeSupported.setAttribute('type', 'datetime-local');
+  datetimeSupported = datetimeSupported.type !== 'text';
+
+  function fixEl($el, defaultTime, utc)
   {
-    var timeRange = {from: -1, to: -1};
-    var fromValue = $from.val().trim();
-    var toValue = $to.val().trim();
-    var now = new Date();
-    var fromMoment = moment(fromValue);
-    var toMoment = moment(toValue);
+    /*jshint -W015*/
 
-    if (!fromMoment.isValid() && fromValue.length > 0)
+    var elMoment;
+
+    if ($el.hasClass('form-group-datetime'))
     {
-      var fromReltime = reltime.parse(now, fromValue);
+      var $elDate = $el.find('input[type=date]');
+      var $elTime = $el.find('input[type=time]');
+      var elDate = $elDate.val().trim();
+      var elTime = $elTime.val().trim();
 
-      if (fromReltime !== false)
+      if (elTime.length === 0)
       {
-        fromMoment = moment(fromReltime);
+        elTime = defaultTime;
       }
-    }
 
-    if (!toMoment.isValid() && toValue.length > 0)
-    {
-      var toReltime = reltime.parse(now, toValue);
-
-      if (toReltime !== false)
-      {
-        toMoment = moment(toReltime);
-      }
-    }
-
-    if (fromMoment.isValid())
-    {
-      $from.val(fromMoment.format(format));
-
-      timeRange.from = fromMoment.valueOf();
+      elMoment = (utc ? moment.utc : time.getMoment)(elDate + ' ' + elTime);
     }
     else
     {
-      $from.val('');
+      elMoment = (utc ? moment.utc : time.getMoment)($el.val());
+    }
+
+    var valid = elMoment.isValid();
+
+    if ($el.hasClass('form-group-datetime'))
+    {
+      $el.find('input[type=date]').val(valid ? elMoment.format('YYYY-MM-DD') : '');
+      $el.find('input[type=time]').val(valid ? elMoment.format('HH:mm') : '');
+    }
+    else if (!valid)
+    {
+      $el.val('');
+    }
+    else
+    {
+      var val = '';
+
+      switch ($el.attr('type'))
+      {
+        case 'datetime-local':
+        case 'datetime':
+          val = elMoment.toISOString();
+          break;
+
+        case 'date':
+          val = elMoment.format('YYYY-MM-DD');
+          break;
+
+        case 'time':
+          val = elMoment.format('HH:mm');
+          break;
+
+        default:
+          val = elMoment.format('YYYY-MM-DD HH:mm');
+          break;
+      }
+
+      $el.val(val);
+    }
+
+    return elMoment;
+  }
+
+  var fixTimeRange = {};
+
+  fixTimeRange.fromView = function(view, options)
+  {
+    options = _.defaults(options || {}, {
+      fromId: 'from',
+      toId: 'to',
+      defaultTime: '00:00',
+      utc: false
+    });
+
+    var timeRange = {
+      from: null,
+      to: null
+    };
+
+    var fromMoment = fixEl(view.$id(options.fromId), options.defaultTime, options.utc);
+    var toMoment = fixEl(view.$id(options.toId), options.defaultTime, options.utc);
+
+    if (fromMoment.isValid())
+    {
+      timeRange.from = fromMoment.valueOf();
     }
 
     if (toMoment.isValid())
     {
-      if (fromMoment.valueOf() === toMoment.valueOf())
-      {
-        toMoment.add('days', 1);
-      }
-
-      $to.val(toMoment.format(format));
-
       timeRange.to = toMoment.valueOf();
-    }
-    else
-    {
-      $to.val('');
     }
 
     return timeRange;
   };
+
+  fixTimeRange.toFormData = function(formData, rqlQueryTerm, type, options)
+  {
+    if (rqlQueryTerm.name === 'select' || rqlQueryTerm.name === 'sort')
+    {
+      return;
+    }
+
+    options = _.defaults(options || {}, {
+      utc: false
+    });
+
+    var property = rqlQueryTerm.name === 'ge' ? 'from': 'to';
+    var formMoment = (options.utc ? moment.utc : time.getMoment)(rqlQueryTerm.args[1]);
+
+    if (type === 'date+time')
+    {
+      formData[property + '-date'] = formMoment.format('YYYY-MM-DD');
+      formData[property + '-time'] = formMoment.format('HH:mm');
+    }
+    else if (type === 'datetime')
+    {
+      formData[property] = datetimeSupported
+        ? formMoment.toISOString()
+        : formMoment.format('YYYY-MM-DD HH:mm:ss');
+    }
+    else if (type === 'time')
+    {
+      formData[property] = formMoment.format('HH:mm:ss');
+    }
+    else
+    {
+      formData[property] = formMoment.format('YYYY-MM-DD');
+    }
+  };
+
+  return fixTimeRange;
 });

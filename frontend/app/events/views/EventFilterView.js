@@ -1,161 +1,74 @@
-// Copyright (c) 2014, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
+// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
 // Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
 // Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
 
 define([
-  'underscore',
-  'moment',
-  'js2form',
-  'reltime',
-  'app/i18n',
-  'app/core/View',
   'app/core/util/fixTimeRange',
-  'app/events/templates/filter',
-  'i18n!app/nls/events',
-  'select2'
+  'app/core/views/FilterView',
+  'app/users/util/setUpUserSelect2',
+  'app/events/templates/filter'
 ], function(
-  _,
-  moment,
-  js2form,
-  reltime,
-  t,
-  View,
   fixTimeRange,
+  FilterView,
+  setUpUsersSelect2,
   filterTemplate
 ) {
   'use strict';
 
-  return View.extend({
+  return FilterView.extend({
 
     template: filterTemplate,
 
-    events: {
-      'submit .filter-form': function(e)
-      {
-        e.preventDefault();
-
-        this.changeFilter();
-      }
-    },
-
-    initialize: function()
-    {
-      this.idPrefix = _.uniqueId('eventFilter');
-    },
-
-    destroy: function()
-    {
-      this.$id('type').select2('destroy');
-      this.$id('user').select2('destroy');
-    },
-
-    serialize: function()
+    defaultFormData: function()
     {
       return {
-        idPrefix: this.idPrefix,
-        types: this.model.eventTypes.toJSON()
+        type: '',
+        user: '',
+        severity: []
       };
+    },
+
+    termToForm: {
+      'time': function(propertyName, term, formData)
+      {
+        fixTimeRange.toFormData(formData, term, 'date+time');
+      },
+      'type': function(propertyName, term, formData)
+      {
+        formData.type = term.args[1];
+      },
+      'user._id': function(propertyName, term, formData)
+      {
+        formData.user = term.args[1] === null ? '$SYSTEM' : term.args[1];
+      },
+      'severity': function(propertyName, term, formData)
+      {
+        formData.severity = term.name === 'eq' ? [term.args[1]] : term.args[1];
+      }
     },
 
     afterRender: function()
     {
-      var formData = this.serializeRqlQuery();
+      FilterView.prototype.afterRender.call(this);
 
-      js2form(this.el.querySelector('.filter-form'), formData);
-
-      this.toggleSeverity(formData.severity);
+      this.toggleSeverity(this.formData.severity);
 
       this.$id('type').select2({
-        width: 'resolve',
-        allowClear: true
-      });
-
-      this.$id('user').select2({
-        width: '200px',
+        width: 300,
         allowClear: true,
-        minimumInputLength: 3,
-        ajax: {
-          cache: true,
-          quietMillis: 500,
-          url: function(term)
-          {
-            term = encodeURIComponent(term);
+        data: this.model.eventTypes.map(function(eventType) { return eventType.toSelect2Option(); })
+      });
 
-            return '/users?select(login)&sort(login)&limit(20)&regex(login,' + term + ')';
-          },
-          results: function(data, query)
-          {
-            var results = [
-              {id: '$SYSTEM', text: t('events', 'FILTER_USER_SYSTEM')},
-              {id: 'root', text: 'root'}
-            ].filter(function(user)
-            {
-              return user.text.indexOf(query.term) !== -1;
-            });
-
-            return {
-              results: results.concat((data.collection || []).map(function(user)
-              {
-                return {id: user.login, text: user.login};
-              }))
-            };
-          }
-        }
+      setUpUsersSelect2(this.$id('user'), {
+        width: 300
       });
     },
 
-    serializeRqlQuery: function()
+    serializeFormToQuery: function(selector)
     {
-      var rqlQuery = this.model.rqlQuery;
-      var formData = {
-        type: '',
-        user: '',
-        limit: rqlQuery.limit < 5 ? 5 : (rqlQuery.limit > 100 ? 100 : rqlQuery.limit),
-        severity: []
-      };
-
-      rqlQuery.selector.args.forEach(function(term)
-      {
-        /*jshint -W015*/
-
-        var property = term.args[0];
-
-        switch (property)
-        {
-          case 'time':
-            formData[term.name === 'ge' ? 'from' : 'to'] =
-              moment(term.args[1]).format('YYYY-MM-DD HH:mm:ss');
-            break;
-
-          case 'type':
-            formData.type = term.args[1];
-            break;
-
-          case 'user':
-            formData.user = term.args[1] === null ? '$SYSTEM' : term.args[1];
-            break;
-
-          case 'severity':
-            formData.severity =
-              term.name === 'eq' ? [term.args[1]] : term.args[1];
-            break;
-        }
-      });
-
-      return formData;
-    },
-
-    changeFilter: function()
-    {
-      var rqlQuery = this.model.rqlQuery;
-      var timeRange = fixTimeRange(
-        this.$('#' + this.idPrefix + '-from'),
-        this.$('#' + this.idPrefix + '-to'),
-        'YYYY-MM-DD HH:mm:ss'
-      );
-      var selector = [];
-      var type = this.$('#' + this.idPrefix + '-type').val().trim();
-      var user = this.$('#' + this.idPrefix + '-user').val().trim();
+      var timeRange = fixTimeRange.fromView(this);
+      var type = this.$id('type').val().trim();
+      var user = this.$id('user').select2('data');
       var severity = this.fixSeverity();
 
       if (type !== '')
@@ -163,21 +76,17 @@ define([
         selector.push({name: 'eq', args: ['type', type]});
       }
 
-      if (user === '$SYSTEM')
+      if (user)
       {
-        selector.push({name: 'eq', args: ['user', null]});
-      }
-      else if (user !== '')
-      {
-        selector.push({name: 'eq', args: ['user.login', user]});
+        selector.push({name: 'eq', args: ['user._id', user.id === '$SYSTEM' ? null : user.id]});
       }
 
-      if (timeRange.from !== -1)
+      if (timeRange.from)
       {
         selector.push({name: 'ge', args: ['time', timeRange.from]});
       }
 
-      if (timeRange.to !== -1)
+      if (timeRange.to)
       {
         selector.push({name: 'le', args: ['time', timeRange.to]});
       }
@@ -190,17 +99,11 @@ define([
       {
         selector.push({name: 'in', args: ['severity', severity]});
       }
-
-      rqlQuery.selector = {name: 'and', args: selector};
-      rqlQuery.limit = parseInt(this.$('#' + this.idPrefix + '-limit').val(), 10);
-      rqlQuery.skip = 0;
-
-      this.trigger('filterChanged', rqlQuery);
     },
 
     fixSeverity: function()
     {
-      var $allSeverity = this.$('.events-filter-form-severity');
+      var $allSeverity = this.$id('severity').find('.btn');
       var $activeSeverity = $allSeverity.filter('.active');
 
       if ($activeSeverity.length === 0)
@@ -215,7 +118,7 @@ define([
 
     toggleSeverity: function(severities)
     {
-      var $allSeverity = this.$('.events-filter-form-severity');
+      var $allSeverity = this.$id('severity').find('.btn');
 
       if (severities.length === 0)
       {
@@ -225,7 +128,7 @@ define([
       {
         severities.forEach(function(severity)
         {
-          $allSeverity.filter('[title="' + severity.toUpperCase() + '"]').addClass('active');
+          $allSeverity.filter('[value=' + severity + ']').addClass('active');
         });
       }
     }

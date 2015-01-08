@@ -1,4 +1,4 @@
-// Copyright (c) 2014, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
+// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
 // Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
 // Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
 
@@ -8,8 +8,12 @@ var startTime = Date.now();
 
 require('./extensions');
 
+var lodash = require('lodash');
+var moment = require('moment');
 var main = require('h5.main');
 var config = require(process.argv[2]);
+
+moment.locale('pl');
 
 var modules = (config.modules || []).map(function(module)
 {
@@ -46,13 +50,13 @@ var modules = (config.modules || []).map(function(module)
 });
 
 var app = {
-  options: {
+  options: lodash.merge({}, config, {
     id: config.id,
     startTime: startTime,
     env: process.env.NODE_ENV,
     rootPath: __dirname,
     moduleStartTimeout: 3000
-  }
+  })
 };
 
 main(app, modules);

@@ -1,10 +1,12 @@
-// Copyright (c) 2014, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
+// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
 // Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
 // Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
 
 define([
+  '../i18n',
   '../core/Model'
 ], function(
+  t,
   Model
 ) {
   'use strict';
@@ -58,10 +60,18 @@ define([
       maxCurrent: 0
     },
 
+    serializeRow: function()
+    {
+      var row = this.toJSON();
+
+      row.kind = t('programs', 'kind:' + row.kind);
+
+      return row;
+    },
+
     getTotalDuration: function()
     {
-      return this.get('illuminationTime')
-        + (this.get('hrsInterval') + this.get('hrsTime')) * this.get('hrsInterval');
+      return this.get('illuminationTime') + (this.get('hrsInterval') + this.get('hrsTime')) * this.get('hrsInterval');
     }
 
   }, {

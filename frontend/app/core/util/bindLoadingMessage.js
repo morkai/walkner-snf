@@ -1,4 +1,4 @@
-// Copyright (c) 2014, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
+// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
 // Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
 // Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
 
@@ -19,7 +19,7 @@ define([
       {
         domain = modelOrCollection.nlsDomain;
       }
-      else if (modelOrCollection.model.prototype.nlsDomain)
+      else if (modelOrCollection.model && modelOrCollection.model.prototype.nlsDomain)
       {
         domain = modelOrCollection.model.prototype.nlsDomain;
       }
@@ -46,24 +46,19 @@ define([
       if (options.syncMethod === 'read')
       {
         viewport.msg.loading();
+
+        jqXhr.done(onSync);
+        jqXhr.fail(onError);
       }
     });
 
-    context.listenTo(modelOrCollection, 'sync', function(modelOrCollection, jqXhr, options)
+    function onSync()
     {
-      if (options.syncMethod === 'read')
-      {
-        viewport.msg.loaded();
-      }
-    });
+      viewport.msg.loaded();
+    }
 
-    context.listenTo(modelOrCollection, 'error', function(modelOrCollection, jqXhr, options)
+    function onError(jqXhr)
     {
-      if (options.syncMethod !== 'read')
-      {
-        return;
-      }
-
       var code = jqXhr.statusText;
 
       if (code === 'abort')
@@ -86,7 +81,7 @@ define([
       }
 
       viewport.msg.loadingFailed(t(domain, key, {code: code}));
-    });
+    }
 
     return modelOrCollection;
   };

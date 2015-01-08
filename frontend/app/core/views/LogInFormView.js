@@ -1,15 +1,12 @@
-// Copyright (c) 2014, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
+// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
 // Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
 // Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
 
 define([
-  'jquery',
   'app/user',
   '../View',
-  'app/core/templates/logInForm',
-  'i18n!app/nls/core'
+  'app/core/templates/logInForm'
 ], function(
-  $,
   user,
   View,
   logInFormTemplate
@@ -61,7 +58,7 @@ define([
       this.$el.addClass('logInForm-loading');
       this.$submitEl.attr('disabled', true);
 
-      var req = $.ajax({
+      var req = this.ajax({
         type: 'POST',
         url: this.el.action,
         data: JSON.stringify(data)

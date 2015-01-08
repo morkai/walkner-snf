@@ -1,4 +1,4 @@
-// Copyright (c) 2014, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
+// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
 // Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
 // Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
 
@@ -6,12 +6,20 @@
 
 var lodash = require('lodash');
 var mongoose = require('mongoose');
+var autoIncrement = null;
+
+try
+{
+  autoIncrement = require('mongoose-auto-increment');
+}
+catch (err) {}
 
 exports.DEFAULT_CONFIG = {
   maxConnectTries: 10,
   connectAttemptDelay: 500,
   uri: 'mongodb://localhost/walkner-hydro',
-  options: {}
+  options: {},
+  models: null
 };
 
 exports.start = function startDbModule(app, module, done)
@@ -41,6 +49,7 @@ exports.start = function startDbModule(app, module, done)
         );
       }
 
+      initializeAutoIncrement();
       loadModels();
     });
   }
@@ -51,8 +60,19 @@ exports.start = function startDbModule(app, module, done)
   function loadModels()
   {
     var modelsDir = app.pathTo('models');
-    var modelsList = require(app.pathTo('models', 'index'));
+    var modelsList = module.config.models || require(app.pathTo('models', 'index'));
 
     app.loadFiles(modelsDir, modelsList, [app, module], done);
+  }
+
+  /**
+   * @private
+   */
+  function initializeAutoIncrement()
+  {
+    if (autoIncrement !== null)
+    {
+      autoIncrement.initialize(module.connection);
+    }
   }
 };

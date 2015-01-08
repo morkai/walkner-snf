@@ -1,30 +1,35 @@
-<div class="well">
-  <form id="<%- idPrefix %>-form" class="filter-form">
-    <div class="form-group">
-      <label for="<%- idPrefix %>-from"><%- t('tests', 'FILTER:DATE:FROM') %></label>
-      <input id="<%- idPrefix %>-from" class="form-control" name="from" type="text" placeholder="YYYY-MM-DD hh:mm:ss">
-    </div><div
-      class="form-group">
-      <label for="<%- idPrefix %>-to"><%- t('tests', 'FILTER:DATE:TO') %></label>
-      <input id="<%- idPrefix %>-to" class="form-control" name="to" type="text" placeholder="YYYY-MM-DD hh:mm:ss">
-    </div><div
-      class="form-group">
-      <label for="<%- idPrefix %>-program"><%- t('tests', 'PROPERTY:program') %></label>
-      <input id="<%- idPrefix %>-program" name="program" type="hidden" data-placeholder="<%= t('tests', 'FILTER:PLACEHOLDER:program') %>">
-    </div><div
-      class="form-group">
-      <label for="<%- idPrefix %>-limit"><%- t('tests', 'FILTER:LIMIT') %></label>
-      <input id="<%- idPrefix %>-limit" class="form-control" name="limit" type="number" value="25" min="5" max="100" step="1">
-    </div><div
-      class="form-group">
-      <label><%- t('tests', 'PROPERTY:result') %></label>
-      <div class="btn-group filter-btn-group" data-toggle="buttons-checkbox">
-        <button class="btn btn-success tests-filter-form-result" type="button" value="true">&nbsp;</button>
-        <button class="btn btn-danger tests-filter-form-result" type="button" value="false">&nbsp;</button>
-      </div>
-    </div><div
-      class="form-group filter-actions">
-      <input type="submit" class="btn btn-primary" value="<%= t('tests', 'FILTER:BUTTON') %>">
+<form id="<%- idPrefix %>-form" class="well filter-form">
+  <div class="form-group">
+    <label for="<%- idPrefix %>-from-date"><%- t('core', 'filter:date:from') %></label>
+    <div id="<%- idPrefix %>-from" class="form-group-datetime">
+      <input id="<%- idPrefix %>-from-date" class="form-control" name="from-date" type="date" placeholder="YYYY-MM-DD">
+      <input id="<%- idPrefix %>-from-time" class="form-control" name="from-time" type="time" placeholder="hh:mm">
     </div>
-  </form>
-</div>
+  </div>
+  <div class="form-group">
+    <label for="<%- idPrefix %>-to-date"><%- t('core', 'filter:date:to') %></label>
+    <div id="<%- idPrefix %>-to" class="form-group-datetime">
+      <input id="<%- idPrefix %>-to-date" class="form-control" name="to-date" type="date" placeholder="YYYY-MM-DD">
+      <input id="<%- idPrefix %>-to-time" class="form-control" name="to-time" type="time" placeholder="hh:mm">
+    </div>
+  </div>
+  <div class="form-group">
+    <label for="<%- idPrefix %>-program"><%- t('tests', 'PROPERTY:program') %></label>
+    <input id="<%- idPrefix %>-program" name="program" type="hidden" data-placeholder="<%= t('tests', 'filter:placeholder:program') %>">
+  </div>
+  <div class="form-group">
+    <label><%- t('tests', 'PROPERTY:result') %></label>
+    <div id="<%- idPrefix %>-result" class="btn-group filter-btn-group" data-toggle="buttons">
+      <label class="btn btn-success" title="<%- t('tests', 'result:true') %>">
+        <input type="checkbox" name="result[]" value="true"> &nbsp;
+      </label>
+      <label class="btn btn-danger" title="<%- t('tests', 'result:false') %>">
+        <input type="checkbox" name="result[]" value="false"> &nbsp;
+      </label>
+    </div>
+  </div>
+  <%- renderLimit() %>
+  <div class="form-group filter-actions">
+    <button type="submit" class="btn btn-default"><i class="fa fa-filter"></i><span><%= t('tests', 'filter:submit') %></span></button>
+  </div>
+</form>
