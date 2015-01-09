@@ -9,6 +9,7 @@ define([
   './pages/TestListPage',
   './pages/TestDetailsPage',
   './Test',
+  './TestCollection',
   'i18n!app/nls/tests'
 ], function(
   router,
@@ -16,7 +17,8 @@ define([
   user,
   TestListPage,
   TestDetailsPage,
-  Test
+  Test,
+  TestCollection
 ) {
   'use strict';
 
@@ -36,7 +38,9 @@ define([
 
   router.map('/tests', canView, function(req)
   {
-    viewport.showPage(new TestListPage({rql: req.rql}));
+    viewport.showPage(new TestListPage({
+      collection: new TestCollection(null, {rqlQuery: req.rql})
+    }));
   });
 
   router.map('/tests/:id', canView, function(req)

@@ -17,9 +17,27 @@ define([
 
   return ListView.extend({
 
+    className: 'tests-list',
+
     remoteTopics: {
       'tests.finished': 'refreshCollection'
     },
+
+    events: _.extend({}, ListView.prototype.events, {
+      'click .list-item': function(e)
+      {
+        var test = this.collection.get(e.currentTarget.dataset.id);
+
+        if (test)
+        {
+          this.broker.publish('router.navigate', {
+            url: test.genClientUrl(),
+            trigger: true,
+            replace: false
+          });
+        }
+      }
+    }),
 
     columns: ['program', 'startedAt', 'finishedAt', 'duration'],
 
@@ -45,12 +63,7 @@ define([
 
     serializeActions: function()
     {
-      var collection = this.collection;
 
-      return function(row)
-      {
-        return [ListView.actions.viewDetails(collection.get(row._id))];
-      };
     }
 
   });

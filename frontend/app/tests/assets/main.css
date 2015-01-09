@@ -4,3 +4,6 @@
 .tests-charts-container {
   padding: 15px 0 0 0;
 }
+.tests-list .list-item {
+  cursor: pointer;
+}
