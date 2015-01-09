@@ -1,0 +1,13 @@
+<div>
+  <div id="<%- idPrefix %>-thumbnails" class="dashboard-gallery-thumbnails">
+    <% images.forEach(function(image, i) { %>
+    <div class="dashboard-gallery-thumbnail <%- i === 0 ? 'is-active' : '' %>">
+      <img src="/programs/<%- programId %>/images/<%- image._id %>.<%- image.type %>" alt="<%= image.label %>">
+    </div>
+    <% }) %>
+  </div>
+  <div id="<%- idPrefix %>-preview" class="dashboard-gallery-preview">
+    <p id="<%- idPrefix %>-label" class="dashboard-gallery-label"><%= images[0].label %></p>
+    <img id="<%- idPrefix %>-image" src="/programs/<%- programId %>/images/<%- images[0]._id %>.<%- images[0].type %>" alt="">
+  </div>
+</div>

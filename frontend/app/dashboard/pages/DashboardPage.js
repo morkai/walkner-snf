@@ -3,6 +3,7 @@
 // Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
 
 define([
+  'jquery',
   'app/i18n',
   'app/user',
   'app/viewport',
@@ -15,10 +16,12 @@ define([
   '../views/CameraView',
   '../views/CurrentProgramView',
   '../views/CurrentStateView',
+  '../views/ImageGalleryView',
   '../Dashboard',
   'app/tests/Test',
   'app/dashboard/templates/dashboard'
 ], function(
+  $,
   t,
   user,
   viewport,
@@ -31,6 +34,7 @@ define([
   CameraView,
   CurrentProgramView,
   CurrentStateView,
+  ImageGalleryView,
   Dashboard,
   Test,
   dashboardTemplate
@@ -63,13 +67,18 @@ define([
 
     actions: function()
     {
-      var actions = [];
+      var actions = [{
+        className: 'dashboard-action-gallery',
+        label: t('dashboard', 'gallery:pageAction'),
+        icon: 'image',
+        callback: this.showImageGalleryDialog.bind(this)
+      }];
 
       if (user.data.local || user.isAllowedTo('PROGRAMS:MANAGE'))
       {
         actions.push({
           label: t('dashboard', 'assignPrograms:pageAction'),
-          href: '#programs;assign',
+          icon: 'plus',
           callback: this.showAssignProgramsDialog.bind(this)
         });
       }
@@ -105,6 +114,9 @@ define([
 
         this.setView('.dashboard-camera-container', this.cameraView);
       }
+
+      this.listenTo(programs, 'change:images', this.onImagesChanged);
+      this.listenTo(this.model, 'change:currentProgram', this.toggleGalleryAction);
     },
 
     serialize: function()
@@ -119,14 +131,36 @@ define([
       return when(this.model.fetch(), this.tests.fetch({reset: true}));
     },
 
-    showAssignProgramsDialog: function(e)
+    afterRender: function()
+    {
+      this.toggleGalleryAction();
+    },
+
+    showAssignProgramsDialog: function()
     {
       viewport.showDialog(new AssignProgramsView(), t('dashboard', 'assignPrograms:dialogTitle'));
+    },
 
-      if (e)
+    showImageGalleryDialog: function()
+    {
+      viewport.showDialog(new ImageGalleryView({model: this.model.get('currentProgram')}));
+    },
+
+    onImagesChanged: function(program)
+    {
+      var currentProgram = this.model.get('currentProgram');
+
+      if (!currentProgram || program.id === currentProgram.id)
       {
-        e.preventDefault();
+        this.toggleGalleryAction();
       }
+    },
+
+    toggleGalleryAction: function()
+    {
+      var currentProgram = this.model.get('currentProgram');
+
+      $('.dashboard-action-gallery').attr('disabled', !currentProgram || !currentProgram.get('images').length);
     }
 
   });

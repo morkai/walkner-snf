@@ -180,3 +180,51 @@
 .currentState-tag[data-tag="light.2"] {
   min-width: 180px;
 }
+.modal-open,
+.modal-open .dashboard-gallery-dialog {
+  overflow: hidden;
+  padding-right: 0!important;
+}
+.dashboard-gallery-dialog .modal-dialog {
+  width: auto;
+  margin: 30px 30px 0 30px;
+}
+.dashboard-gallery-dialog .modal-body {
+  padding: 0;
+}
+.dashboard-gallery-thumbnails {
+  display: flex;
+  flex: 0;
+  overflow-x: scroll;
+}
+.dashboard-gallery-thumbnail {
+  min-width: 60px;
+  flex: 0 0 auto;
+  outline-offset: -5px;
+  outline: 5px solid transparent;
+  cursor: pointer;
+}
+.dashboard-gallery-thumbnail.is-active {
+  outline-color: #fa0;
+}
+.dashboard-gallery-thumbnail:hover {
+  outline-color: #0af;
+}
+.dashboard-gallery-thumbnail > img {
+  max-width: 192px;
+  max-height: 108px;
+}
+.dashboard-gallery-preview {
+  position: relative;
+  overflow: scroll;
+  text-align: center;
+}
+.dashboard-gallery-label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 10px;
+  background: rgba(0, 0, 0, .75);
+  color: #fff;
+  font-weight: bold;
+}

@@ -2,6 +2,8 @@
   "assignPrograms:pageAction": "Przypisz programy",
   "assignPrograms:dialogTitle": "Przypisywanie programów",
 
+  "gallery:pageAction": "Pokaż obrazy programu",
+
   "currentProgram:noProgram": "Brak przypisanego programu",
   "currentProgram:title:idle": "Wybrany program",
   "currentProgram:title:testing": "Wykonywany program",
