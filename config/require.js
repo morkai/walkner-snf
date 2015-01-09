@@ -7,6 +7,7 @@ exports.paths = {
   'underscore': 'vendor/underscore',
   'jquery': 'vendor/jquery',
   'jquery.transit': 'vendor/jquery.transit',
+  'jquery.kinetic': 'vendor/jquery.kinetic',
   'backbone': 'vendor/backbone',
   'backbone.layout': 'vendor/backbone.layoutmanager',
   'moment': 'vendor/moment/moment',
@@ -28,6 +29,7 @@ exports.paths = {
 
 exports.shim = {
   'jquery.transit': ['jquery'],
+  'jquery.kinetic': ['jquery'],
   'underscore': {
     exports: '_'
   },
