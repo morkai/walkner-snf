@@ -6,28 +6,28 @@ define([
   '../router',
   '../viewport',
   '../user',
-  './Program',
-  './ProgramCollection',
-  '../core/pages/DetailsPage',
+  '../core/util/showDeleteFormPage',
   '../core/pages/AddFormPage',
   '../core/pages/EditFormPage',
-  '../core/pages/ActionFormPage',
+  '../data/programs',
+  './Program',
+  './ProgramCollection',
   './pages/ProgramListPage',
-  './views/ProgramDetailsView',
+  './pages/ProgramDetailsPage',
   './views/ProgramFormView',
   'i18n!app/nls/programs'
 ], function(
   router,
   viewport,
   user,
-  Program,
-  ProgramCollection,
-  DetailsPage,
+  showDeleteFormPage,
   AddFormPage,
   EditFormPage,
-  ActionFormPage,
+  programs,
+  Program,
+  ProgramCollection,
   ProgramListPage,
-  ProgramDetailsView,
+  ProgramDetailsPage,
   ProgramFormView
 ) {
   'use strict';
@@ -44,9 +44,8 @@ define([
 
   router.map('/programs/:id', function(req)
   {
-    viewport.showPage(new DetailsPage({
-      DetailsView: ProgramDetailsView,
-      model: new Program({_id: req.params.id})
+    viewport.showPage(new ProgramDetailsPage({
+      model: programs.get(req.params.id)
     }));
   });
 
@@ -62,22 +61,9 @@ define([
   {
     viewport.showPage(new EditFormPage({
       FormView: ProgramFormView,
-      model: new Program({_id: req.params.id})
+      model: programs.get(req.params.id)
     }));
   });
 
-  router.map('/programs/:id;delete', canManage, function(req, referer)
-  {
-    var model = new Program({_id: req.params.id});
-
-    viewport.showPage(new ActionFormPage({
-      model: model,
-      actionKey: 'delete',
-      successUrl: model.genClientUrl('base'),
-      cancelUrl: referer || model.genClientUrl('base'),
-      formMethod: 'DELETE',
-      formAction: model.url(),
-      formActionSeverity: 'danger'
-    }));
-  });
+  router.map('/programs/:id;delete', canManage, showDeleteFormPage.bind(null, Program));
 });

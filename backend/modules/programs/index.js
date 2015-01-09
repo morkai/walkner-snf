@@ -4,7 +4,30 @@
 
 'use strict';
 
+var path = require('path');
+var fs = require('fs');
+
 module.exports = require('../createDictionaryModule')(
   'Program',
-  require('./routes')
+  require('./routes'),
+  function(app, programsModule)
+  {
+    app.broker.subscribe('programs.deleted', function(message)
+    {
+      message.model.images.forEach(function(image)
+      {
+        fs.unlink(path.join(programsModule.config.imagesPath || './', image._id + '.' + image.type), function() {});
+      });
+    });
+
+    app.broker.subscribe('programs.*.images.*', function()
+    {
+      var updater = app[programsModule.config.updaterId || 'updater'];
+
+      if (updater)
+      {
+        updater.updateFrontendVersion();
+      }
+    });
+  }
 );

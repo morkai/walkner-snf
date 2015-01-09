@@ -15,6 +15,7 @@
   "PANEL:TITLE:details": "Szczegóły programu",
   "PANEL:TITLE:addForm": "Formularz dodawania programu",
   "PANEL:TITLE:editForm": "Formularz edycji programu",
+  "PANEL:TITLE:gallery": "Galeria",
 
   "FORM:ACTION:add": "Dodaj program",
   "FORM:ACTION:edit": "Edytuj program",
@@ -64,6 +65,7 @@
   "PROPERTY:currentBoundries": "Tolerancja prądu",
   "PROPERTY:minCurrent": "Prąd minimalny",
   "PROPERTY:maxCurrent": "Prąd maksymalny",
+  "PROPERTY:images.label": "Etykieta",
 
   "current:noBoundries": "Nie sprawdzana",
   "current:boundries": "od <em>{min}A</em> do <em>{max}A</em>",
@@ -117,5 +119,14 @@
   "assignPrograms:failure": "Nie udało się przypisać programu na pozycję {kind, select, kind30s{30s} kindhrs{HRS} kindtester{Tester} other{{kind}}}: <em>{error}</em>",
   "assignPrograms:failure:unassign": "Nie udało się usunąć przypisania programu na pozycji {kind, select, kind30s{30s} kindhrs{HRS} kindtester{Tester} other{{kind}}}: <em>{error}</em>",
   "assignPrograms:success": "Przypisano program na pozycję {kind, select, kind30s{30s} kindhrs{HRS} kindtester{Tester} other{{kind}}}: <em>{program}</em>",
-  "assignPrograms:success:unassign": "Usunięto przypisanie programu na pozycji {kind, select, kind30s{30s} kindhrs{HRS} kindtester{Tester} other{{kind}}}!"
+  "assignPrograms:success:unassign": "Usunięto przypisanie programu na pozycji {kind, select, kind30s{30s} kindhrs{HRS} kindtester{Tester} other{{kind}}}!",
+
+  "gallery:add": "Dodaj nowe obrazy!",
+  "gallery:delete:title": "Usuwanie obrazu",
+  "gallery:delete:message": "Czy na pewno chcesz usunąć wybrany obraz?",
+  "gallery:delete:yes": "Usuń obraz",
+  "gallery:delete:no": "Anuluj",
+  "gallery:edit:title": "Edycja obrazu",
+  "gallery:edit:submit": "Edytuj obraz",
+  "gallery:edit:failure": "Nie udało się zmienić etykiety :("
 }

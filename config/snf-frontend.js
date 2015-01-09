@@ -72,7 +72,8 @@ exports.pubsub = {
     'events.saved',
     'updater.newVersion',
     '*.added', '*.edited', '*.deleted', '*.synced',
-    'controller.tagsChanged', 'controller.tagValuesChanged'
+    'controller.tagsChanged', 'controller.tagValuesChanged',
+    'programs.*.images.*'
   ]
 };
 
@@ -135,4 +136,8 @@ exports['messenger/server'] = {
   repHost: '0.0.0.0',
   repPort: 5053,
   broadcastTopics: ['programs.edited', 'programs.deleted']
+};
+
+exports.programs = {
+  imagesPath: __dirname + '/../data/uploads/programs'
 };

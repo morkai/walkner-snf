@@ -328,6 +328,11 @@ define([
       this.$dialog.removeClass(_.result(this.currentDialog, 'dialogClassName'));
     }
 
+    if (_.isFunction(this.currentDialog.onDialogHidden))
+    {
+      this.currentDialog.onDialogHidden(this);
+    }
+
     if (_.isFunction(this.currentDialog.remove))
     {
       this.currentDialog.remove();

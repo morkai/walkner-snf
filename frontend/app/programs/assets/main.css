@@ -1,3 +1,108 @@
 .programs-form .panel-body {
   padding-bottom: 0;
 }
+.programs-container-gallery {
+  margin-top: 1em;
+}
+.programs-gallery > .panel-body {
+  display: flex;
+  flex-wrap: wrap;
+  padding-top: 0;
+  padding-left: 0;
+}
+.programs-gallery.is-valid > .panel-body {
+  background: #E5FEE5;
+}
+.programs-gallery.is-invalid > .panel-body {
+  background: #FEE5E5;
+}
+.programs-gallery .thumbnail {
+  flex: 0 0 250px;
+  height: 183px;
+  position: relative;
+  margin: 15px 0 0 15px;
+  vertical-align: top;
+}
+.programs-gallery .thumbnail:hover {
+  border-color: #23527c;
+}
+.programs-gallery .thumbnail-actions {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  opacity: .1;
+}
+.programs-gallery .thumbnail-actions .fa-spinner {
+  display: none;
+  font-size: 32px;
+  color: #0af;
+}
+.programs-gallery .is-uploading .fa-spinner {
+  display: block;
+}
+.programs-gallery .is-uploading .thumbnail-actions {
+  opacity: 1;
+}
+.programs-gallery .is-uploading .btn {
+  display: none;
+}
+.programs-gallery .thumbnail:hover .thumbnail-actions {
+  opacity: 1;
+}
+.programs-gallery .thumbnail img {
+  max-width: 240px;
+  max-height: 135px;
+}
+.programs-gallery .caption h3 {
+  margin-top: 0;
+}
+.programs-gallery .caption p {
+  margin-bottom: 0;
+}
+.programs-gallery-upload .btn {
+  padding: 0;
+  border: 0;
+}
+.programs-gallery-upload .fa {
+  width: 240px;
+  height: 135px;
+  line-height: 135px;
+  font-size: 135px;
+  text-align: center;
+}
+.programs-gallery-upload input {
+  display: none;
+}
+.programs-gallery-upload p {
+  text-align: center;
+}
+.programs-gallery .thumbnail-label {
+  max-width: 222px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+.programs-image-dialog {
+  text-align: center;
+}
+.programs-image-dialog > .modal-dialog {
+  display: inline-block;
+  width: auto;
+}
+.programs-image-dialog .modal-body {
+  padding: 0;
+}
+.programs-image {
+  overflow: auto;
+  position: relative;
+  min-width: 240px;
+  min-height: 135px;
+}
+.programs-image-label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 10px;
+  background: rgba(0, 0, 0, .75);
+  color: #fff;
+}

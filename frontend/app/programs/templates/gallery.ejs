@@ -1,0 +1,19 @@
+<div class="panel panel-default programs-gallery">
+  <div class="panel-heading">
+    <%- t('programs', 'PANEL:TITLE:gallery') %>
+  </div>
+  <div class="panel-body">
+    <% if (user.isAllowedTo('PROGRAMS:MANAGE')) { %>
+    <form class="thumbnail programs-gallery-upload" method="post" enctype="multipart/form-data" action="/programs/<%- program._id %>/images">
+      <input id="<%- idPrefix %>-files" type="file" accept="image/*" multiple>
+      <button id="<%- idPrefix %>-upload" class="btn btn-link" type="button"><i class="fa fa-plus-circle"></i></button>
+      <div class="caption">
+        <p><%- t('programs', 'gallery:add') %></p>
+      </div>
+    </form>
+    <% } %>
+    <% program.images.forEach(function(image) { %>
+    <% include galleryThumbnail.ejs %>
+    <% }) %>
+  </div>
+</div>

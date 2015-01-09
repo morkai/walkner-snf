@@ -27,6 +27,24 @@ module.exports = function setupProgramModel(app, mongoose)
     default: false
   };
 
+  var imageSchema = mongoose.Schema({
+    _id: {
+      type: String,
+      required: true
+    },
+    type: {
+      type: String,
+      required: true,
+      enum: ['jpg', 'png', 'gif']
+    },
+    label: {
+      type: String,
+      required: true
+    }
+  }, {
+    id: false
+  });
+
   var programSchema = mongoose.Schema({
     name: {
       type: String,
@@ -128,7 +146,8 @@ module.exports = function setupProgramModel(app, mongoose)
       default: 0,
       min: 0,
       max: 100
-    }
+    },
+    images: [imageSchema]
   }, {
     id: false
   });

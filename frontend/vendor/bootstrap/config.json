@@ -392,6 +392,7 @@
     "pagination.less",
     "labels.less",
     "badges.less",
+    "thumbnails.less",
     "progress-bars.less",
     "list-group.less",
     "panels.less",
@@ -415,5 +416,5 @@
     "collapse.js",
     "transition.js"
   ],
-  "customizerUrl": "http://getbootstrap.com/customize/?id=062665f5ea62f207c55b"
+  "customizerUrl": "http://getbootstrap.com/customize/?id=2712ae047764b24083d6"
 }
