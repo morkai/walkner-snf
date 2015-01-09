@@ -81,7 +81,9 @@
           <div class="prop-name"><%- t('programs', 'PROPERTY:contactors') %></div>
           <div class="prop-value">
             <% contactors.forEach(function(contactor) { %>
+            <% if (model[contactor]) { %>
             <span class="label label-<%- model[contactor] ? 'success' : 'danger' %>"><%- t('programs', 'PROPERTY:' + contactor) %></span>
+            <% } %>
             <% }) %>
           </div>
         </div>
