@@ -60,7 +60,7 @@ module.exports = function(grunt)
         dest: './build/frontend',
         ext: '.js',
         options: {
-          helpers: require('./config/wmes-frontend').express.ejsAmdHelpers
+          helpers: require('./config/snf-frontend').express.ejsAmdHelpers
         }
       }
     },
@@ -111,8 +111,7 @@ module.exports = function(grunt)
           },
           optimizeCss: 'standard',
           modules: [
-            {name: 'wmes-main'},
-            {name: 'pos-main'}
+            {name: 'snf-main'}
           ],
           paths: requirejsConfig.buildPaths,
           shim: requirejsConfig.buildShim,
