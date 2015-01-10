@@ -27,7 +27,7 @@ exports.dictionaryModules = {
 };
 
 exports.updater = {
-  manifestPath: __dirname + '/snf-manifest.appcache',
+  manifestPath: null,
   packageJsonPath: __dirname + '/../package.json',
   restartDelay: 10000,
   pull: {

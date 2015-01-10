@@ -8,9 +8,9 @@ var lodash = require('lodash');
 
 module.exports = function startCoreRoutes(app, express)
 {
-  var appCache = app.options.env === 'production';
   var updaterModule = app[app.options.updaterId || 'updater'];
   var userModule = app[app.options.userId || 'user'];
+  var appCache = app.options.env === 'production' && updaterModule && updaterModule.config.manifestPath;
   var requirejsPaths;
   var requirejsShim;
 
