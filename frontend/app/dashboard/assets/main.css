@@ -228,3 +228,27 @@
   color: #fff;
   font-weight: bold;
 }
+@media screen and (max-width: 1024px) {
+  .currentState-tag {
+    font-size: 32px;
+  }
+  .currentState-tag[data-tag="current"],
+  .currentState-tag[data-tag="voltage"] {
+    min-width: 145px;
+  }
+  .currentState-tag[data-tag="temperature"] {
+    min-width: 100px;
+  }
+  .currentState-tag[data-tag="light.1"],
+  .currentState-tag[data-tag="light.2"] {
+    min-width: 140px;
+  }
+  .currentState-tag-name {
+    line-height: 59px;
+    height: 59px;
+  }
+  .currentState-tag-value {
+    line-height: 45px;
+    height: 45px;
+  }
+}
