@@ -143,7 +143,12 @@ define([
 
     showImageGalleryDialog: function()
     {
-      viewport.showDialog(new ImageGalleryView({model: this.model.get('currentProgram')}));
+      var currentProgram = this.model.get('currentProgram');
+
+      if (currentProgram)
+      {
+        viewport.showDialog(new ImageGalleryView({model: currentProgram}));
+      }
     },
 
     onImagesChanged: function(program)
