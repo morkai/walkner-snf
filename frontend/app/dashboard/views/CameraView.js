@@ -90,11 +90,7 @@ define([
     {
       stream = null;
 
-      viewport.msg.show({
-        type: 'error',
-        time: 5000,
-        text: '[CAMERA:' + e.name + ']' + (e.message.length ? (' ' + e.message) : '')
-      });
+      console.error('[CAMERA:' + e.name + ']' + (e.message.length ? (' ' + e.message) : ''));
     },
 
     setUpVideo: function()
