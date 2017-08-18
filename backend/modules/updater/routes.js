@@ -1,21 +1,31 @@
-// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
-// Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
-// Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
+// Part of <https://miracle.systems/p/walkner-wmes> licensed under <CC BY-NC-SA 4.0>
 
 'use strict';
 
+const _ = require('lodash');
+
 module.exports = function setUpUpdaterRoutes(app, updaterModule)
 {
-  var express = app[updaterModule.config.expressId];
+  const express = app[updaterModule.config.expressId];
 
-  express.get('/manifest.appcache', function(req, res)
+  _.forEach(updaterModule.config.manifests, function(manifestOptions)
   {
-    if (app.options.env !== 'production' || typeof updaterModule.manifest !== 'string')
+    express.get(manifestOptions.path, function(req, res)
     {
-      return res.send(404);
-    }
+      const template = manifestOptions.template || updaterModule.manifest;
 
-    res.type('text/cache-manifest');
-    res.send(updaterModule.manifest.replace('{version}', 'v' + updaterModule.getFrontendVersion()));
+      if (app.options.env === 'development' || typeof template !== 'string')
+      {
+        return res.sendStatus(404);
+      }
+
+      const cacheManifest = template
+        .replace('{version}', 'v' + updaterModule.getFrontendVersion(manifestOptions.frontendVersionKey))
+        .replace('{mainJsFile}', manifestOptions.mainJsFile)
+        .replace('{mainCssFile}', manifestOptions.mainCssFile);
+
+      res.type('text/cache-manifest');
+      res.send(cacheManifest);
+    });
   });
 };

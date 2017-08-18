@@ -1,8 +1,10 @@
-// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
-// Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
-// Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
+// Part of <https://miracle.systems/p/walkner-wmes> licensed under <CC BY-NC-SA 4.0>
+
+/* eslint-disable no-extend-native */
 
 'use strict';
+
+const util = require('util');
 
 Object.defineProperty(Error.prototype, 'toJSON', {
   configurable: false,
@@ -10,17 +12,36 @@ Object.defineProperty(Error.prototype, 'toJSON', {
   writable: true,
   value: function()
   {
-    var error = this;
-    var result = {
+    const error = this;
+    const result = {
       message: error.message,
       stack: error.stack
     };
+    const keys = Object.keys(error);
 
-    Object.keys(error).forEach(function(property)
+    for (let i = 0; i < keys.length; ++i)
     {
-      result[property] = error[property];
-    });
+      const key = keys[i];
+
+      result[key] = error[key];
+    }
 
     return result;
   }
 });
+
+console.inspect = function(value, depth, colors)
+{
+  console.log(util.inspect(value, {depth: depth || null, colors: colors !== false}));
+};
+
+console.bench = function(label, context, func)
+{
+  const time = process.hrtime();
+  const result = func.call(context);
+  const diff = process.hrtime(time);
+
+  console.log('[bench] %s %d ms', label, (diff[0] * 1e9 + diff[1]) / 1e6);
+
+  return result;
+};

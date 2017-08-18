@@ -1,6 +1,4 @@
-// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
-// Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
-// Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
+// Part of <https://miracle.systems/p/walkner-wmes> licensed under <CC BY-NC-SA 4.0>
 
 define([
   'underscore',
@@ -47,15 +45,10 @@ define([
   {
     if (this.paginationData)
     {
-      this.paginationData.set({
-        totalCount: res.totalCount,
-        urlTemplate: this.genPaginationUrlTemplate(),
-        skip: this.rqlQuery.skip,
-        limit: this.rqlQuery.limit
-      });
+      this.paginationData.set(this.getPaginationData(res));
     }
 
-    return res.collection;
+    return Array.isArray(res.collection) ? res.collection : [];
   };
 
   Collection.prototype.sync = function(type, model, options)
@@ -100,6 +93,13 @@ define([
     return this.nlsDomain || this.model.prototype.nlsDomain;
   };
 
+  Collection.prototype.getLabel = function(id)
+  {
+    var model = this.get(id);
+
+    return model ? model.getLabel() : null;
+  };
+
   Collection.prototype.createRqlQuery = function(rqlQuery)
   {
     if (_.isString(rqlQuery))
@@ -136,6 +136,16 @@ define([
     }
 
     return new rql.Query();
+  };
+
+  Collection.prototype.getPaginationData = function(res)
+  {
+    return {
+      totalCount: res.totalCount,
+      urlTemplate: this.genPaginationUrlTemplate(),
+      skip: this.rqlQuery.skip,
+      limit: this.rqlQuery.limit
+    };
   };
 
   Collection.prototype.genPaginationUrlTemplate = function()

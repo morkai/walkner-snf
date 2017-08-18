@@ -1,8 +1,7 @@
-// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
-// Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
-// Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
+// Part of <https://miracle.systems/p/walkner-wmes> licensed under <CC BY-NC-SA 4.0>
 
 define([
+  'underscore',
   'jquery',
   'app/i18n',
   'app/user',
@@ -11,6 +10,7 @@ define([
   './PaginationView',
   'app/core/templates/list'
 ], function(
+  _,
   $,
   t,
   user,
@@ -24,6 +24,10 @@ define([
   var ListView = View.extend({
 
     template: listTemplate,
+
+    tableClassName: 'table-bordered table-hover table-condensed',
+
+    paginationOptions: {},
 
     remoteTopics: function()
     {
@@ -41,6 +45,51 @@ define([
     },
 
     events: {
+      'click .list-item[data-id]': function(e)
+      {
+        if (e.target.classList.contains('actions-group'))
+        {
+          return false;
+        }
+
+        if (this.isNotClickable(e))
+        {
+          return;
+        }
+
+        var url = this.collection.get(e.currentTarget.dataset.id).genClientUrl();
+
+        if (e.ctrlKey)
+        {
+          window.open(url);
+        }
+        else if (!e.altKey)
+        {
+          this.broker.publish('router.navigate', {
+            url: url,
+            trigger: true,
+            replace: false
+          });
+        }
+      },
+      'mousedown .list-item[data-id]': function(e)
+      {
+        if (!this.isNotClickable(e) && e.button === 1)
+        {
+          e.preventDefault();
+        }
+      },
+      'mouseup .list-item[data-id]': function(e)
+      {
+        if (this.isNotClickable(e) || e.button !== 1)
+        {
+          return;
+        }
+
+        window.open(this.collection.get(e.currentTarget.dataset.id).genClientUrl());
+
+        return false;
+      },
       'click .action-delete': function(e)
       {
         e.preventDefault();
@@ -51,6 +100,7 @@ define([
 
     initialize: function()
     {
+      this.refreshReq = null;
       this.lastRefreshAt = 0;
 
       this.listenTo(this.collection, 'sync', function()
@@ -60,9 +110,12 @@ define([
 
       if (this.collection.paginationData)
       {
-        this.paginationView = new PaginationView({
-          model: this.collection.paginationData
-        });
+        this.paginationView = new PaginationView(_.assign(
+          {replaceUrl: !!this.options.replaceUrl},
+          this.paginationOptions,
+          this.options.pagination,
+          {model: this.collection.paginationData}
+        ));
 
         this.setView('.pagination-container', this.paginationView);
 
@@ -81,7 +134,9 @@ define([
         columns: this.decorateColumns(this.serializeColumns()),
         actions: this.serializeActions(),
         rows: this.serializeRows(),
-        className: this.className
+        className: _.result(this, 'className'),
+        tableClassName: _.result(this, 'tableClassName'),
+        noData: this.options.noData || t('core', 'LIST:NO_DATA')
       };
     },
 
@@ -113,12 +168,28 @@ define([
       {
         if (typeof column === 'string')
         {
-          column = {id: column, label: t(nlsDomain, 'PROPERTY:' + column)};
+          column = {id: column, label: t.bound(nlsDomain, 'PROPERTY:' + column)};
         }
 
         if (!column.label)
         {
-          column.label = t(nlsDomain, 'PROPERTY:' + column.id);
+          column.label = t.bound(nlsDomain, 'PROPERTY:' + column.id);
+        }
+
+        if (!column.thAttrs)
+        {
+          column.thAttrs = '';
+        }
+
+        if (!column.tdAttrs)
+        {
+          column.tdAttrs = '';
+        }
+
+        if (column.className || column.thClassName || column.tdClassName)
+        {
+          column.thAttrs += ' class="' + (column.className || '') + ' ' + (column.thClassName || '') + '"';
+          column.tdAttrs += ' class="' + (column.className || '') + ' ' + (column.tdClassName || '') + '"';
         }
 
         return column;
@@ -162,14 +233,31 @@ define([
 
     onModelDeleted: function(message)
     {
-      if (!message || !message.model || !message.model._id)
+      if (!message)
       {
         return;
       }
 
-      this.$('.list-item[data-id="' + message.model._id + '"]').addClass('is-deleted');
+      var model = message.model || message;
 
-      this.refreshCollection(message);
+      if (!model._id)
+      {
+        return;
+      }
+
+      this.$('.list-item[data-id="' + model._id + '"]').addClass('is-deleted');
+
+      this.refreshCollection(model);
+    },
+
+    $row: function(rowId)
+    {
+      return this.$('tr[data-id="' + rowId + '"]');
+    },
+
+    $cell: function(rowId, columnId)
+    {
+      return this.$('tr[data-id="' + rowId + '"] > td[data-id="' + columnId + '"]');
     },
 
     refreshCollection: function(message)
@@ -179,8 +267,11 @@ define([
         return;
       }
 
-      if (Date.now() - this.lastRefreshAt > 3000)
+      var now = Date.now();
+
+      if (now - this.lastRefreshAt > 3000)
       {
+        this.lastRefreshAt = now;
         this.refreshCollectionNow();
       }
       else
@@ -191,6 +282,11 @@ define([
 
     refreshCollectionNow: function(options)
     {
+      if (!this.timers)
+      {
+        return;
+      }
+
       if (this.timers.refreshCollection)
       {
         clearTimeout(this.timers.refreshCollection);
@@ -198,7 +294,24 @@ define([
 
       delete this.timers.refreshCollection;
 
-      this.promised(this.collection.fetch(options || {reset: true}));
+      if (this.refreshReq)
+      {
+        this.refreshReq.abort();
+      }
+
+      var view = this;
+      var req = this.promised(this.collection.fetch(_.isObject(options) ? options : {reset: true}));
+
+      req.always(function()
+      {
+        if (view.refreshReq === req)
+        {
+          view.refreshReq.abort();
+          view.refreshReq = null;
+        }
+      });
+
+      this.refreshReq = req;
     },
 
     scrollTop: function()
@@ -220,6 +333,17 @@ define([
     getModelFromEvent: function(e)
     {
       return this.collection.get(this.$(e.target).closest('.list-item').attr('data-id'));
+    },
+
+    isNotClickable: function(e)
+    {
+      return !this.el.classList.contains('is-clickable')
+        || e.target.tagName === 'A'
+        || e.target.tagName === 'INPUT'
+        || e.target.tagName === 'BUTTON'
+        || e.target.classList.contains('actions')
+        || window.getSelection().toString() !== ''
+        || (e.target.tagName !== 'TD' && this.$(e.target).closest('a, input, button').length);
     }
 
   });

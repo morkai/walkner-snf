@@ -16,7 +16,9 @@ define([
   return FilteredListPage.extend({
 
     FilterView: TestFilterView,
-    ListView: TestListView
+    ListView: TestListView,
+
+    actions: []
 
   });
 });

@@ -39,7 +39,12 @@ define([
       }
     }),
 
-    columns: ['program', 'startedAt', 'finishedAt', 'duration'],
+    columns: [
+      {id: 'program', className: 'is-min'},
+      {id: 'startedAt', className: 'is-min'},
+      {id: 'finishedAt', className: 'is-min'},
+      {id: 'duration'}
+    ],
 
     serializeRows: function()
     {

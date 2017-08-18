@@ -1,6 +1,4 @@
-// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
-// Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
-// Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
+// Part of <https://miracle.systems/p/walkner-wmes> licensed under <CC BY-NC-SA 4.0>
 
 define([
   'underscore',
@@ -13,7 +11,7 @@ define([
   $,
   user,
   View,
-  pageLayoutTemplate
+  template
 ) {
   'use strict';
 
@@ -21,7 +19,7 @@ define([
 
     pageContainerSelector: '.bd',
 
-    template: pageLayoutTemplate
+    template: template
 
   });
 
@@ -51,10 +49,16 @@ define([
      * @type {jQuery|null}
      */
     this.$actions = null;
+
+    this.onWindowResize = _.debounce(this.onWindowResize.bind(this), 1000 / 15);
+
+    $(window).on('resize', this.onWindowResize);
   };
 
   PageLayout.prototype.destroy = function()
   {
+    $(window).off('resize', this.onWindowResize);
+
     if (this.el.ownerDocument)
     {
       this.el.ownerDocument.body.classList.remove('page');
@@ -67,7 +71,8 @@ define([
   PageLayout.prototype.serialize = function()
   {
     return _.extend(View.prototype.serialize.call(this), {
-      version: this.options.version || '0.0.0'
+      version: this.options.version,
+      changelogUrl: this.options.changelogUrl
     });
   };
 
@@ -100,7 +105,7 @@ define([
 
     if (this.$header)
     {
-      this.$header.hide();
+      this.$header[0].style.display = 'none';
     }
 
     if (this.$breadcrumbs)
@@ -163,10 +168,10 @@ define([
   };
 
   /**
-   * @param {function|object|string|Array.<object|string>} breadcrumbs
+   * @param {function|Object|string|Array.<Object|string>} breadcrumbs
    * @param {string|function} breadcrumbs.label
    * @param {string} [breadcrumbs.href]
-   * @param {object} [context]
+   * @param {Object} [context]
    * @returns {PageLayout}
    */
   PageLayout.prototype.setBreadcrumbs = function(breadcrumbs, context)
@@ -215,7 +220,7 @@ define([
 
   /**
    * @param {function|string|Array.<string>} title
-   * @param {object} [context]
+   * @param {Object} [context]
    * @returns {PageLayout}
    */
   PageLayout.prototype.setTitle = function(title, context)
@@ -243,13 +248,13 @@ define([
   };
 
   /**
-   * @param {function|object|string|Array.<object|string>} actions
+   * @param {function|Object|string|Array.<Object|string>} actions
    * @param {string} actions.label
    * @param {string} [actions.type]
    * @param {string} [actions.icon]
    * @param {string} [actions.href]
    * @param {function} [actions.callback]
-   * @param {object} [context]
+   * @param {Object} [context]
    * @returns {PageLayout}
    */
   PageLayout.prototype.setActions = function(actions, context)
@@ -274,7 +279,7 @@ define([
       actions = [actions];
     }
 
-    this.model.actions = actions.map(this.prepareAction.bind(this));
+    this.model.actions = actions.map(this.prepareAction.bind(this, context));
 
     if (this.$actions)
     {
@@ -286,15 +291,31 @@ define([
 
   /**
    * @private
-   * @param action
+   */
+  PageLayout.prototype.onWindowResize = function()
+  {
+    this.adjustBreadcrumbsPosition();
+  };
+
+  /**
+   * @private
+   * @param {*} context
+   * @param {Object} action
    * @returns {*}
    */
-  PageLayout.prototype.prepareAction = function(action)
+  PageLayout.prototype.prepareAction = function(context, action)
   {
     if (action.prepared)
     {
       return action;
     }
+
+    if (!action.id)
+    {
+      action.id = '';
+    }
+
+    action.idPrefix = context && context.idPrefix || '';
 
     if (typeof action.href === 'string')
     {
@@ -315,13 +336,10 @@ define([
       action.icon = 'fa-' + action.icon.split(' ').join(' fa-');
     }
 
-    if (typeof action.className !== 'string')
+    if (!action.className)
     {
       action.className = '';
     }
-
-    action.className = 'btn btn-' + (action.type || 'default')
-      + ' ' + action.className;
 
     action.prepared = true;
 
@@ -342,19 +360,35 @@ define([
 
       html += '<li>';
 
-      if (i === l - 1 || !breadcrumb.href)
+      if (!breadcrumb.href)
       {
         html += breadcrumb.label;
       }
       else
       {
-        html += '<a href="' + breadcrumb.href + '">'
-          + breadcrumb.label + '</a>';
+        html += '<a href="' + breadcrumb.href + '">' + breadcrumb.label + '</a>';
       }
     }
 
     this.$breadcrumbs.html(html);
-    this.$header.show();
+    this.$header[0].style.display = '';
+
+    this.adjustBreadcrumbsPosition();
+
+    this.trigger('afterRender:breadcrumbs');
+  };
+
+  /**
+   * @private
+   */
+  PageLayout.prototype.adjustBreadcrumbsPosition = function()
+  {
+    if (window.innerWidth < 768)
+    {
+      var top = (this.$('.navbar-header').outerHeight() - this.$breadcrumbs.outerHeight()) / 2;
+
+      this.$breadcrumbs.css('top', top + 'px');
+    }
   };
 
   /**
@@ -370,17 +404,18 @@ define([
     for (var i = 0, l = actions.length; i < l; ++i)
     {
       var action = actions[i];
+      var privileges = action.privileges;
 
-      if (action.privileges)
+      if (privileges)
       {
-        if (_.isFunction(action.privileges))
+        if (_.isFunction(privileges))
         {
-          if (!action.privileges())
+          if (!privileges())
           {
             continue;
           }
         }
-        else if (!user.isAllowedTo(action.privileges))
+        else if (!user.isAllowedTo(privileges))
         {
           continue;
         }
@@ -404,13 +439,21 @@ define([
       }
       else
       {
+        var className = 'btn btn-' + (action.type || 'default') + ' ' + _.result(action, 'className');
+        var id = _.result(action, 'id');
+
+        if (id && id.charAt(0) === '-')
+        {
+          id = action.idPrefix + id;
+        }
+
         if (action.href === null)
         {
-          html += '<button class="' + action.className + '">';
+          html += '<button id="' + id + '" class="' + className + '">';
         }
         else
         {
-          html += '<a class="' + action.className + '" href="' + action.href + '">';
+          html += '<a id="' + id + '" class="' + className + '" href="' + action.href + '">';
         }
 
         if (typeof action.icon === 'string')
@@ -418,7 +461,12 @@ define([
           html += '<i class="fa ' + action.icon + '"></i>';
         }
 
-        html += '<span>' + action.label + '</span>' + (action.href ? '</a>' : '</button>');
+        if (action.label)
+        {
+          html += '<span>' + action.label + '</span>';
+        }
+
+        html += action.href ? '</a>' : '</button>';
       }
     }
 
@@ -436,7 +484,9 @@ define([
       afterRender[i]($actions.filter('li[data-index="' + i + '"]'), actions[i]);
     });
 
-    this.$header.show();
+    this.$header[0].style.display = '';
+
+    this.trigger('afterRender:actions');
   };
 
   /**

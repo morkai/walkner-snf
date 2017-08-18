@@ -1,21 +1,31 @@
-// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
-// Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
-// Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
+// Part of <https://miracle.systems/p/walkner-wmes> licensed under <CC BY-NC-SA 4.0>
 
 define([
   'underscore',
   'app/i18n',
   'app/viewport',
   '../views/ActionFormView',
-  'app/core/templates/jumpAction'
+  'app/core/templates/jumpAction',
+  'app/core/templates/exportAction'
 ], function(
   _,
   t,
   viewport,
   ActionFormView,
-  jumpActionTemplate
+  jumpActionTemplate,
+  exportActionTemplate
 ) {
   'use strict';
+
+  function resolvePrivileges(modelOrCollection, privilege, privilegeSuffix)
+  {
+    if (privilege === false)
+    {
+      return null;
+    }
+
+    return privilege || (modelOrCollection.getPrivilegePrefix() + ':' + (privilegeSuffix || 'MANAGE'));
+  }
 
   function getTotalCount(collection)
   {
@@ -87,7 +97,7 @@ define([
         label: t.bound(collection.getNlsDomain(), 'PAGE_ACTION:add'),
         icon: 'plus',
         href: collection.genClientUrl('add'),
-        privileges: privilege || (collection.getPrivilegePrefix() + ':MANAGE')
+        privileges: resolvePrivileges(collection, privilege)
       };
     },
     edit: function(model, privilege)
@@ -96,54 +106,84 @@ define([
         label: t.bound(model.getNlsDomain(), 'PAGE_ACTION:edit'),
         icon: 'edit',
         href: model.genClientUrl('edit'),
-        privileges: privilege || (model.getPrivilegePrefix() + ':MANAGE')
+        privileges: resolvePrivileges(model, privilege)
       };
     },
-    delete: function(model, privilege)
+    delete: function(model, privilege, options)
     {
+      if (!options)
+      {
+        options = {};
+      }
+
       return {
         label: t.bound(model.getNlsDomain(), 'PAGE_ACTION:delete'),
         icon: 'times',
         href: model.genClientUrl('delete'),
-        privileges: privilege || (model.getPrivilegePrefix() + ':MANAGE'),
+        privileges: resolvePrivileges(model, privilege),
         callback: function(e)
         {
-          if (e.button === 0)
+          if (!e || e.button === 0)
           {
-            e.preventDefault();
+            if (e)
+            {
+              e.preventDefault();
+            }
 
-            ActionFormView.showDeleteDialog({model: model});
+            ActionFormView.showDeleteDialog(_.defaults({model: model}, options));
           }
         }
       };
     },
     export: function(layout, page, collection, privilege)
     {
-      page.listenTo(collection, 'sync', function()
-      {
-        var totalCount = getTotalCount(collection);
-        var $export = layout.$('.page-actions .export')
-          .attr('href', _.result(collection, 'url') + ';export?' + collection.rqlQuery)
-          .toggleClass('disabled', !totalCount)
-          .removeClass('btn-default btn-warning');
+      var options = {
+        layout: layout,
+        page: page,
+        collection: collection,
+        privilege: privilege
+      };
 
-        if (totalCount >= 10000)
+      if (arguments.length === 1)
+      {
+        options = layout;
+      }
+
+      var template = function()
+      {
+        var totalCount = getTotalCount(options.collection);
+        var url = _.result(options.collection, 'url') + ';export.${format}?' + options.collection.rqlQuery;
+        var formats = [
+          {
+            type: 'csv',
+            href: url.replace('${format}', 'csv')
+          }
+        ];
+
+        if (window.XLSX_EXPORT)
         {
-          $export.removeClass('btn-default').addClass('btn-warning');
+          formats.push({
+            type: 'xlsx',
+            href: url.replace('${format}', 'xlsx')
+          });
         }
-        else
-        {
-          $export.removeClass('btn-warning').addClass('btn-default');
-        }
+
+        return exportActionTemplate({
+          type: totalCount >= 30000 ? 'danger' : totalCount >= 15000 ? 'warning' : 'default',
+          formats: formats,
+          disabled: options.collection.length === 0,
+          label: options.label || t(options.collection.getNlsDomain(), 'PAGE_ACTION:export')
+        });
+      };
+
+      options.page.listenTo(options.collection, 'sync', function()
+      {
+        options.layout.$('.page-actions-export').replaceWith(template());
       });
 
       return {
-        label: t.bound(collection.getNlsDomain(), 'PAGE_ACTION:export'),
-        icon: 'download',
-        type: getTotalCount(collection) >= 10000 ? 'warning' : 'default',
-        href: _.result(collection, 'url') + ';export?' + collection.rqlQuery,
-        privileges: privilege || (collection.getPrivilegePrefix() + ':VIEW'),
-        className: 'export' + (collection.length ? '' : ' disabled')
+        template: template,
+        privileges: resolvePrivileges(options.collection, options.privilege, 'VIEW')
       };
     },
     jump: function(page, collection)

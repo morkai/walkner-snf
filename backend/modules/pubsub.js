@@ -1,21 +1,20 @@
-// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
-// Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
-// Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
+// Part of <https://miracle.systems/p/walkner-wmes> licensed under <CC BY-NC-SA 4.0>
 
 'use strict';
 
-var lodash = require('lodash');
-var pubsub = require('h5.pubsub');
+const _ = require('lodash');
+const pubsub = require('h5.pubsub');
 
 exports.DEFAULT_CONFIG = {
   sioId: 'sio',
   statsPublishInterval: 1000,
+  republishMaxDelay: 3,
   republishTopics: []
 };
 
 exports.start = function startPubsubModule(app, module)
 {
-  var stats = {
+  const stats = {
     publishedMessages: 0,
     receivedMessages: 0,
     sentMessages: 0,
@@ -29,34 +28,37 @@ exports.start = function startPubsubModule(app, module)
   /**
    * @type {number}
    */
-  var nextMessageId = 0;
+  let nextMessageId = 0;
 
   /**
    * @type {object.<string, Array>}
    */
-  var idToMessageMap = {};
+  let idToMessageMap = {};
 
   /**
    * @type {object.<string, object.<string, boolean>>}
    */
-  var socketIdToMessagesMap = {};
-
-  /**
-   * @type {boolean}
-   */
-  var sendingScheduled = false;
+  let socketIdToMessagesMap = {};
 
   /**
    * @type {RegExp}
    */
-  var invalidTopicRegExp = /^(\s*|\s*\.\s*)+$/;
+  const invalidTopicRegExp = /^(\s*|\s*\.\s*)+$/;
+
+  /**
+   * @type {function()}
+   */
+  const scheduleSendMessages = _.debounce(sendMessages, module.config.republishMaxDelay, {
+    trailing: true,
+    leading: false
+  });
 
   /**
    * @type {MessageBroker}
    */
-  module = app[module.name] = lodash.merge(new pubsub.MessageBroker(), module);
+  module = app[module.name] = _.assign(new pubsub.MessageBroker(), module);
 
-  module.config.republishTopics.forEach(function(topic)
+  _.forEach(module.config.republishTopics, function(topic)
   {
     app.broker.subscribe(topic, function(message, topic)
     {
@@ -66,6 +68,11 @@ exports.start = function startPubsubModule(app, module)
 
   module.on('message', function(topic, message, meta)
   {
+    if (stats.currentSubscriptions === 0)
+    {
+      return;
+    }
+
     ++stats.publishedMessages;
 
     if (typeof meta.messageId === 'undefined')
@@ -73,7 +80,14 @@ exports.start = function startPubsubModule(app, module)
       meta.messageId = getNextMessageId();
     }
 
-    idToMessageMap[meta.messageId] = [topic, message];
+    if (typeof meta.json === 'undefined')
+    {
+      meta.json = false;
+    }
+
+    idToMessageMap[meta.messageId] = [topic, message, meta];
+
+    scheduleSendMessages();
   });
 
   module.on('subscribe', function()
@@ -106,7 +120,7 @@ exports.start = function startPubsubModule(app, module)
 
   function publishPubsubStats()
   {
-    var interval = module.config.statsPublishInterval;
+    const interval = module.config.statsPublishInterval;
 
     if (interval <= 0)
     {
@@ -120,11 +134,12 @@ exports.start = function startPubsubModule(app, module)
 
   function onSocketDisconnect()
   {
-    /*jshint validthis:true*/
+    const socket = this;
 
-    var socket = this;
+    delete socketIdToMessagesMap[socket.id];
 
     socket.pubsub.destroy();
+    socket.pubsub.onSubscriptionMessage = null;
     socket.pubsub = null;
   }
 
@@ -134,27 +149,25 @@ exports.start = function startPubsubModule(app, module)
    */
   function onSocketSubscribe(topics, cb)
   {
-    /*jshint validthis:true*/
-
-    var hasCb = typeof cb === 'function';
+    const hasCb = typeof cb === 'function';
 
     if (!Array.isArray(topics))
     {
       if (hasCb)
       {
-        cb("First argument must be an array of topics.");
+        cb('First argument must be an array of topics.');
       }
 
       return;
     }
 
-    var socket = this;
-    var pubsub = socket.pubsub;
-    var notAllowedTopics = [];
+    const socket = this;
+    const pubsub = socket.pubsub;
+    const notAllowedTopics = [];
 
-    for (var i = 0, l = topics.length; i < l; ++i)
+    for (let i = 0, l = topics.length; i < l; ++i)
     {
-      var topic = topics[i];
+      const topic = topics[i];
 
       if (isValidTopic(topic) && isSocketAllowedToSubscribe(socket, topic))
       {
@@ -177,19 +190,17 @@ exports.start = function startPubsubModule(app, module)
    */
   function onSocketUnsubscribe(topics)
   {
-    /*jshint validthis:true*/
-
     if (!Array.isArray(topics))
     {
       return;
     }
 
-    var socket = this;
-    var pubsub = socket.pubsub;
+    const socket = this;
+    const pubsub = socket.pubsub;
 
-    for (var i = 0, l = topics.length; i < l; ++i)
+    for (let i = 0, l = topics.length; i < l; ++i)
     {
-      var topic = topics[i];
+      const topic = topics[i];
 
       if (isValidTopic(topic))
       {
@@ -201,14 +212,12 @@ exports.start = function startPubsubModule(app, module)
   /**
    * @param {string} topic
    * @param {*} message
-   * @param {object} meta
+   * @param {Object} meta
    * @param {function} [cb]
    */
   function onSocketPublish(topic, message, meta, cb)
   {
-    /*jshint validthis:true*/
-
-    var socket = this;
+    const socket = this;
 
     ++stats.receivedMessages;
 
@@ -226,7 +235,7 @@ exports.start = function startPubsubModule(app, module)
    * @param {Socket} socket
    * @param {*} message
    * @param {string} topic
-   * @param {object} meta
+   * @param {Object} meta
    */
   function onSubscriptionMessage(socket, message, topic, meta)
   {
@@ -237,14 +246,14 @@ exports.start = function startPubsubModule(app, module)
       return;
     }
 
-    var socketMessagesMap = socketIdToMessagesMap[socket.id];
+    let socketMessagesMap = socketIdToMessagesMap[socket.id];
 
-    if (typeof socketMessagesMap === 'undefined')
+    if (!socketMessagesMap)
     {
       socketMessagesMap = socketIdToMessagesMap[socket.id] = {};
     }
 
-    if (meta.messageId in socketMessagesMap)
+    if (socketMessagesMap[meta.messageId])
     {
       ++stats.ignoredDuplications;
 
@@ -252,45 +261,45 @@ exports.start = function startPubsubModule(app, module)
     }
 
     socketMessagesMap[meta.messageId] = true;
-
-    scheduleSendMessages();
-  }
-
-  function scheduleSendMessages()
-  {
-    if (!sendingScheduled)
-    {
-      sendingScheduled = true;
-
-      process.nextTick(sendMessages);
-    }
   }
 
   function sendMessages()
   {
-    /*jshint forin:false*/
+    const sockets = app[module.config.sioId].sockets.connected;
+    const socketIds = Object.keys(socketIdToMessagesMap);
 
-    var sockets =  app[module.config.sioId].sockets.sockets;
-    var socketIds = Object.keys(socketIdToMessagesMap);
-
-    for (var i = 0, l = socketIds.length; i < l; ++i)
+    for (let i = 0, l = socketIds.length; i < l; ++i)
     {
-      var socketId = socketIds[i];
-      var socket = sockets[socketId];
-      var socketMessagesMap = socketIdToMessagesMap[socketId];
-      var messageIds = Object.keys(socketMessagesMap);
+      const socketId = socketIds[i];
+      const socket = sockets[socketId];
 
-      for (var j = 0, m = messageIds.length; j < m; ++j)
+      if (socket === undefined)
       {
-        var message = idToMessageMap[messageIds[j]];
+        continue;
+      }
 
-        socket.emit('pubsub.message', message[0], message[1]);
+      const socketMessagesMap = socketIdToMessagesMap[socketId];
+      const messageIds = Object.keys(socketMessagesMap);
+
+      for (let j = 0, m = messageIds.length; j < m; ++j)
+      {
+        const message = idToMessageMap[messageIds[j]];
+        const topic = message[0];
+        const payload = message[1];
+        const meta = message[2];
+
+        if (!meta.json)
+        {
+          meta.payload = JSON.stringify(meta.payload);
+          meta.json = true;
+        }
+
+        socket.emit('pubsub.message', topic, payload, meta);
 
         ++stats.sentMessages;
       }
     }
 
-    sendingScheduled = false;
     socketIdToMessagesMap = {};
     idToMessageMap = {};
   }
@@ -311,9 +320,9 @@ exports.start = function startPubsubModule(app, module)
    * @param {string} topic
    * @returns {boolean}
    */
-  function isSocketAllowedToSubscribe(socket, topic)
+  function isSocketAllowedToSubscribe(socket, topic) // eslint-disable-line no-unused-vars
   {
-    return socket && topic;
+    return true;
   }
 
   /**

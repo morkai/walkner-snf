@@ -4,10 +4,11 @@
 
 'use strict';
 
+var os = require('os');
 var fs = require('fs');
 var path = require('path');
-var lodash = require('lodash');
-var multipart = require('express').multipart;
+var _ = require('lodash');
+var multer = require('multer');
 var step = require('h5.step');
 
 module.exports = function setUpProgramsRoutes(app, programsModule)
@@ -29,7 +30,18 @@ module.exports = function setUpProgramsRoutes(app, programsModule)
 
   express.delete('/programs/:id', canManage, express.crud.deleteRoute.bind(null, app, Program));
 
-  express.post('/programs/:program/images', canManage, multipart({limit: '5mb'}), uploadImagesRoute);
+  express.post(
+    '/programs/:program/images',
+    canManage,
+    multer({
+      dest: os.tmpdir(),
+      limits: {
+        files: 10,
+        fileSize: 5 * 1024 * 1024
+      }
+    }).any(),
+    uploadImagesRoute
+  );
 
   express.get('/programs/:program/images/:image', sendImageRoute);
 
@@ -39,21 +51,25 @@ module.exports = function setUpProgramsRoutes(app, programsModule)
 
   function uploadImagesRoute(req, res, next)
   {
-    var imageFiles = lodash.filter(req.files, function(file)
+    var imageFiles = _.filter(req.files, function(file)
     {
-      return /^[A-Z0-9]+$/.test(file.fieldName) && /^image\/(jpeg|gif|png)$/.test(file.type);
+      return /^[A-Z0-9]+$/.test(file.fieldname) && /^image\/(jpeg|gif|png)$/.test(file.mimetype);
     });
 
     if (!imageFiles.length)
     {
-      return res.send(400);
+      removeFiles(req.files);
+
+      return res.sendStatus(400);
     }
 
     var program = programsModule.modelsById[req.params.program];
 
     if (!program)
     {
-      return res.send(404);
+      removeFiles(req.files);
+
+      return res.sendStatus(404);
     }
 
     step(
@@ -64,16 +80,16 @@ module.exports = function setUpProgramsRoutes(app, programsModule)
         for (var i = 0; i < imageFiles.length; ++i)
         {
           var imageFile = imageFiles[i];
-          var imageType = resolveImageType(imageFile.type);
-          var newFileName = imageFile.fieldName + '.' + imageType;
+          var imageType = resolveImageType(imageFile.mimetype);
+          var newFileName = imageFile.fieldname + '.' + imageType;
           var newFilePath = path.join(imagesPath, newFileName);
 
           fs.rename(imageFile.path, newFilePath, this.parallel());
 
           var image = {
-            _id: imageFile.fieldName,
+            _id: imageFile.fieldname,
             type: imageType,
-            label: imageFile.originalFilename.replace(/\..*?$/, '')
+            label: imageFile.originalname.replace(/\..*?$/, '')
           };
 
           program.images.push(image);
@@ -96,7 +112,7 @@ module.exports = function setUpProgramsRoutes(app, programsModule)
           return next(err);
         }
 
-        res.send(204);
+        res.sendStatus(204);
 
         removeFiles(req.files);
 
@@ -127,7 +143,7 @@ module.exports = function setUpProgramsRoutes(app, programsModule)
           return this.skip(err);
         }
 
-        this.image = lodash.find(program.images, function(image)
+        this.image = _.find(program.images, function(image)
         {
           return image._id === imageId;
         });
@@ -178,7 +194,7 @@ module.exports = function setUpProgramsRoutes(app, programsModule)
           return this.skip(err);
         }
 
-        var imageIndex = lodash.findIndex(program.images, function(image) { return image._id === imageId; });
+        var imageIndex = _.findIndex(program.images, function(image) { return image._id === imageId; });
 
         if (imageIndex === -1)
         {
@@ -247,19 +263,9 @@ module.exports = function setUpProgramsRoutes(app, programsModule)
 
   function removeFiles(files)
   {
-    Object.keys(files).forEach(function(key)
+    _.forEach(files, function(file)
     {
-      if (Array.isArray(files[key]))
-      {
-        files[key].forEach(function(file)
-        {
-          fs.unlink(file.path, function() {});
-        });
-      }
-      else
-      {
-        fs.unlink(files[key].path, function() {});
-      }
+      fs.unlink(file.path, function() {});
     });
   }
 };

@@ -1,116 +1,209 @@
-// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
-// Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
-// Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
+// Part of <https://miracle.systems/p/walkner-snf> licensed under <CC BY-NC-SA 4.0>
 
 'use strict';
 
-var path = require('path');
-var lodash = require('lodash');
-var express = require('express');
-var bodyParser = require('body-parser');
-var ejsAmd = require('ejs-amd');
-var messageFormatAmd = require('messageformat-amd');
-var MongoStore = require('./MongoStore')(express.session.Store);
-var wrapAmd = require('./wrapAmd');
-var rqlMiddleware = require('./rqlMiddleware');
-var errorHandlerMiddleware = require('./errorHandlerMiddleware');
-var crud = require('./crud');
+const path = require('path');
+const _ = require('lodash');
+const step = require('h5.step');
+const express = require('express');
+const ExpressView = require('express/lib/view');
+const methods = require('methods');
+const ejsAmd = require('ejs-amd');
+const messageFormatAmd = require('messageformat-amd');
+const wrapAmd = require('./wrapAmd');
+const rqlMiddleware = require('./rqlMiddleware');
+const errorHandlerMiddleware = require('./errorHandlerMiddleware');
+const crud = require('./crud');
+const monkeyPatch = require('./monkeyPatch');
+let cookieParser = null;
+let bodyParser = null;
+let session = null;
+let pmx = null;
+let MongoStore = null;
+
+try { cookieParser = require('cookie-parser'); }
+catch (err) { console.log('Failed to load cookie-parser: %s', err.message); }
+
+try { bodyParser = require('body-parser'); }
+catch (err) { console.log('Failed to load body-parser: %s', err.message); }
+
+try { require('iconv-lite').encodingExists('UTF-8'); }
+catch (err) { console.log('Failed to load iconv-lite: %s', err.message); }
+
+try { session = require('express-session'); }
+catch (err) { console.log('Failed to load express-session: %s', err.message); }
+
+try { pmx = require('pmx'); }
+catch (err) { console.log('Failed to load pmx: %s', err.message); }
+
+try { MongoStore = require('./MongoStore'); }
+catch (err) { console.log('Failed to load MongoStore %s', err.message); }
 
 exports.DEFAULT_CONFIG = {
   mongooseId: 'mongoose',
   staticPath: 'public',
   staticBuildPath: 'public-build',
-  sessionCookieKey: 'walkner.sid',
+  sessionCookieKey: 'express.sid',
   sessionCookie: {
     maxAge: null,
     path: '/',
     httpOnly: true
   },
+  sessionStore: {},
   cookieSecret: null,
   ejsAmdHelpers: {},
   title: 'express',
   jsonBody: {},
   textBody: {},
-  urlencodedBody: {}
+  urlencodedBody: {},
+  ignoredErrorCodes: ['ECONNRESET', 'ECONNABORTED'],
+  jsonToXlsxExe: null,
+  routes: (app, expressModule) => {} // eslint-disable-line no-unused-vars
 };
 
-exports.start = function startExpressModule(app, module, done)
+exports.start = function startExpressModule(app, expressModule, done)
 {
-  var mongoose = app[module.config.mongooseId];
+  const config = expressModule.config;
+  const mongoose = app[config.mongooseId];
+  const development = app.options.env === 'development';
+  const staticPath = config[development ? 'staticPath' : 'staticBuildPath'];
+  const expressApp = express();
 
-  module = app[module.name] = lodash.merge(express(), module);
+  expressModule.staticPath = staticPath;
 
-  module.createHttpError = function(message, statusCode)
+  expressModule.app = expressApp;
+
+  expressModule.crud = crud;
+
+  expressModule.sessionStore = mongoose
+    ? new MongoStore(mongoose.connection.db, config.sessionStore)
+    : session ? new session.MemoryStore() : null;
+
+  expressModule.router = express.Router(); // eslint-disable-line new-cap
+
+  expressModule.createHttpError = function(message, statusCode)
   {
-    var httpError = new Error(message);
+    const httpError = new Error(message);
     httpError.status = statusCode || 400;
 
     return httpError;
   };
 
-  module.crud = crud;
-
-  var production = app.options.env === 'production';
-  var staticPath = module.config[production ? 'staticBuildPath' : 'staticPath'];
-
-  module.set('trust proxy', true);
-  module.set('views', app.pathTo('templates'));
-  module.set('view engine', 'ejs');
-  module.set('static path', staticPath);
-
-  app.broker.publish('express.beforeMiddleware', {
-    module: module,
-    express: express
+  _.forEach(methods, function(method)
+  {
+    expressModule[method] = function()
+    {
+      return expressModule.router[method].apply(expressModule.router, arguments);
+    };
   });
 
-  if (!production)
+  expressApp.set('trust proxy', true);
+  expressApp.set('view engine', 'ejs');
+  expressApp.set('views', app.pathTo('templates'));
+
+  if (development)
+  {
+    expressApp.set('json spaces', 2);
+  }
+
+  expressApp.use(function(req, res, next)
+  {
+    req.isFrontendRequest = /^\/(app|assets|vendor)/.test(req.url) || /\.(js|css|png|ico)$/.test(req.url);
+
+    next();
+  });
+
+  app.broker.publish('express.beforeMiddleware', {
+    module: expressModule
+  });
+
+  if (development)
   {
     setUpDevMiddleware(staticPath);
   }
 
-  if (module.config.cookieSecret)
+  if (config.cookieSecret && cookieParser)
   {
-    module.use(express.cookieParser(module.config.cookieSecret));
+    expressApp.use(cookieParser(config.cookieSecret));
   }
 
-  if (mongoose)
+  if (bodyParser)
   {
-    module.sessionStore = new MongoStore(mongoose.connection.db);
-
-    module.use(express.session({
-      store: module.sessionStore,
-      key: module.config.sessionCookieKey,
-      cookie: module.config.sessionCookie,
-      secret: module.config.cookieSecret
-    }));
+    expressApp.use(bodyParser.json(config.jsonBody));
+    expressApp.use(bodyParser.urlencoded(_.assign({extended: false}, config.urlencodedBody)));
+    expressApp.use(bodyParser.text(_.defaults({type: 'text/*'}, config.textBody)));
   }
 
-  module.use(bodyParser.json(module.config.jsonBody));
-  module.use(bodyParser.urlencoded(lodash.extend({extended: false}, module.config.urlencodedBody)));
-  module.use(bodyParser.text(lodash.defaults({type: 'text/*'}, module.config.textBody)));
-  module.use(rqlMiddleware());
+  expressApp.use(rqlMiddleware());
+
+  if (expressModule.sessionStore)
+  {
+    const sessionMiddleware = session({
+      store: expressModule.sessionStore,
+      key: config.sessionCookieKey,
+      cookie: config.sessionCookie,
+      secret: config.cookieSecret,
+      saveUninitialized: true,
+      resave: false,
+      rolling: true
+    });
+
+    expressApp.use(function checkSessionMiddleware(req, res, next)
+    {
+      if (req.isFrontendRequest)
+      {
+        next();
+      }
+      else
+      {
+        sessionMiddleware(req, res, next);
+      }
+    });
+  }
 
   app.broker.publish('express.beforeRouter', {
-    module: module,
-    express: express
+    module: expressModule
   });
 
-  module.use(module.router);
-  module.use(express.static(staticPath));
+  expressApp.use('/', expressModule.router);
 
-  var errorHandlerOptions = {
-    title: module.config.title,
-    basePath: path.resolve(__dirname, '../../../')
-  };
+  if (typeof expressModule.config.routes === 'function')
+  {
+    expressModule.config.routes(app, expressModule);
+  }
 
-  module.use(errorHandlerMiddleware(module, errorHandlerOptions));
+  step(
+    function()
+    {
+      app.loadDir(app.pathTo('routes'), [app, expressModule], this.next());
+    },
+    function(err)
+    {
+      if (err)
+      {
+        return this.skip(err);
+      }
 
-  app.broker.publish('express.beforeRoutes', {
-    module: module,
-    express: express
-  });
+      expressApp.use(express.static(staticPath));
 
-  app.loadDir(app.pathTo('routes'), [app, module], done);
+      if (pmx !== null)
+      {
+        expressApp.use(pmx.expressErrorHandler());
+      }
+
+      const errorHandlerOptions = {
+        title: config.title,
+        basePath: path.resolve(__dirname, '../../../')
+      };
+
+      expressApp.use(errorHandlerMiddleware(expressModule, errorHandlerOptions));
+
+      monkeyPatch(app, expressModule, {
+        View: ExpressView
+      });
+    },
+    done
+  );
 
   /**
    * @private
@@ -118,16 +211,16 @@ exports.start = function startExpressModule(app, module, done)
    */
   function setUpDevMiddleware(staticPath)
   {
-    ejsAmd.wrapAmd = wrapEjsAmd.bind(null, module.config.ejsAmdHelpers);
+    ejsAmd.wrapAmd = wrapEjsAmd.bind(null, config.ejsAmdHelpers);
 
-    var templateUrlRe = /^\/app\/([a-zA-Z0-9\-]+)\/templates\/(.*?)\.js$/;
-    var ejsAmdMiddleware = ejsAmd.middleware({
+    const templateUrlRe = /^\/app\/([a-zA-Z0-9\-]+)\/templates\/(.*?)\.js$/;
+    const ejsAmdMiddleware = ejsAmd.middleware({
       views: staticPath
     });
 
-    module.use(function(req, res, next)
+    expressApp.use(function runEjsAmdMiddleware(req, res, next)
     {
-      var matches = req.url.match(templateUrlRe);
+      const matches = req.url.match(templateUrlRe);
 
       if (matches === null)
       {
@@ -137,13 +230,13 @@ exports.start = function startExpressModule(app, module, done)
       ejsAmdMiddleware(req, res, next);
     });
 
-    module.use('/app/nls/locale/', messageFormatAmd.localeMiddleware());
+    expressApp.use('/app/nls/locale/', messageFormatAmd.localeMiddleware());
 
-    module.use('/app/nls/', messageFormatAmd.nlsMiddleware({
+    expressApp.use('/app/nls/', messageFormatAmd.nlsMiddleware({
       localeModulePrefix: 'app/nls/locale/',
       jsonPath: function(locale, nlsName)
       {
-        var jsonFile = (locale === null ? 'root' : locale) + '.json';
+        const jsonFile = (locale === null ? 'root' : locale) + '.json';
 
         return path.join(staticPath, 'app', nlsName, 'nls', jsonFile);
       }
@@ -152,7 +245,7 @@ exports.start = function startExpressModule(app, module, done)
 
   /**
    * @private
-   * @param {object} ejsAmdHelpers
+   * @param {Object} ejsAmdHelpers
    * @param {string} js
    * @returns {string}
    */

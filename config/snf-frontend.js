@@ -1,5 +1,7 @@
 'use strict';
 
+const mongodb = require('./snf-mongodb');
+
 exports.id = 'snf-frontend';
 
 exports.modules = [
@@ -66,6 +68,14 @@ exports.httpServer = {
   port: 6080
 };
 
+exports.sio = {
+  httpServerIds: ['httpServer'],
+  socketIo: {
+    pingInterval: 10000,
+    pingTimeout: 5000
+  }
+};
+
 exports.pubsub = {
   statsPublishInterval: 60000,
   republishTopics: [
@@ -78,12 +88,10 @@ exports.pubsub = {
 };
 
 exports.mongoose = {
+  uri: mongodb.uri,
+  options: mongodb,
   maxConnectTries: 10,
   connectAttemptDelay: 500,
-  uri: require('./snf-mongodb').uri,
-  options: {
-    server: {poolSize: 5}
-  },
   models: ['event', 'user', 'test', 'program']
 };
 
@@ -94,13 +102,19 @@ exports.express = {
   sessionCookie: {
     httpOnly: true,
     path: '/',
-    maxAge: null
+    maxAge: 3600 * 24 * 30 * 1000
+  },
+  sessionStore: {
+    touchInterval: 3600 * 8 * 1000,
+    touchChance: 0
   },
   cookieSecret: '1ee7\\/\\/snf',
   ejsAmdHelpers: {
     t: 'app/i18n',
     time: 'app/time'
-  }
+  },
+  textBody: {limit: '15mb'},
+  jsonBody: {limit: '4mb'}
 };
 
 exports.user = {

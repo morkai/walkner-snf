@@ -1,6 +1,4 @@
-// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
-// Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
-// Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
+// Part of <https://miracle.systems/p/walkner-wmes> licensed under <CC BY-NC-SA 4.0>
 
 define([
   'h5.rql/index',
@@ -43,7 +41,7 @@ define([
     this.fragment = urlParts[3] || '';
 
     /**
-     * @type {object}
+     * @type {Object}
      */
     this.params = {};
 
@@ -53,14 +51,11 @@ define([
     this.query = {};
 
     /**
-     * @type {object}
+     * @type {Object}
      */
     this.rql = {};
 
-    if (this.queryString !== '')
-    {
-      this.defineGetters();
-    }
+    this.defineGetters();
   }
 
   Request.prototype.defineGetters = function()

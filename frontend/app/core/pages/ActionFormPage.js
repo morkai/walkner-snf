@@ -1,19 +1,19 @@
-// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
-// Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
-// Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
+// Part of <https://miracle.systems/p/walkner-wmes> licensed under <CC BY-NC-SA 4.0>
 
 define([
   'underscore',
   'app/i18n',
   '../util/bindLoadingMessage',
   '../View',
-  '../views/ActionFormView'
+  '../views/ActionFormView',
+  './createPageBreadcrumbs'
 ], function(
   _,
   t,
   bindLoadingMessage,
   View,
-  ActionFormView
+  ActionFormView,
+  createPageBreadcrumbs
 ) {
   'use strict';
 
@@ -21,19 +21,17 @@ define([
 
     layoutName: 'page',
 
+    baseBreadcrumb: false,
+
     breadcrumbs: function()
     {
-      return [
-        {
-          label: t.bound(this.model.getNlsDomain(), 'BREADCRUMBS:browse'),
-          href: this.model.genClientUrl('base')
-        },
+      return createPageBreadcrumbs(this, [
         {
           label: this.model.getLabel(),
           href: this.model.genClientUrl()
         },
-        t.bound(this.model.getNlsDomain(), 'BREADCRUMBS:ACTION_FORM:' + this.options.actionKey)
-      ];
+        ':ACTION_FORM:' + this.options.actionKey
+      ]);
     },
 
     initialize: function()

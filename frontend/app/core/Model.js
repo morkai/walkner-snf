@@ -1,6 +1,4 @@
-// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
-// Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
-// Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
+// Part of <https://miracle.systems/p/walkner-wmes> licensed under <CC BY-NC-SA 4.0>
 
 define([
   'backbone'
@@ -29,7 +27,7 @@ define([
     {
       if (this.clientUrlRoot === null)
       {
-        throw new Error("`clientUrlRoot` was not specified");
+        throw new Error('`clientUrlRoot` was not specified');
       }
 
       var url = this.clientUrlRoot;
@@ -81,6 +79,47 @@ define([
     getLabel: function()
     {
       return String(this.get(this.getLabelAttribute()));
+    },
+
+    sync: function(method, model, options)
+    {
+      var read = method === 'read';
+
+      if (read)
+      {
+        this.cancelCurrentReadRequest(model);
+      }
+
+      var req = Backbone.Model.prototype.sync.call(this, method, model, options);
+
+      if (read)
+      {
+        this.setUpCurrentReadRequest(model, req);
+      }
+
+      return req;
+    },
+
+    cancelCurrentReadRequest: function(model)
+    {
+      if (model.currentReadRequest)
+      {
+        model.currentReadRequest.abort();
+        model.currentReadRequest = null;
+      }
+    },
+
+    setUpCurrentReadRequest: function(model, req)
+    {
+      req.always(function()
+      {
+        if (model.currentReadRequest === req)
+        {
+          model.currentReadRequest = null;
+        }
+      });
+
+      model.currentReadRequest = req;
     }
 
   });

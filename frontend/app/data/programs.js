@@ -32,7 +32,7 @@ define([
     switch (event)
     {
       case 'added':
-        images = images.concat(message.images);
+        images = [].concat(images, message.images);
         break;
 
       case 'deleted':
@@ -54,7 +54,7 @@ define([
         }
         break;
     }
-
+console.log(event, images);
     program.set('images', images, {action: event, message: message});
   });
 

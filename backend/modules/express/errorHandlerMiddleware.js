@@ -1,10 +1,10 @@
-// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
-// Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
-// Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
+// Part of <https://miracle.systems/p/walkner-wmes> licensed under <CC BY-NC-SA 4.0>
 
 'use strict';
 
-module.exports = function createErrorHandlerMiddleware(appModule, options)
+const _ = require('lodash');
+
+module.exports = function createErrorHandlerMiddleware(expressModule, options)
 {
   if (!options)
   {
@@ -12,9 +12,12 @@ module.exports = function createErrorHandlerMiddleware(appModule, options)
   }
 
   // Based on https://github.com/expressjs/errorhandler
-  return function errorHandlerMiddleware(err, req, res, next)
+  return function errorHandlerMiddleware(err, req, res, next) // eslint-disable-line no-unused-vars
   {
-    /*jshint unused:false*/
+    if (_.includes(expressModule.config.ignoredErrorCodes, err.code))
+    {
+      return;
+    }
 
     if (err.status)
     {
@@ -26,7 +29,19 @@ module.exports = function createErrorHandlerMiddleware(appModule, options)
       res.statusCode = 500;
     }
 
-    var login = req.session && req.session.user
+    if (typeof err === 'string')
+    {
+      err = {message: err, stack: null};
+    }
+    else if (err && err.name === 'ValidationError')
+    {
+      _.forEach(err.errors, function(validationError)
+      {
+        err.message += '\n  - ' + validationError;
+      });
+    }
+
+    const login = req.session && req.session.user
       ? req.session.user.login
       : 'guest';
 
@@ -34,11 +49,11 @@ module.exports = function createErrorHandlerMiddleware(appModule, options)
     {
       try
       {
-        appModule.warn(
-          "%s %s\n%s\nUser: %s (%s)\nHeaders:\n%s\nRequest body:\n%s",
+        expressModule.warn(
+          '%s %s\n%s\nUser: %s (%s)\nHeaders:\n%s\nRequest body:\n%s',
           req.method,
           req.url,
-          err.stack,
+          err.stack || err.message,
           login,
           req.ip,
           JSON.stringify(req.headers),
@@ -47,13 +62,13 @@ module.exports = function createErrorHandlerMiddleware(appModule, options)
       }
       catch (err)
       {
-        appModule.warn("%s %s\n%s\nUser: %s (%s)", req.method, req.url, err.stack, login, req.ip);
+        expressModule.warn('%s %s\n%s\nUser: %s (%s)', req.method, req.url, err.stack, login, req.ip);
       }
     }
     else
     {
-      appModule.warn(
-        "%s %s\n%s\nUser: %s (%s)\nHeaders:\n%s",
+      expressModule.warn(
+        '%s %s\n%s\nUser: %s (%s)\nHeaders:\n%s',
         req.method,
         req.url,
         err.stack || err.message,
@@ -63,7 +78,12 @@ module.exports = function createErrorHandlerMiddleware(appModule, options)
       );
     }
 
-    var accept = req.headers.accept || '';
+    if (!res.connection || !res.connection.writable)
+    {
+      return;
+    }
+
+    const accept = req.headers.accept || '';
 
     if (accept.indexOf('html') !== -1)
     {
@@ -71,7 +91,7 @@ module.exports = function createErrorHandlerMiddleware(appModule, options)
         title: options.title || 'express',
         statusCode: res.statusCode,
         stack: prepareStack(options.basePath, err).reverse(),
-        error: err.toString().replace(/\n/g, '<br>').replace(/^Error: /, '')
+        error: err.message.replace(/^Error: /, '')
       });
 
       return;
@@ -79,12 +99,12 @@ module.exports = function createErrorHandlerMiddleware(appModule, options)
 
     if (accept.indexOf('json') !== -1)
     {
-      var error = {
+      const error = {
         message: err.message,
         stack: err.stack
       };
 
-      Object.keys(err).forEach(function(prop) { error[prop] = err[prop]; });
+      _.forEach(err, function(value, key) { error[key] = value; });
 
       res.setHeader('Content-Type', 'application/json');
       res.end(JSON.stringify({error: error}));
@@ -93,24 +113,24 @@ module.exports = function createErrorHandlerMiddleware(appModule, options)
     }
 
     res.setHeader('Content-Type', 'text/plain');
-    res.end(err.stack);
+    res.end(err.stack || err.message);
   };
 };
 
 function prepareStack(basePath, err)
 {
-  var stack = (err.stack || '').split('\n').slice(1);
+  const stack = (err.stack || '').split('\n').slice(1);
 
   if (stack.length === 0)
   {
     return [];
   }
 
-  var no = stack.length;
+  let no = stack.length;
 
   return stack.map(function(stack)
   {
-    var matches = stack.match(/at (.*?) \((.*?):([0-9]+):([0-9]+)\)/);
+    let matches = stack.match(/at (.*?) \((.*?):([0-9]+):([0-9]+)\)/);
 
     if (matches !== null)
     {

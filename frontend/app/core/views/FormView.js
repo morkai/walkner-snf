@@ -1,6 +1,4 @@
-// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
-// Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
-// Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
+// Part of <https://miracle.systems/p/walkner-wmes> licensed under <CC BY-NC-SA 4.0>
 
 define([
   'underscore',
@@ -33,7 +31,7 @@ define([
       {
         if (this.isRendered())
         {
-          js2form(this.el, this.serializeToForm());
+          js2form(this.el, this.serializeToForm(true), '.', null, false, false);
         }
       });
     },
@@ -58,10 +56,10 @@ define([
 
     afterRender: function()
     {
-      js2form(this.el, this.serializeToForm());
+      js2form(this.el, this.serializeToForm(false));
     },
 
-    serializeToForm: function()
+    serializeToForm: function(partial) // eslint-disable-line no-unused-vars
     {
       return this.model.toJSON();
     },
@@ -69,6 +67,11 @@ define([
     serializeForm: function(formData)
     {
       return formData;
+    },
+
+    getFormData: function()
+    {
+      return this.serializeForm(form2js(this.el));
     },
 
     submitForm: function()
@@ -80,41 +83,79 @@ define([
         return false;
       }
 
-      var formData = this.serializeForm(form2js(this.el));
+      var formData = this.getFormData();
 
       if (!this.checkValidity(formData))
       {
+        this.handleInvalidity(formData);
+
         return false;
       }
 
       var $submitEl = this.$('[type="submit"]').attr('disabled', true);
 
-      var req = this.promised(this.model.save(formData, {
-        wait: true
-      }));
+      this.submitRequest($submitEl, formData);
 
-      var view = this;
+      return false;
+    },
 
-      req.done(function()
-      {
-        if (typeof view.options.done === 'function')
-        {
-          view.options.done(true);
-        }
-        else
-        {
-          view.broker.publish('router.navigate', {
-            url: view.model.genClientUrl(),
-            trigger: true
-          });
-        }
-      });
+    submitRequest: function($submitEl, formData)
+    {
+      var req = this.request(formData);
 
+      req.done(this.handleSuccess.bind(this));
       req.fail(this.handleFailure.bind(this));
+      req.always(function() { $submitEl.attr('disabled', false); });
+    },
 
-      req.always(function()
+    request: function(formData)
+    {
+      return this.promised(this.model.save(formData, this.getSaveOptions()));
+    },
+
+    checkValidity: function(formData)
+    {
+      return !!formData;
+    },
+
+    handleInvalidity: function()
+    {
+
+    },
+
+    handleSuccess: function()
+    {
+      if (typeof this.options.done === 'function')
       {
-        $submitEl.attr('disabled', false);
+        this.options.done(true);
+      }
+      else
+      {
+        this.broker.publish('router.navigate', {
+          url: this.model.genClientUrl(),
+          trigger: true
+        });
+      }
+    },
+
+    handleFailure: function()
+    {
+      this.showErrorMessage(this.getFailureText());
+    },
+
+    getFailureText: function()
+    {
+      return this.options.failureText;
+    },
+
+    showErrorMessage: function(text)
+    {
+      this.hideErrorMessage();
+
+      this.$errorMessage = viewport.msg.show({
+        type: 'error',
+        time: 3000,
+        text: text
       });
 
       return false;
@@ -130,17 +171,11 @@ define([
       }
     },
 
-    checkValidity: function(formData)
+    getSaveOptions: function()
     {
-      return !!formData;
-    },
-
-    handleFailure: function()
-    {
-      this.$errorMessage = viewport.msg.show({
-        type: 'error',
-        text: this.options.failureText
-      });
+      return {
+        wait: true
+      };
     }
 
   });

@@ -1,11 +1,9 @@
-// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
-// Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
-// Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
+// Part of <https://miracle.systems/p/walkner-wmes> licensed under <CC BY-NC-SA 4.0>
 
 'use strict';
 
-var util = require('util');
-var EventEmitter = require('events').EventEmitter;
+const util = require('util');
+const EventEmitter = require('events').EventEmitter;
 
 module.exports = SocketIoMultiServer;
 
@@ -18,6 +16,8 @@ function SocketIoMultiServer()
 
 util.inherits(SocketIoMultiServer, EventEmitter);
 
+SocketIoMultiServer.prototype.listen = function() {};
+
 SocketIoMultiServer.prototype.addServer = function(eventEmitter)
 {
   this.servers.push(eventEmitter);
@@ -25,7 +25,7 @@ SocketIoMultiServer.prototype.addServer = function(eventEmitter)
 
 SocketIoMultiServer.prototype.addListener = function(event, listener)
 {
-  for (var i = 0, l = this.servers.length; i < l; ++i)
+  for (let i = 0, l = this.servers.length; i < l; ++i)
   {
     this.servers[i].addListener(event, listener);
   }
@@ -35,7 +35,7 @@ SocketIoMultiServer.prototype.on = SocketIoMultiServer.prototype.addListener;
 
 SocketIoMultiServer.prototype.once = function(event, listener)
 {
-  for (var i = 0, l = this.servers.length; i < l; ++i)
+  for (let i = 0, l = this.servers.length; i < l; ++i)
   {
     this.servers[i].once(event, listener);
   }
@@ -43,7 +43,7 @@ SocketIoMultiServer.prototype.once = function(event, listener)
 
 SocketIoMultiServer.prototype.removeListener = function(event, listener)
 {
-  for (var i = 0, l = this.servers.length; i < l; ++i)
+  for (let i = 0, l = this.servers.length; i < l; ++i)
   {
     this.servers[i].removeListener(event, listener);
   }
@@ -51,7 +51,7 @@ SocketIoMultiServer.prototype.removeListener = function(event, listener)
 
 SocketIoMultiServer.prototype.removeAllListeners = function(event)
 {
-  for (var i = 0, l = this.servers.length; i < l; ++i)
+  for (let i = 0, l = this.servers.length; i < l; ++i)
   {
     this.servers[i].removeAllListeners(event);
   }
@@ -59,7 +59,7 @@ SocketIoMultiServer.prototype.removeAllListeners = function(event)
 
 SocketIoMultiServer.prototype.setMaxListeners = function(n)
 {
-  for (var i = 0, l = this.servers.length; i < l; ++i)
+  for (let i = 0, l = this.servers.length; i < l; ++i)
   {
     this.servers[i].setMaxListeners(n);
   }

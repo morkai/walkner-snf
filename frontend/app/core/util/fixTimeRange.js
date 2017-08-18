@@ -1,6 +1,4 @@
-// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
-// Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
-// Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
+// Part of <https://miracle.systems/p/walkner-wmes> licensed under <CC BY-NC-SA 4.0>
 
 define([
   'underscore',
@@ -19,8 +17,6 @@ define([
 
   function fixEl($el, defaultTime, utc)
   {
-    /*jshint -W015*/
-
     var elMoment;
 
     if ($el.hasClass('form-group-datetime'))
@@ -35,11 +31,37 @@ define([
         elTime = defaultTime;
       }
 
-      elMoment = (utc ? moment.utc : time.getMoment)(elDate + ' ' + elTime);
+      if (elTime.split(':').length === 2)
+      {
+        elTime += ':00';
+      }
+
+      elMoment = (utc ? moment.utc : time.getMoment)(elDate + ' ' + elTime, 'YYYY-MM-DD HH:mm:ss');
     }
     else
     {
-      elMoment = (utc ? moment.utc : time.getMoment)($el.val());
+      var elValue = $el.val().trim();
+
+      if (/^[0-9]{4}.[0-9]{1,2}/.test(elValue) && !/^[0-9]{4}.[0-9]{1,2}.[0-9]{1,2}/.test(elValue))
+      {
+        var parts = elValue.split(' ');
+
+        parts[0] += '-01';
+
+        elValue = parts.join(' ');
+      }
+
+      if (!/ [0-9]+:[0-9]+(:[0-9]+)?/.test(elValue))
+      {
+        elValue += ' ' + (defaultTime || '00:00:00');
+      }
+
+      if (elValue.split(':').length === 2)
+      {
+        elValue += ':00';
+      }
+
+      elMoment = (utc ? moment.utc : time.getMoment)(elValue, 'YYYY-MM-DD HH:mm:ss');
     }
 
     var valid = elMoment.isValid();
@@ -70,6 +92,10 @@ define([
 
         case 'time':
           val = elMoment.format('HH:mm');
+          break;
+
+        case 'month':
+          val = elMoment.format('YYYY-MM');
           break;
 
         default:
@@ -126,7 +152,7 @@ define([
       utc: false
     });
 
-    var property = rqlQueryTerm.name === 'ge' ? 'from': 'to';
+    var property = rqlQueryTerm.name === 'ge' ? 'from' : 'to';
     var formMoment = (options.utc ? moment.utc : time.getMoment)(rqlQueryTerm.args[1]);
 
     if (type === 'date+time')

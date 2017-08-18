@@ -10,8 +10,14 @@
   <div class="bd"></div>
   <div class="ft">
     <p>
-      <%- t('core', 'TITLE') %> v<%- version %><br>
-      <a href="http://miracle.systems/">miracle.systems</a>
+      SNF
+      <% if (changelogUrl) { %>
+      <a href="<%- changelogUrl %>">v<%- version %></a>
+      <% } else { %>
+      v<%- version %>
+      <% } %>
+      <br>
+      <a href="https://miracle.systems/">miracle.systems</a>
     </p>
   </div>
 </div>

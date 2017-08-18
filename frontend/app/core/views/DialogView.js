@@ -1,6 +1,4 @@
-// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
-// Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
-// Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
+// Part of <https://miracle.systems/p/walkner-wmes> licensed under <CC BY-NC-SA 4.0>
 
 define([
   'underscore',
@@ -17,21 +15,15 @@ define([
       'click .dialog-answer': function(e)
       {
         var $answer = this.$(e.target).closest('.dialog-answer');
-
-        if ($answer.prop('disabled'))
-        {
-          return;
-        }
-
-        $answer.prop('disabled', true);
-
         var answer = $answer.attr('data-answer');
 
         if (_.isString(answer) && answer.length > 0)
         {
+          this.disableAnswers();
+
           this.trigger('answered', answer);
 
-          if (_.isFunction(this.closeDialog))
+          if (this.options.autoHide !== false && _.isFunction(this.closeDialog))
           {
             this.closeDialog();
           }
@@ -46,9 +38,17 @@ define([
 
     onDialogShown: function(viewport)
     {
-      this.closeDialog = this.options.autoHide === false
-        ? function() {}
-        : viewport.closeDialog.bind(viewport);
+      this.closeDialog = viewport.closeDialog.bind(viewport);
+    },
+
+    disableAnswers: function()
+    {
+      this.$('.btn[data-answer]').prop('disabled', true);
+    },
+
+    enableAnswers: function()
+    {
+      this.$('.btn[data-answer]').prop('disabled', false);
     }
 
   });

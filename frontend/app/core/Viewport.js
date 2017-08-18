@@ -1,6 +1,4 @@
-// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
-// Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
-// Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
+// Part of <https://miracle.systems/p/walkner-wmes> licensed under <CC BY-NC-SA 4.0>
 
 define([
   'require',
@@ -47,6 +45,8 @@ define([
     this.dialogQueue = [];
 
     this.currentDialog = null;
+
+    this.pageCounter = 0;
 
     this.closeDialog = this.closeDialog.bind(this);
 
@@ -121,12 +121,35 @@ define([
     }
 
     var viewport = this;
+    var pageCounter = ++this.pageCounter;
 
-    require([].concat(dependencies), function()
-    {
-      viewport.showPage(createPage.apply(null, arguments));
-      viewport.msg.loaded();
-    });
+    require(
+      [].concat(dependencies),
+      function()
+      {
+        if (pageCounter === viewport.pageCounter)
+        {
+          viewport.showPage(createPage.apply(null, arguments));
+        }
+
+        viewport.msg.loaded();
+      },
+      function(err)
+      {
+        if (pageCounter === viewport.pageCounter)
+        {
+          viewport.msg.loadingFailed();
+
+          viewport.broker.publish('viewport.page.loadingFailed', {
+            page: null,
+            xhr: {
+              status: 0,
+              responseText: err.message
+            }
+          });
+        }
+      }
+    );
   };
 
   Viewport.prototype.showPage = function(page)
@@ -135,18 +158,49 @@ define([
 
     if (!_.isObject(this.layouts[layoutName]))
     {
-      throw new Error("Unknown layout: `" + layoutName + "`");
+      throw new Error('Unknown layout: `' + layoutName + '`');
     }
+
+    ++this.pageCounter;
 
     var viewport = this;
 
+    this.broker.publish('viewport.page.loading', {page: page});
+
+    if (_.isFunction(page.load))
+    {
+      page.load(when).then(onPageLoadSuccess, onPageLoadFailure);
+    }
+    else
+    {
+      onPageLoadSuccess();
+    }
+
     function when()
     {
-      return $.when.apply($, _.map(arguments, page.promised, page));
+      var requests = [];
+
+      for (var i = 0; i < arguments.length; ++i)
+      {
+        var request = arguments[i];
+
+        if (Array.isArray(request))
+        {
+          requests.push.apply(requests, request);
+        }
+        else
+        {
+          requests.push(request);
+        }
+      }
+
+      return $.when.apply($, _.map(requests, page.promised, page));
     }
 
     function onPageLoadSuccess()
     {
+      viewport.broker.publish('viewport.page.loaded', {page: page});
+
       if (viewport.currentPage !== null)
       {
         viewport.currentPage.remove();
@@ -185,22 +239,15 @@ define([
       {
         page.render();
       }
+
+      viewport.broker.publish('viewport.page.shown', page);
     }
 
-    function onPageLoadFailure()
+    function onPageLoadFailure(jqXhr)
     {
-      console.log('onPageLoadFailure');
-
       page.remove();
-    }
 
-    if (_.isFunction(page.load))
-    {
-      page.load(when).then(onPageLoadSuccess, onPageLoadFailure);
-    }
-    else
-    {
-      onPageLoadSuccess();
+      viewport.broker.publish('viewport.page.loadingFailed', {page: page, xhr: jqXhr});
     }
   };
 
@@ -266,12 +313,22 @@ define([
 
     this.$dialog.modal('hide');
 
-    if (e)
+    if (e && e.preventDefault)
     {
       e.preventDefault();
     }
 
     return this;
+  };
+
+  Viewport.prototype.closeDialogs = function(closeCurrent, filter)
+  {
+    this.dialogQueue = this.dialogQueue.filter(filter || closeCurrent);
+
+    if (typeof closeCurrent === 'function' && this.currentDialog && closeCurrent(this.currentDialog))
+    {
+      this.closeDialog();
+    }
   };
 
   Viewport.prototype.closeAllDialogs = function()
@@ -319,6 +376,8 @@ define([
     }
 
     this.broker.publish('viewport.dialog.shown', this.currentDialog);
+
+    this.currentDialog.trigger('dialog:shown');
   };
 
   Viewport.prototype.onDialogHidden = function()
@@ -328,16 +387,12 @@ define([
       this.$dialog.removeClass(_.result(this.currentDialog, 'dialogClassName'));
     }
 
-    if (_.isFunction(this.currentDialog.onDialogHidden))
-    {
-      this.currentDialog.onDialogHidden(this);
-    }
-
     if (_.isFunction(this.currentDialog.remove))
     {
+      this.currentDialog.trigger('dialog:hidden');
       this.currentDialog.remove();
 
-      this.broker.publish('viewport.dialog.hidden');
+      this.broker.publish('viewport.dialog.hidden', this.currentDialog);
     }
 
     this.currentDialog = null;

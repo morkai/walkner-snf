@@ -1,6 +1,4 @@
-// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
-// Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
-// Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
+// Part of <https://miracle.systems/p/walkner-wmes> licensed under <CC BY-NC-SA 4.0>
 
 define([
   'underscore'
@@ -39,7 +37,7 @@ define([
   };
 
   /**
-   * @param {object} obj
+   * @param {Object} obj
    * @param {string} propertyName
    * @param {{sandbox: function}} parent
    */
@@ -62,10 +60,9 @@ define([
 
       return;
     }
-    else
-    {
+
       sandboxedProperties[propertyName] = null;
-    }
+
 
     Object.defineProperty(obj, propertyName, {
       enumerable: true,
@@ -87,7 +84,7 @@ define([
   };
 
   /**
-   * @param {object} obj
+   * @param {Object} obj
    */
   util.cleanupSandboxedProperties = function(obj)
   {
@@ -114,9 +111,9 @@ define([
   };
 
   /**
-   * @param {object} obj
+   * @param {Object} obj
    * @param {string} brokerProperty
-   * @param {object.<string, function|string>|function(): object.<string, function|string>} topics
+   * @param {Object.<string, function|string>|function(): Object.<string, function|string>} topics
    * @param {boolean} bind
    */
   util.subscribeTopics = function(obj, brokerProperty, topics, bind)
@@ -151,11 +148,22 @@ define([
 
   /**
    * @param {string} string
+   * @param {boolean} [extended]
    * @returns {string}
    */
-  util.escapeRegExp = function(string)
+  util.escapeRegExp = function(string, extended)
   {
-    return string.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, '\\$1');
+    return string.replace(extended ? /([-[\]{}()*+!<=:?.\/\\^$|#\s,])/g : /([.*+?^=!:${}()|\[\]\/\\])/g, '\\$1');
+  };
+
+  /**
+   * @param {string} string
+   * @param {boolean} [extended]
+   * @returns {string}
+   */
+  util.unescapeRegExp = function(string, extended)
+  {
+    return string.replace(extended ? /\\([-[\]{}()*+!<=:?.\/\\^$|#\s,])/g : /\\([.*+?^=!:${}()|\[\]\/\\])/g, '$1');
   };
 
   return util;

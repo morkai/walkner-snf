@@ -1,17 +1,15 @@
-// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
-// Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
-// Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
+// Part of <https://miracle.systems/p/walkner-wmes> licensed under <CC BY-NC-SA 4.0>
 
 'use strict';
 
-var lodash = require('lodash');
-var rql = require('h5.rql');
+const _ = require('lodash');
+const rql = require('h5.rql');
 
 module.exports = function createRqlMiddleware()
 {
   return function rqlMiddleware(req, res, next)
   {
-    var rqlQuery = null;
+    let rqlQuery = null;
 
     Object.defineProperty(req, 'rql', {
       configurable: false,
@@ -33,14 +31,14 @@ module.exports = function createRqlMiddleware()
 
 function getQueryString(req)
 {
-  if (lodash.isObject(req._parsedUrl) && lodash.isString(req._parsedUrl.query))
+  if (_.isObject(req._parsedUrl) && _.isString(req._parsedUrl.query))
   {
     return req._parsedUrl.query;
   }
 
-  if (lodash.isString(req.url))
+  if (_.isString(req.url))
   {
-    var queryPos = req.url.indexOf('?');
+    const queryPos = req.url.indexOf('?');
 
     if (queryPos !== -1)
     {

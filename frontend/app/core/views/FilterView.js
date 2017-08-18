@@ -1,20 +1,24 @@
-// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
-// Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
-// Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
+// Part of <https://miracle.systems/p/walkner-wmes> licensed under <CC BY-NC-SA 4.0>
 
 define([
   'underscore',
+  'jquery',
   'js2form',
   'h5.rql/specialTerms',
+  'app/i18n',
   'app/core/View',
+  'app/core/util',
   'app/core/util/buttonGroup',
   'app/core/templates/filterLimit',
   'select2'
 ], function(
   _,
+  $,
   js2form,
   specialTerms,
+  t,
   View,
+  util,
   buttonGroup,
   filterLimitTemplate
 ) {
@@ -34,8 +38,11 @@ define([
         this.changeFilter();
 
         return false;
-      }
+      },
+      'click .filter-toggle': 'toggle'
     },
+
+    collapsed: false,
 
     serialize: function()
     {
@@ -69,6 +76,31 @@ define([
       this.formData = this.serializeQueryToForm();
 
       js2form(this.el, this.formData);
+
+      this.$toggleFilter = $('<button class="btn btn-default btn-block filter-toggle" type="button"></button>')
+        .append('<i class="fa"></i>')
+        .append('<span></span>');
+
+      this.$el.append(this.$toggleFilter);
+
+      this.toggle();
+    },
+
+    toggle: function()
+    {
+      if (window.innerWidth < 768)
+      {
+        this.collapsed = !this.collapsed;
+
+        this.$el
+          .toggleClass('is-collapsed', this.collapsed)
+          .toggleClass('is-expanded', !this.collapsed);
+      }
+
+      this.$toggleFilter.find('span').text(t('core', 'filter:' + (this.collapsed ? 'show' : 'hide')));
+      this.$toggleFilter.find('.fa')
+        .removeClass('fa-caret-up fa-caret-down')
+        .addClass('fa-caret-' + (this.collapsed ? 'down' : 'up'));
     },
 
     serializeQueryToForm: function()
@@ -110,17 +142,34 @@ define([
       }
     },
 
+    isValid: function()
+    {
+      return true;
+    },
+
     changeFilter: function()
     {
+      if (!this.isValid())
+      {
+        return;
+      }
+
       var rqlQuery = this.model.rqlQuery;
       var selector = [];
+      var $limit = this.$id('limit');
 
       this.copyPopulateTerms(selector);
       this.serializeFormToQuery(selector, rqlQuery);
 
+      this.trigger('filtering', selector, rqlQuery);
+
       rqlQuery.selector = {name: 'and', args: selector};
       rqlQuery.skip = 0;
-      rqlQuery.limit = Math.min(Math.max(parseInt(this.$id('limit').val(), 10) || 15, this.minLimit), this.maxLimit);
+
+      if ($limit.length)
+      {
+        rqlQuery.limit = Math.min(Math.max(parseInt(this.$id('limit').val(), 10) || 15, this.minLimit), this.maxLimit);
+      }
 
       this.trigger('filterChanged', rqlQuery);
     },
@@ -136,12 +185,12 @@ define([
       });
     },
 
-    serializeFormToQuery: function(selector, rqlQuery)
+    serializeFormToQuery: function(selector, rqlQuery) // eslint-disable-line no-unused-vars
     {
-      /*jshint unused:false*/
+
     },
 
-    serializeRegexTerm: function(selector, property, maxLength, replaceRe)
+    serializeRegexTerm: function(selector, property, maxLength, replaceRe, ignoreCase, startAnchor)
     {
       var $el = this.$id(property.replace(/\./g, '-'));
       var value = $el.val().trim();
@@ -158,14 +207,42 @@ define([
         value = null;
       }
 
-      if (value === null || value.length === maxLength)
+      var args = [property, value];
+
+      if (value === null || (!ignoreCase && value.length === maxLength))
       {
-        selector.push({name: 'eq', args: [property, value]});
+        selector.push({name: 'eq', args: args});
+
+        return;
       }
-      else if (value.length > 0)
+
+      if (value.length === 0)
       {
-        selector.push({name: 'regex', args: [property, value]});
+        return;
       }
+
+      if (ignoreCase)
+      {
+        args.push('i');
+      }
+
+      args[1] = util.escapeRegExp(args[1]);
+
+      if (value.length === maxLength)
+      {
+        args[1] = '^' + args[1] + '$';
+      }
+      else if (startAnchor)
+      {
+        args[1] = '^' + args[1];
+      }
+
+      selector.push({name: 'regex', args: args});
+    },
+
+    unescapeRegExp: function(string)
+    {
+      return util.unescapeRegExp(string, true);
     }
 
   });

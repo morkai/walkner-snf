@@ -416,7 +416,7 @@ var LayoutManager = Backbone.View.extend({
     // If we're inserting, we need to insert into the views array. If one
     // already exists, we may want to insert at a particular index.
     if (insertOptions && _.isNumber(insertOptions.insertAt) && existing) {
-      // If an index is specified & existing views are presesnt, 
+      // If an index is specified & existing views are presesnt,
       // splice there.
       existing.splice(insertOptions.insertAt, 0, view);
       root.views[selector] = existing;
@@ -922,7 +922,7 @@ var defaultOptions = {
 
     // Use the insert method if the parent's `insert` argument is true.
     if (rentManager.insert) {
-      this.insert($root, $el, manager.insertAt);
+      this.insert($root, $el, manager.insertAt, manager.selector);
     } else {
       this.html($root, $el);
     }
@@ -971,10 +971,10 @@ var defaultOptions = {
   },
 
   // Very similar to HTML except this one will appendChild by default.
-  insert: function($root, $el, insertAt) {
+  insert: function($root, $el, insertAt, selector) {
     if(_.isNumber(insertAt)) {
       // If an index is supplied, use it.
-      this.insertAtIndex($root, $el, insertAt);
+      this.insertAtIndex($root, $el, insertAt, selector);
     } else {
       $root.append($el);
     }
@@ -982,24 +982,36 @@ var defaultOptions = {
 
   // Called by `insert` if an `insertAt` is provided. Inserts a view
   // at a particular position.
-  insertAtIndex: function($root, $el, insertAt) {
+  insertAtIndex: function($root, $el, insertAt, selector) {
+    var $children = $root.children();
     var $baseEl;
 
-    // If insertAt is < 0, it behaves like the index in Array#splice.
     if(insertAt < 0) {
-      $baseEl = $root.children()
-        .eq(Math.max(0, $root.children().length + insertAt));
+      $baseEl = $children.eq(Math.max(0, $children.length + insertAt));
     } else {
-      $baseEl = $root.children().eq(insertAt);
+      $baseEl = $children.eq(insertAt);
     }
 
-    if($baseEl.length) {
-      // If a reference point is found for insertion, put this view behind it.
-      $baseEl.before($el);
+    var views = this.views[selector];
+
+    if (insertAt < 0) {
+      insertAt = Math.max(0, views.length - 1 + insertAt);
     } else {
-      // If no reference point is found (index is greater than the length of
-      // of the array of elements), append it.
-      this.insert($root, $el);
+      insertAt += 1;
+    }
+
+    var nextView = views[insertAt];
+
+    if(nextView) {
+      if (nextView.el.parentNode) {
+        $el.insertBefore(nextView.$el);
+      } else if ($baseEl.length) {
+        $baseEl.before($el);
+      } else {
+        $root.append($el);
+      }
+    } else {
+      $root.append($el);
     }
   },
 

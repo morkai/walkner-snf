@@ -1,6 +1,4 @@
-// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
-// Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
-// Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
+// Part of <https://miracle.systems/p/walkner-wmes> licensed under <CC BY-NC-SA 4.0>
 
 define([
   '../View',
@@ -49,7 +47,7 @@ define([
 
     beforeRender: function()
     {
-      this.stopListening(this.collection, 'change', this.render);
+      this.stopListening(this.model, 'change', this.render);
     },
 
     afterRender: function()

@@ -1,6 +1,4 @@
-// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
-// Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
-// Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
+// Part of <https://miracle.systems/p/walkner-wmes> licensed under <CC BY-NC-SA 4.0>
 
 define([
   'app/core/SocketSandbox'
@@ -21,33 +19,32 @@ define([
 
   Socket.prototype.getId = function()
   {
-    return this.sio.socket.sessionid;
+    return this.sio.id || null;
   };
 
   Socket.prototype.isConnected = function()
   {
-    return this.sio.socket.connected;
+    return this.sio.io.readyState === 'open';
+  };
+
+  Socket.prototype.isConnecting = function()
+  {
+    return this.sio.io.readyState === 'opening';
   };
 
   Socket.prototype.connect = function()
   {
-    if (!this.isConnected() && !this.sio.socket.connecting)
-    {
-      this.sio.socket.connect();
-    }
+    this.sio.open();
   };
 
   Socket.prototype.reconnect = function()
   {
-    if (!this.isConnected() && !this.sio.socket.reconnecting)
-    {
-      this.sio.socket.reconnect();
-    }
+    this.connect();
   };
 
   Socket.prototype.on = function(eventName, cb)
   {
-    this.sio.addListener(eventName, cb);
+    this.sio.on(eventName, cb);
 
     return this;
   };
@@ -60,7 +57,7 @@ define([
     }
     else
     {
-      this.sio.removeListener(eventName, cb);
+      this.sio.off(eventName, cb);
     }
 
     return this;

@@ -1,6 +1,4 @@
-// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
-// Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
-// Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
+// Part of <https://miracle.systems/p/walkner-wmes> licensed under <CC BY-NC-SA 4.0>
 
 define([
   'app/i18n',
@@ -8,6 +6,7 @@ define([
   '../util/pageActions',
   '../View',
   '../views/ListView',
+  './createPageBreadcrumbs',
   'app/core/templates/listPage'
 ], function(
   t,
@@ -15,6 +14,7 @@ define([
   pageActions,
   View,
   ListView,
+  createPageBreadcrumbs,
   template
 ) {
   'use strict';
@@ -25,9 +25,11 @@ define([
 
     layoutName: 'page',
 
+    baseBreadcrumb: false,
+
     breadcrumbs: function()
     {
-      return [t.bound((this.collection || this.model).getNlsDomain(), 'BREADCRUMBS:browse')];
+      return createPageBreadcrumbs(this);
     },
 
     actions: function()
@@ -60,7 +62,9 @@ define([
 
     createListView: function()
     {
-      return new (this.ListView || this.options.ListView || ListView)({
+      var ListViewClass = this.ListView || this.options.ListView || ListView;
+
+      return new ListViewClass({
         collection: this.collection,
         model: this.model
       });
@@ -68,7 +72,9 @@ define([
 
     createFilterView: function()
     {
-      return new (this.FilterView || this.options.FilterView)({
+      var FilterViewClass = this.FilterView || this.options.FilterView;
+
+      return new FilterViewClass({
         model: {
           rqlQuery: (this.collection || this.model).rqlQuery
         }
@@ -90,9 +96,15 @@ define([
     refreshCollection: function()
     {
       this.listView.refreshCollectionNow();
+      this.updateClientUrl();
+    },
+
+    updateClientUrl: function()
+    {
+      var model = this.collection || this.model;
 
       this.broker.publish('router.navigate', {
-        url: (this.collection || this.model).genClientUrl() + '?' + (this.collection || this.model).rqlQuery,
+        url: model.genClientUrl() + '?' + model.rqlQuery,
         trigger: false,
         replace: true
       });

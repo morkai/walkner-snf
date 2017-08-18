@@ -1,6 +1,4 @@
-// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
-// Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
-// Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
+// Part of <https://miracle.systems/p/walkner-wmes> licensed under <CC BY-NC-SA 4.0>
 
 define([
   'jquery',
@@ -12,14 +10,19 @@ define([
   'use strict';
 
   var PLUGIN_NAME = 'expandableSelect';
+  var INSTANCE_ID = 0;
 
   function ExpandableSelect($el, options)
   {
+    this.id = ++INSTANCE_ID;
+
     this.$el = $el;
 
     this.$helper = null;
 
     this.options = options;
+
+    $(window).on('resize.' + PLUGIN_NAME + this.id, this.onWindowResize.bind(this));
 
     this.$el
       .on('mousedown.' + PLUGIN_NAME, this.onMouseDown.bind(this))
@@ -33,6 +36,8 @@ define([
     destroy: function()
     {
       this.collapse();
+
+      $(window).off('.' + PLUGIN_NAME + this.id);
 
       this.$el.off('.' + PLUGIN_NAME);
       this.$el = null;
@@ -84,6 +89,11 @@ define([
 
       this.$el.prop('size', 1);
       this.$el.removeClass(this.options.isExpandedClassName);
+    },
+
+    onWindowResize: function()
+    {
+      this.collapse();
     },
 
     onMouseDown: function(e)

@@ -1,6 +1,4 @@
-// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
-// Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
-// Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
+// Part of <https://miracle.systems/p/walkner-wmes> licensed under <CC BY-NC-SA 4.0>
 
 'use strict';
 
@@ -11,7 +9,7 @@ module.exports = function(app, updaterModule, req, res, next)
     return next();
   }
 
-  var restartDelay = updaterModule.config.restartDelay
+  const restartDelay = updaterModule.config.restartDelay
     - (Date.now() - updaterModule.restarting)
     + 5000;
 
@@ -19,8 +17,8 @@ module.exports = function(app, updaterModule, req, res, next)
     text: function()
     {
       res.send(
-        "503 - Service Unavailable - Restarting... try again in "
-          + Math.ceil(restartDelay / 1000) + "s"
+        '503 - Service Unavailable - Restarting... try again in '
+          + Math.ceil(restartDelay / 1000) + 's'
       );
     },
     html: function()

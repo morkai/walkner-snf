@@ -1,12 +1,10 @@
-// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
-// Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
-// Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
+// Part of <https://miracle.systems/p/walkner-wmes> licensed under <CC BY-NC-SA 4.0>
 
 'use strict';
 
-var util = require('util');
-var http = require('http');
-var domain = require('domain');
+const util = require('util');
+const http = require('http');
+const domain = require('domain');
 
 exports.DEFAULT_CONFIG = {
   expressId: 'express',
@@ -21,22 +19,20 @@ exports.start = function startHttpServerModule(app, module, done)
     if (err.code === 'EADDRINUSE')
     {
       return done(new Error(util.format(
-        "port %d already in use?", module.config.port
+        'port %d already in use?', module.config.port
       )));
     }
-    else
-    {
-      return done(err);
-    }
+
+    return done(err);
   }
 
-  var serverDomain = domain.create();
+  const serverDomain = domain.create();
 
   serverDomain.run(function()
   {
     module.server = http.createServer(function onRequest(req, res)
     {
-      var reqDomain = domain.create();
+      const reqDomain = domain.create();
 
       reqDomain.add(req);
       reqDomain.add(res);
@@ -45,17 +41,27 @@ exports.start = function startHttpServerModule(app, module, done)
       {
         if (err.code !== 'ECONNRESET')
         {
-          module.error(err.stack);
+          module.error(err.stack || err.message || err);
         }
 
         reqDomain.dispose();
+
+        try
+        {
+          res.statusCode = 500;
+          res.end();
+        }
+        catch (err)
+        {
+          module.error(err.stack);
+        }
       });
 
-      var express = app[module.config.expressId];
+      const expressApp = app[module.config.expressId].app;
 
-      if (express)
+      if (expressApp)
       {
-        express(req, res);
+        expressApp(req, res);
       }
       else
       {
@@ -70,7 +76,7 @@ exports.start = function startHttpServerModule(app, module, done)
     {
       module.server.removeListener('error', onFirstServerError);
 
-      module.debug("Listening on port %d...", module.config.port);
+      module.debug('Listening on port %d...', module.config.port);
 
       return done();
     });

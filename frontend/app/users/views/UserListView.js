@@ -11,7 +11,12 @@ define([
 
   return ListView.extend({
 
-    columns: ['lastName', 'firstName', 'login', 'email']
+    columns: [
+      {id: 'lastName', className: 'is-min'},
+      {id: 'firstName', className: 'is-min'},
+      {id: 'login', className: 'is-min'},
+      {id: 'email'}
+    ]
 
   });
 });
