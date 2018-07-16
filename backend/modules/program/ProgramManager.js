@@ -144,7 +144,14 @@ ProgramManager.prototype.updateProgramTags = function(program, lock)
       controlUnit.setTagValue('.duration.pc', program.illuminationTime || 0, this.parallel());
       controlUnit.setTagValue('.current.min', program.minCurrent || 0, this.parallel());
       controlUnit.setTagValue('.current.max', program.maxCurrent || 0, this.parallel());
-      controlUnit.setTagValue('.contactors', 0, this.parallel());
+
+      if (controlUnit.getTagValue('.contactors') !== contactorsBytes)
+      {
+        this.setContactors = true;
+
+        controlUnit.setTagValue('.contactors', 0, this.parallel());
+      }
+
       controlUnit.setTagValue(
         'light.1.min.plc', controlUnit.getTagValue('light.1.min.pc') || 0, this.parallel()
       );
@@ -154,11 +161,17 @@ ProgramManager.prototype.updateProgramTags = function(program, lock)
     },
     function()
     {
-      setTimeout(this.next(), 1000);
+      if (this.setContactors)
+      {
+        setTimeout(this.next(), 1000);
+      }
     },
     function()
     {
-      controlUnit.setTagValue('.contactors', contactorsBytes, this.next());
+      if (this.setContactors)
+      {
+        controlUnit.setTagValue('.contactors', contactorsBytes, this.next());
+      }
     },
     function publishAndUnlockStep()
     {
