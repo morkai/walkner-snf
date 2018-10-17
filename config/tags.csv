@@ -158,6 +158,8 @@ predef.16.current.min,Dolna tolerancja prądu 16,snfPlc,register,1,D331,0,1,uint
 predef.16.current.max,Górna tolerancja prądu 16,snfPlc,register,1,D347,0,1,uint16,-,-,-,-,-,-,-,-,-
 ,Inne,,,,,,,,,,,,,,,,
 watchdog,Watchdog,snfPlc,output,1,M8,1,1,bool,-,-,-,-,-,-,-,-,-
+remoteServerUrl,Adres serwera WMES,-,setting,-,-,0,1,string,-,-,-,-,-,-,-,-,-
+prodLine,ID linii produkcyjnej WMES,-,setting,-,-,0,1,string,-,-,-,-,-,-,-,-,-
 ,Stany połączenia z urządzeniami,,,,,,,,,,,,,,,,
 masters.controlProcess,Stan połączenia z urządzeniami sterowania (snfPlc),-,virtual,-,-,0,0,bool,-,-,-,-,-,-,-,-,-
 masters.snfPlc,Stan połączenia ze sterownikiem delta,snfPlc,virtual,-,-,0,0,bool,-,-,-,-,-,-,0,-,-

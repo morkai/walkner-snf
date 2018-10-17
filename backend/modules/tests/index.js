@@ -4,6 +4,7 @@
 
 'use strict';
 
+var http = require('http');
 var setUpRoutes = require('./routes');
 var setUpCommands = require('./commands');
 
@@ -13,7 +14,8 @@ exports.DEFAULT_CONFIG = {
   userId: 'user',
   pubsubId: 'pubsub',
   sioId: 'sio',
-  messengerClientId: 'messenger/client'
+  messengerClientId: 'messenger/client',
+  controllerId: 'controller'
 };
 
 exports.start = function startTestsModule(app, module)
@@ -71,6 +73,11 @@ exports.start = function startTestsModule(app, module)
 
   function onTestFinished(testId)
   {
+    if (!testId)
+    {
+      return;
+    }
+
     module.currentTest = null;
 
     app[module.config.mongooseId].model('Test').findById(testId, {tags: 0}, function(err, test)
@@ -83,6 +90,11 @@ exports.start = function startTestsModule(app, module)
       if (test)
       {
         module.lastTest = test.toJSON();
+
+        if (test.result)
+        {
+          printLabel(module.lastTest._id.toString(), 1);
+        }
       }
       else
       {
@@ -91,5 +103,83 @@ exports.start = function startTestsModule(app, module)
 
       app[module.config.pubsubId].publish('tests.finished', test ? module.lastTest : null);
     });
+  }
+
+  setTimeout(printLabel, 1337);
+
+  function printLabel(requestId, tryNo)
+  {
+    var controller = app[module.config.controllerId];
+    var remoteServerUrl = controller.values.remoteServerUrl;
+    var prodLine = controller.values.prodLine;
+
+    if (!remoteServerUrl || !prodLine)
+    {
+      return;
+    }
+
+    var req = http.request({
+      host: remoteServerUrl,
+      port: 80,
+      path: '/xiconf/hidLamps;printLabel',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    req.on('error', function(err)
+    {
+      module.error('Failed to print label: %s', err.message);
+
+      retryPrintLabel(requestId, tryNo);
+    });
+
+    req.on('response', function(res)
+    {
+      if (res.statusCode !== 200)
+      {
+        module.error('Failed to print label: unexpected status code: %s', res.statusCode);
+
+        return retryPrintLabel(requestId, tryNo);
+      }
+
+      var body = '';
+
+      res.setEncoding('utf8');
+      res.on('data', function(chunk)
+      {
+        body += chunk;
+      });
+      res.on('end', function()
+      {
+        try
+        {
+          body = JSON.parse(body);
+        }
+        catch (err)
+        {
+          module.error('Failed to print label: invalid response body: %s', err.message);
+
+          return retryPrintLabel(requestId, tryNo);
+        }
+
+        module.info('Printed label: %s', JSON.stringify(body));
+      });
+    });
+
+    req.end(JSON.stringify({
+      line: prodLine,
+      orderNo: null,
+      serialNo: null
+    }));
+  }
+
+  function retryPrintLabel(requestId, tryNo)
+  {
+    if (tryNo < 2)
+    {
+      setTimeout(printLabel, 1000, requestId, tryNo + 1);
+    }
   }
 };

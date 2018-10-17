@@ -26,6 +26,7 @@ exports.start = function startControllerModule(app, module)
 
   module.values = {};
   module.tags = [];
+  module.setTagValue = setTagValue;
 
   app.onModuleReady(module.config.sioId, setUpClientMessages);
   app.onModuleReady(
@@ -164,6 +165,16 @@ exports.start = function startControllerModule(app, module)
         message: "Not allowed.",
         code: 'TAG_WRITE_NO_PERM'
       });
+    }
+
+    setTagValue(tagName, tagValue, user, reply);
+  }
+
+  function setTagValue(tagName, tagValue, user, reply)
+  {
+    if (!lodash.isFunction(reply))
+    {
+      reply = function() {};
     }
 
     if (!lodash.isString(tagName))
