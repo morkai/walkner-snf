@@ -169,6 +169,7 @@ exports.start = function startTestsModule(app, module)
     });
 
     req.end(JSON.stringify({
+      requestId: requestId,
       line: prodLine,
       orderNo: null,
       serialNo: null
