@@ -1,4 +1,4 @@
-// Part of <https://miracle.systems/p/walkner-wmes> licensed under <CC BY-NC-SA 4.0>
+// Part of <https://miracle.systems/p/walkner-snf> licensed under <CC BY-NC-SA 4.0>
 
 define([
   'underscore',
@@ -33,7 +33,7 @@ define([
 
     serialize: function()
     {
-      return this.model;
+      return _.assign(this.getCommonTemplateData(), this.model);
     },
 
     onDialogShown: function(viewport)
@@ -49,7 +49,9 @@ define([
     enableAnswers: function()
     {
       this.$('.btn[data-answer]').prop('disabled', false);
-    }
+    },
+
+    closeDialog: function() {}
 
   });
 });

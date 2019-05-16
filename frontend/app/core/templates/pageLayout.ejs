@@ -1,5 +1,5 @@
 <div class="page">
-  <div class="hd">
+  <div class="hd <%- hdHidden ? 'hidden' : '' %>">
     <nav class="navbar navbar-default"></nav>
     <div class="page-alerts"></div>
     <div class="page-header">
@@ -10,7 +10,7 @@
   <div class="bd"></div>
   <div class="ft">
     <p>
-      SNF
+      <%- t('core', 'APP_NAME') %>
       <% if (changelogUrl) { %>
       <a href="<%- changelogUrl %>">v<%- version %></a>
       <% } else { %>

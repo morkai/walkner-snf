@@ -22,11 +22,6 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.dashboard-tests-container td:nth-child(2),
-.dashboard-tests-container th:nth-child(3) {
-  width: 1%;
-  white-space: nowrap;
-}
 .currentProgram-title {
   margin-top: 0;
 }
@@ -180,7 +175,6 @@
 .currentState-tag[data-tag="light.2"] {
   min-width: 180px;
 }
-.modal-open,
 .modal-open .dashboard-gallery-dialog {
   overflow: hidden;
   padding-right: 0!important;
@@ -227,6 +221,31 @@
   background: rgba(0, 0, 0, .75);
   color: #fff;
   font-weight: bold;
+}
+.dashboard-list {
+  overflow-y: scroll;
+  border: 1px solid #ccc;
+}
+.dashboard-list > .btn-lg {
+  margin: 0;
+  font-size: 35px;
+  text-align: left;
+  border-left: none;
+  border-bottom: none;
+}
+.dashboard-list > .btn-lg:first-child {
+  border-top: none;
+}
+.dashboard-list > .dashboard-list-last {
+  border-top: 1px solid #ccc;
+  height: 64px;
+}
+.dashboard-list-last:only-child {
+  display: none;
+}
+.dashboard-list .fa-spinner {
+  padding: 10px;
+  font-size: 42px;
 }
 @media screen and (max-width: 1024px) {
   .currentState-tag {

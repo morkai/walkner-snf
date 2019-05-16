@@ -6,7 +6,6 @@ exports.paths = {
   'domReady': 'vendor/require/domReady',
   'underscore': 'vendor/underscore',
   'jquery': 'vendor/jquery',
-  'jquery.transit': 'vendor/jquery.transit',
   'jquery.kinetic': 'vendor/jquery.kinetic',
   'backbone': 'vendor/backbone',
   'backbone.layout': 'vendor/backbone.layoutmanager',
@@ -14,7 +13,6 @@ exports.paths = {
   'moment-lang': 'vendor/moment/lang',
   'moment-timezone': 'vendor/moment/moment-timezone',
   'bootstrap': 'vendor/bootstrap/js/bootstrap',
-  'bootstrap-colorpicker': 'vendor/bootstrap-colorpicker/js/bootstrap-colorpicker',
   'socket.io': 'vendor/socket.io',
   'h5.pubsub': 'vendor/h5.pubsub',
   'h5.rql': 'vendor/h5.rql',
@@ -23,13 +21,14 @@ exports.paths = {
   'reltime': 'vendor/reltime',
   'select2': 'vendor/select2/select2',
   'select2-lang': 'vendor/select2-lang',
-  'highcharts': 'vendor/highcharts-custom',
+  'highcharts': 'vendor/highcharts/highcharts.src',
+  'highcharts.exporting': 'vendor/highcharts/modules/exporting.src',
+  'highcharts.grouped-categories': 'vendor/highcharts/modules/grouped-categories.src',
+  'highcharts.no-data-to-display': 'vendor/highcharts/modules/no-data-to-display.src',
   'zeroclipboard': 'vendor/zeroclipboard/ZeroClipboard'
 };
 
 exports.shim = {
-  'jquery.transit': ['jquery'],
-  'jquery.kinetic': ['jquery'],
   'underscore': {
     exports: '_'
   },
@@ -38,7 +37,6 @@ exports.shim = {
     exports: 'Backbone'
   },
   'bootstrap': ['jquery'],
-  'bootstrap-colorpicker': ['bootstrap'],
   'reltime': {
     exports: 'reltime'
   },
@@ -46,10 +44,7 @@ exports.shim = {
     deps: ['jquery'],
     exports: 'Select2'
   },
-  'highcharts': {
-    deps: ['jquery'],
-    exports: 'Highcharts'
-  }
+  'jquery.kinetic': ['jquery']
 };
 
 exports.buildPaths = exports.paths;

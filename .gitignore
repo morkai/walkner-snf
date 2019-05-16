@@ -1,5 +1,13 @@
 .idea
-node_modules
-build
-frontend-build
-config/production
+/node_modules
+/node_modules_min
+/node_modules_dev
+/frontend/files
+/frontend-build/files
+/build
+/config/up
+/config/production
+/config/development
+/config/license.ed.private.pem
+/data
+/bin/fix

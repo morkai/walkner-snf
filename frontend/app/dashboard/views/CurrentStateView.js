@@ -1,6 +1,4 @@
-// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
-// Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
-// Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
+// Part of <https://miracle.systems/p/walkner-snf> licensed under <CC BY-NC-SA 4.0>
 
 define([
   'underscore',
@@ -9,7 +7,6 @@ define([
   'app/time',
   'app/user',
   'app/controller',
-  'app/data/programs',
   'app/core/View',
   'app/dashboard/templates/currentState'
 ], function(
@@ -19,20 +16,19 @@ define([
   time,
   user,
   controller,
-  programs,
   View,
-  currentStateTemplate
+  template
 ) {
   'use strict';
 
   return View.extend({
 
-    template: currentStateTemplate,
+    template: template,
 
     localTopics: {
-      'controller.tagValuesChanged': function(changes)
+      'controller.valuesChanged': function(changes)
       {
-        _.each(changes, this.updateState, this);
+        _.forEach(changes, this.updateState, this);
       }
     },
 
@@ -105,7 +101,7 @@ define([
     {
       if (typeof tagValue === 'undefined')
       {
-        tagValue = Math.max(controller.getValue(tagName), 0)
+        tagValue = Math.max(controller.tags.getValue(tagName), 0)
       }
 
       var $value = this.$tag(tagName).find('.currentState-tag-value');
@@ -143,7 +139,7 @@ define([
 
     updateTagExtreme: function(valueTagName, extreme, extremeTagName, noAnimation)
     {
-      var extremeTagValue = controller.getValue(extremeTagName);
+      var extremeTagValue = controller.tags.getValue(extremeTagName);
       var $extreme = this.$tag(valueTagName).find('.currentState-tag-extreme.is-' + extreme);
 
       $extreme.text(extremeTagValue);
@@ -157,10 +153,10 @@ define([
 
     updateTotalDuration: function()
     {
-      var totalDuration = controller.getValue('program.duration.pc');
-      var hrsCount = controller.getValue('program.hrsCount.pc');
-      var hrsDuration = controller.getValue('program.hrsDuration');
-      var hrsInterval = controller.getValue('program.hrsInterval.pc');
+      var totalDuration = controller.tags.getValue('program.duration.pc');
+      var hrsCount = controller.tags.getValue('program.hrsCount.pc');
+      var hrsDuration = controller.tags.getValue('program.hrsDuration');
+      var hrsInterval = controller.tags.getValue('program.hrsInterval.pc');
 
       totalDuration += (hrsInterval + hrsDuration) * hrsCount;
 

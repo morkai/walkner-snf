@@ -1,0 +1,8 @@
+<div class="panel panel-default snf-programs-gallery">
+  <div class="panel-heading"><%- helpers.t('PANEL:TITLE:gallery') %></div>
+  <div class="panel-body">
+    <% program.images.forEach(function(image) { %>
+    <% include galleryThumbnail.ejs %>
+    <% }) %>
+  </div>
+</div>

@@ -1,4 +1,4 @@
-// Part of <https://miracle.systems/p/walkner-wmes> licensed under <CC BY-NC-SA 4.0>
+// Part of <https://miracle.systems/p/walkner-snf> licensed under <CC BY-NC-SA 4.0>
 
 define([
   'require',
@@ -144,7 +144,7 @@ define([
             page: null,
             xhr: {
               status: 0,
-              responseText: err.message
+              responseText: err.stack || err.message
             }
           });
         }
@@ -260,6 +260,7 @@ define([
       return this;
     }
 
+    var triggerEvent = true;
     var afterRender = dialogView.afterRender;
     var viewport = this;
 
@@ -272,7 +273,12 @@ define([
         $modalBody.empty().append(dialogView.el);
       }
 
-      viewport.$dialog.modal('show');
+      if (triggerEvent)
+      {
+        triggerEvent = false;
+
+        viewport.$dialog.modal('show');
+      }
 
       if (_.isFunction(afterRender))
       {
@@ -362,6 +368,7 @@ define([
     this.currentLayout = createNewLayout();
 
     this.setView(selector, this.currentLayout);
+    this.trigger('layout:change', this.currentLayoutName, this.currentLayout);
 
     return this.currentLayout;
   };

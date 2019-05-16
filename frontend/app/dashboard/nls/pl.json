@@ -1,13 +1,41 @@
 {
-  "assignPrograms:pageAction": "Przypisz programy",
-  "assignPrograms:dialogTitle": "Przypisywanie programów",
-
   "gallery:pageAction": "Pokaż obrazy programu",
 
   "currentProgram:noProgram": "Brak przypisanego programu",
-  "currentProgram:title:idle": "Wybrany program",
-  "currentProgram:title:testing": "Wykonywany program",
+  "currentProgram:order:label": "Zlecenie",
+  "currentProgram:order:empty": "wybierz zlecenie",
 
   "camera:title": "Kamera",
-  "tests:title": "Ostatnie testy"
+  "tests:title": "Ostatnie testy",
+
+  "assignPrograms:pageAction": "Przypisz programy",
+  "assignPrograms:dialogTitle": "Przypisywanie programów",
+  "assignPrograms:30s": "Program na pozycji 1 (30s):",
+  "assignPrograms:hrs": "Program na pozycji 2 (Hot Restrike):",
+  "assignPrograms:tester": "Program na pozycji 3 (Tester):",
+  "assignPrograms:placeholder": "Wybierz program...",
+  "assignPrograms:submit": "Przypisz programy",
+  "assignPrograms:cancel": "Anuluj",
+  "assignPrograms:failure": "Nie udało się przypisać programu na pozycję {kind, select, kind30s{30s} kindhrs{HRS} kindtester{Tester} other{{kind}}}: <em>{error}</em>",
+  "assignPrograms:failure:unassign": "Nie udało się usunąć przypisania programu na pozycji {kind, select, kind30s{30s} kindhrs{HRS} kindtester{Tester} other{{kind}}}: <em>{error}</em>",
+  "assignPrograms:success": "Przypisano program na pozycję {kind, select, kind30s{30s} kindhrs{HRS} kindtester{Tester} other{{kind}}}: <em>{program}</em>",
+  "assignPrograms:success:unassign": "Usunięto przypisanie programu na pozycji {kind, select, kind30s{30s} kindhrs{HRS} kindtester{Tester} other{{kind}}}!",
+
+  "printHidLabel:pageAction": "Dodrukuj etykietę",
+  "printHidLabel:dialogTitle": "Dodruk etykiety",
+  "printHidLabel:orderNo": "Numer zlecenia:",
+  "printHidLabel:serialNo": "Numer sztuki:",
+  "printHidLabel:submit": "Drukuj etykietę",
+  "printHidLabel:cancel": "Anuluj",
+  "printHidLabel:failure": "Drukowanie etykiety nie powiodło się.",
+  "printHidLabel:success": "Etykieta pomyślnie wysłana na drukarkę.",
+
+  "orderPicker:title": "Wybór zlecenia",
+  "orderPicker:order": "Numer zlecenia",
+  "orderPicker:done": "Zlecenia rozpoczęte",
+  "orderPicker:todo": "Zlecenia zaplanowane",
+  "orderPicker:submit": "Wybierz zlecenie",
+  "orderPicker:noOrder": "Brak zlecenia",
+  "orderPicker:cancel": "Anuluj",
+  "orderPicker:notFound": "Zlecenie nie istnieje."
 }

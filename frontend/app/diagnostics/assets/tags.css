@@ -11,3 +11,6 @@
   font-family: Consolas, monospace;
   white-space: nowrap;
 }
+.tag-writable {
+  cursor: pointer;
+}

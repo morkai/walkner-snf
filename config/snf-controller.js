@@ -1,10 +1,14 @@
 'use strict';
 
+const mongodb = require('./snf-mongodb');
+
 exports.id = 'snf-controller';
+
+Object.assign(exports, require('./snf-common'));
 
 exports.modules = [
   'updater',
-  'mongoose',
+  {id: 'h5-mongoose', name: 'mongoose'},
   'events',
   'modbus',
   'messenger/server',
@@ -13,11 +17,13 @@ exports.modules = [
 ];
 
 exports.updater = {
-  manifestPath: null,
-  packageJsonPath: __dirname + '/../package.json',
-  restartDelay: 1337,
-  pull: null,
-  versionsKey: 'snf'
+  expressId: null,
+  sioId: null,
+  packageJsonPath: `${__dirname}/../package.json`,
+  restartDelay: 2000,
+  versionsKey: 'snf',
+  backendVersionKey: 'controller',
+  frontendVersionKey: null
 };
 
 exports.events = {
@@ -27,7 +33,7 @@ exports.events = {
   insertDelay: 1000,
   topics: {
     debug: [
-      'app.started'
+
     ],
     info: [
       'events.**'
@@ -36,7 +42,7 @@ exports.events = {
 
     ],
     error: [
-
+      'app.started'
     ]
   },
   print: ['modbus.error']
@@ -47,7 +53,7 @@ exports['messenger/server'] = {
   pubPort: 5050,
   repHost: '0.0.0.0',
   repPort: 5051,
-  broadcastTopics: ['events.saved', 'tests.started', 'tests.finished']
+  broadcastTopics: ['events.saved', 'snf.tests.started', 'snf.tests.finished']
 };
 
 exports['messenger/client:frontend'] = {
@@ -59,13 +65,12 @@ exports['messenger/client:frontend'] = {
 };
 
 exports.mongoose = {
+  uri: mongodb.uri,
+  mongoClient: Object.assign(mongodb.mongoClient, {
+    poolSize: 5
+  }),
   maxConnectTries: 10,
-  connectAttemptDelay: 500,
-  uri: require('./snf-mongodb').uri,
-  options: {
-    server: {poolSize: 5}
-  },
-  models: ['event', 'user', 'test', 'program']
+  connectAttemptDelay: 500
 };
 
 exports.program = {
@@ -90,13 +95,15 @@ exports.modbus = {
       interval: 100,
       suppressTransactionErrors: true,
       transport: {
-        type: 'ip',
-        connection: {
-          type: 'tcp',
-          host: '127.0.0.1',
-          port: 502,
-          noActivityTime: 2000
-        }
+        type: 'ip'
+      },
+      connection: {
+        type: 'tcp',
+        socketOptions: {
+          host: '127.0.0.2',
+          port: 502
+        },
+        noActivityTime: 2000
       }
     }
   },

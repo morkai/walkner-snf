@@ -11,18 +11,10 @@
   <div class="collapse navbar-collapse navbar-collapse">
     <ul class="nav navbar-nav">
       <li><a href="#"><%- t('core', 'navbar:dashboard') %></a>
-      <li data-online data-privilege="EVENTS:VIEW"><a href="#events"><%- t('core', 'navbar:events') %></a>
-      <li data-online data-privilege="TESTS:VIEW"><a href="#tests"><%- t('core', 'navbar:tests') %></a>
-      <li data-online data-privilege="PROGRAMS:VIEW"><a href="#programs"><%- t('core', 'navbar:programs') %></a>
-      <li data-online data-privilege="USERS:VIEW"><a href="#users"><%- t('core', 'navbar:users') %></a>
-      <li data-online data-privilege="DIAGNOSTICS:MANAGE" class="dropdown">
-        <a class="dropdown-toggle" data-toggle="dropdown" href="#diagnostics">
-          <%- t('core', 'navbar:diagnostics') %>
-          <b class="caret"></b>
-        </a>
-        <ul class="dropdown-menu">
-          <li><a href="#diagnostics/tags"><%- t('core', 'navbar:diagnostics:tags') %></a>
-        </ul>
+      <li data-online data-privilege="EVENTS:VIEW" data-module><a href="#events"><%- t('core', 'navbar:events') %></a>
+      <li data-online data-privilege="LOCAL USER" data-module="snf-tests"><a href="#tests"><%- t('core', 'navbar:tests') %></a>
+      <li data-online data-privilege="SNF:VIEW" data-module="snf-programs"><a href="#programs"><%- t('core', 'navbar:programs') %></a>
+      <li data-online data-privilege="SNF:MANAGE" data-module="controller"><a href="#diagnostics/tags"><%- t('core', 'navbar:diagnostics') %></a>
     </ul>
     <ul class="nav navbar-nav navbar-right">
       <li class="dropdown navbar-account-dropdown">
@@ -32,8 +24,6 @@
           <b class="caret"></b>
         </a>
         <ul class="dropdown-menu">
-          <li data-online data-loggedin><a href="#users/<%- user.data._id %>"><%- t('core', 'navbar:myAccount') %></a>
-          <li class="divider">
           <li data-online data-loggedin=0><a class="navbar-account-logIn" href="#login"><%- t('core', 'navbar:logIn') %></a>
           <li data-online data-loggedin><a class="navbar-account-logOut" href="/logout"><%- t('core', 'navbar:logOut') %></a>
         </ul>

@@ -1,5 +1,11 @@
 <div class="currentProgram">
-  <h1 class="currentProgram-title"><%- t('dashboard', 'currentProgram:title:idle') %></h1>
+  <h1 class="currentProgram-title">
+    <%- helpers.t('dashboard', 'currentProgram:order:label') %>
+    •
+    <a id="<%- idPrefix %>-orderNo" href="javascript:void(0)"><%- helpers.t('currentProgram:order:empty') %></a>
+    •
+    <span id="<%- idPrefix %>-qtyDone">?</span>/<span id="<%- idPrefix %>-qtyTodo">?</span>
+  </h1>
   <div class="panel panel-default">
     <div class="panel-body">
       <div class="currentProgram-nameAndStatus">

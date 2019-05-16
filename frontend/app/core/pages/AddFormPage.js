@@ -1,4 +1,4 @@
-// Part of <https://miracle.systems/p/walkner-wmes> licensed under <CC BY-NC-SA 4.0>
+// Part of <https://miracle.systems/p/walkner-snf> licensed under <CC BY-NC-SA 4.0>
 
 define([
   'app/i18n',
@@ -52,14 +52,15 @@ define([
     getFormViewOptions: function()
     {
       var model = this.model;
+      var nlsDomain = model.getNlsDomain();
       var options = {
         editMode: false,
         model: model,
         formMethod: 'POST',
         formAction: model.url(),
-        formActionText: t(model.getNlsDomain(), 'FORM:ACTION:add'),
-        failureText: t(model.getNlsDomain(), 'FORM:ERROR:addFailure'),
-        panelTitleText: t(model.getNlsDomain(), 'PANEL:TITLE:addForm')
+        formActionText: t(t.has(nlsDomain, 'FORM:ACTION:add') ? nlsDomain : 'core', 'FORM:ACTION:add'),
+        failureText: t(t.has(nlsDomain, 'FORM:ERROR:addFailure') ? nlsDomain : 'core', 'FORM:ERROR:addFailure'),
+        panelTitleText: t(t.has(nlsDomain, 'PANEL:TITLE:addForm') ? nlsDomain : 'core', 'PANEL:TITLE:addForm')
       };
 
       if (typeof this.options.formTemplate === 'function')

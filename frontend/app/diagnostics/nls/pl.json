@@ -1,11 +1,6 @@
 {
-  "BREADCRUMBS:diag": "Diagnostyka",
+  "BREADCRUMBS:base": "Diagnostyka",
   "BREADCRUMBS:tags": "Tagi",
-
-  "MSG_LOADING_TAGS": "Ładowanie tagów...",
-  "MSG_LOADING_TAGS_FAILED": "Ładowanie tagów nie powiodło się :(",
-
-  "PAGE_ACTION_SETTINGS": "Ustawienia",
 
   "TAGS_HEADER_NAME": "Nazwa",
   "TAGS_HEADER_DESCRIPTION": "Opis",
@@ -25,9 +20,5 @@
   "TAG_WRITE_UNSUPPORTED": "zmiana nie wspierana",
   "TAG_WRITE_NO_BIT_MASK": "brak maski bitowej",
   "TAG_WRITE_NO_REFERENCE_TAG": "brak taga referencyjnego",
-  "TAG_WRITE_UNKNOWN_REFERENCE_TAG": "nieznany tag referencyjny",
-
-  "GROUP:other": "Inne",
-
-  "TAG:todo": "TODO"
+  "TAG_WRITE_UNKNOWN_REFERENCE_TAG": "nieznany tag referencyjny"
 }

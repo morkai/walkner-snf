@@ -1,16 +1,16 @@
 <div>
-  <div class="currentProgram-container"></div>
-  <div class="currentState-container"></div>
+  <div id="<%- idPrefix %>-program" class="currentProgram-container"></div>
+  <div id="<%- idPrefix %>-state" class="currentState-container"></div>
   <% if (local) { %>
   <div class="dashboard-cameraAndTasks">
-    <div class="dashboard-camera-container"></div>
+    <div id="<%- idPrefix %>-camera" class="dashboard-camera-container"></div>
     <div style="flex: 1 1 auto">
-      <h1><%- t('dashboard', 'tests:title') %></h1>
-      <div class="dashboard-tests-container"></div>
+      <h1><%- helpers.t('tests:title') %></h1>
+      <div id="<%- idPrefix %>-tests" class="dashboard-tests-container"></div>
     </div>
   </div>
   <% } else { %>
-  <h1><%- t('dashboard', 'tests:title') %></h1>
-  <div class="dashboard-tests-container"></div>
+  <h1><%- helpers.t('tests:title') %></h1>
+  <div id="<%- idPrefix %>-tests" class="dashboard-tests-container"></div>
   <% } %>
 </div>

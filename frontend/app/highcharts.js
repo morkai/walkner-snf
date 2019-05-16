@@ -1,21 +1,30 @@
-// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
-// Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
-// Part of the walkner-wmes project <http://lukasz.walukiewicz.eu/p/walkner-wmes>
+// Part of <https://miracle.systems/p/walkner-snf> licensed under <CC BY-NC-SA 4.0>
 
 define([
   'underscore',
   'highcharts',
+  'highcharts.exporting',
+  'highcharts.no-data-to-display',
+  'highcharts.grouped-categories',
   './i18n',
   './time',
-  './broker'
+  './broker',
+  'i18n!app/nls/core'
 ], function(
   _,
   Highcharts,
+  exporting,
+  noDataToDisplay,
+  groupedCategories,
   t,
   time,
   broker
 ) {
   'use strict';
+
+  exporting(Highcharts);
+  noDataToDisplay(Highcharts);
+  groupedCategories(Highcharts);
 
   var oldGetTooltipPosition = Highcharts.Tooltip.prototype.getPosition;
 
@@ -31,7 +40,7 @@ define([
     return pos;
   };
 
-  _.extend(Highcharts.Axis.prototype.defaultYAxisOptions, {
+  _.assign(Highcharts.Axis.prototype.defaultYAxisOptions, {
     maxPadding: 0.01,
     minPadding: 0.01
   });
@@ -52,12 +61,14 @@ define([
       var fraction = yParts.length === 2 ? (decimalPoint + yParts[1]) : '';
       var yPrefix = row.prefix || '';
       var ySuffix = row.suffix || '';
+      var valueStyle = ' style="' + (row.valueStyle || '') + '"';
 
       str += '<tr><td class="highcharts-tooltip-label">'
         + '<span style="color: ' + row.color + '">\u25cf</span> ' + row.name + ':</td>'
-        + '<td class="highcharts-tooltip-integer">' + yPrefix + integer + '</td>'
-        + '<td class="highcharts-tooltip-fraction">' + fraction + '</td>'
-        + '<td class="highcharts-tooltip-suffix">' + ySuffix + '</td></tr>';
+        + '<td class="highcharts-tooltip-integer"' + valueStyle + '>' + yPrefix + integer + '</td>'
+        + '<td class="highcharts-tooltip-fraction"' + valueStyle + '>' + fraction + '</td>'
+        + '<td class="highcharts-tooltip-suffix"' + valueStyle + '>' + ySuffix + '</td>'
+        + (row.extraColumns || '') + '</tr>';
     });
 
     str += '</table>';
@@ -67,7 +78,7 @@ define([
 
   Highcharts.setOptions({
     global: {
-      timezoneOffset: time.getMoment().zone(),
+      timezoneOffset: time.getMoment().utcOffset(),
       useUTC: false
     },
     chart: {
@@ -110,11 +121,17 @@ define([
       hideDelay: 250,
       useHTML: true,
       displayHeader: true,
+      style: {
+        pointerEvents: 'auto'
+      },
       formatter: function()
       {
         var header;
         var rows = [];
-        var headerFormatter = (this.point || this.points[0]).series.chart.tooltip.options.headerFormatter;
+        var tooltipOptions = (this.point || this.points[0]).series.chart.tooltip.options;
+        var headerFormatter = tooltipOptions.headerFormatter;
+        var rowNameFormatter = tooltipOptions.rowNameFormatter || formatTooltipRowName;
+        var valueFormatter = tooltipOptions.valueFormatter || formatTooltipValue;
 
         if (typeof headerFormatter === 'function')
         {
@@ -149,14 +166,20 @@ define([
           var options = point.series.tooltipOptions;
 
           rows.push({
-            color: point.color || point.series.color,
-            name: point.series.name,
-            prefix: options.valuePrefix,
-            suffix: options.valueSuffix,
+            point: point,
+            color: point.series.userOptions.tooltipColor || point.color || point.series.color,
+            name: rowNameFormatter(point),
+            prefix: typeof options.valuePrefix === 'function' ? options.valuePrefix(point) : options.valuePrefix,
+            suffix: typeof options.valueSuffix === 'function' ? options.valueSuffix(point) : options.valueSuffix,
             decimals: options.valueDecimals,
-            value: point.y
+            value: (options.valueFormatter || valueFormatter)(point)
           });
         });
+
+        if (tooltipOptions.extraRowsProvider)
+        {
+          tooltipOptions.extraRowsProvider(points, rows);
+        }
 
         return Highcharts.formatTableTooltip(header, rows);
       }
@@ -168,8 +191,8 @@ define([
         }
       },
       scale: 1,
-      sourceWidth: 848,
-      sourceHeight: 600,
+      sourceWidth: 842,
+      sourceHeight: 595,
       url: '/reports;export'
     },
     loading: {
@@ -226,54 +249,68 @@ define([
 
   function exportChart(type)
   {
-    /*jshint validthis:true*/
-
     var plotOptions = {
       dataLabels: {
         enabled: true,
+        padding: 0,
+        allowOverlap: false,
         formatter: formatDataLabelForExport
       }
     };
 
+    var originalEvents = this.options.chart.events;
+
     this.exportChart({type: type}, {
-      plotOptions: {
-        line: plotOptions,
-        column: plotOptions,
-        area: plotOptions
+      chart: {
+        events: {
+          load: function()
+          {
+            if (originalEvents && originalEvents.load)
+            {
+              originalEvents.load.apply(this, arguments);
+            }
+
+            _.forEach(this.series, function(series)
+            {
+              series.update(plotOptions);
+            });
+          }
+        }
       }
     });
   }
 
   function formatDataLabelForExport()
   {
-    /*jshint validthis:true*/
+    var series = this.series;
+    var chartOptions = series.chart.options;
+    var chartType = chartOptions.chart.type;
 
-    if (this.y === null || this.y === 0)
+    if (chartOptions.exporting.noDataLabels
+      || this.y === null
+      || (this.y === 0 && chartType !== 'pie'))
     {
       return '';
     }
 
-    if (this.series.type !== 'column' && this.series.points.length > 10)
-    {
-      if (this.seriesIndex % 2 === 0 && this.pointIndex % 2 !== 0)
-      {
-        return '';
-      }
-
-      if (this.seriesIndex % 2 !== 0 && this.pointIndex % 2 === 0)
-      {
-        return '';
-      }
-    }
-
     var y = Highcharts.numberFormat(this.y, 1);
 
-    if (/.0$/.test(y))
+    if (/[^0-9]0$/.test(y))
     {
       y = Highcharts.numberFormat(this.y, 0);
     }
 
     return y;
+  }
+
+  function formatTooltipRowName(point)
+  {
+    return point.series.name;
+  }
+
+  function formatTooltipValue(point)
+  {
+    return point.y;
   }
 
   return Highcharts;

@@ -1,65 +1,40 @@
-// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
-// Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
-// Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
+// Part of the walkner-hydro project <http://lukasz.walukiewicz.eu/p/walkner-hydro>
 
 define([
   'underscore',
   'jquery',
-  'moment',
+  'app/time',
   'app/i18n',
-  'app/controller',
   'app/viewport',
   'app/core/View',
-  'app/diagnostics/TagsCollection',
   'app/diagnostics/templates/tags',
-  'jquery.transit',
   'i18n!app/nls/diagnostics'
 ], function(
   _,
   $,
-  moment,
+  time,
   t,
-  controller,
   viewport,
   View,
-  TagsCollection,
-  tagsTemplate
+  template
 ) {
   'use strict';
 
   return View.extend({
 
-    template: tagsTemplate,
-
-    localTopics: {
-      'controller.tagValuesChanged': function(changes)
-      {
-        _.each(changes, this.updateState, this);
-      }
-    },
-
-    remoteTopics: {
-      'controller.tagsChanged': function(tags)
-      {
-        this.collection.reset(tags);
-      }
-    },
+    template: template,
 
     events: {
       'click .tag-value': function(e)
       {
-        this.setTagValue($(e.target));
-      },
-      'click th': function(e)
-      {
-        this.sort($(e.target).attr('data-sort-property'));
+        this.setTagValue(this.$(e.currentTarget));
       }
     },
 
     initialize: function()
     {
-      this.listenTo(this.collection, 'reset', this.render);
-      this.listenTo(this.collection, 'sort', this.render);
+      this.listenTo(this.model, 'add remove reset', this.render);
+      this.listenTo(this.model, 'change:value', this.updateState);
     },
 
     serialize: function()
@@ -67,10 +42,10 @@ define([
       var formatValue = this.formatValue.bind(this);
 
       return {
-        tags: this.collection.map(function(tag)
+        tags: this.model.map(function(tag)
         {
           tag = tag.toJSON();
-          tag.value = formatValue(controller.values[tag.name], tag.type);
+          tag.value = formatValue(tag.value, tag.type);
 
           if (tag.unit === null || tag.unit === -1)
           {
@@ -87,35 +62,9 @@ define([
       };
     },
 
-    destroy: function()
+    updateState: function(tag)
     {
-      this.collection = null;
-    },
-
-    sort: function(property)
-    {
-      this.collection.comparator = function(a, b)
-      {
-        if (a.get(property) < b.get(property))
-        {
-          return -1;
-        }
-        else if (a.get(property) > b.get(property))
-        {
-          return 1;
-        }
-        else
-        {
-          return 0;
-        }
-      };
-
-      this.collection.sort();
-    },
-
-    updateState: function(newValue, tagName)
-    {
-      var $tagValue = this.$('tr[data-tag="' + tagName + '"] .tag-value');
+      var $tagValue = this.$('tr[data-tag="' + tag.id + '"] .tag-value');
 
       if ($tagValue.length === 0 || $tagValue.is('.tag-changing'))
       {
@@ -123,22 +72,37 @@ define([
       }
 
       $tagValue.removeClass('highlight');
-      $tagValue.text(this.formatValue(newValue, this.collection.get(tagName).get('type')));
+      $tagValue.text(this.formatValue(tag.get('value'), tag.get('type')));
 
       _.defer(function() { $tagValue.addClass('highlight'); });
     },
 
     formatValue: function(value, type)
     {
-      /*jshint -W015*/
-
       switch (type)
       {
         case 'time':
-          return moment(value || 0).format('YYYY-MM-DD HH:mm:ss');
+          return time.format(value || 0, 'YYYY-MM-DD HH:mm:ss');
+
+        case 'object':
+        {
+          if (value == null)
+          {
+            return '?';
+          }
+
+          var str = JSON.stringify(value);
+
+          if (str.length > 40)
+          {
+            return str.substring(0, 35) + '...';
+          }
+
+          return str;
+        }
 
         default:
-          return value === null || typeof value === 'undefined' ? '?' : String(value);
+          return value == null ? '?' : String(value);
       }
     },
 
@@ -152,11 +116,11 @@ define([
       $tagValue.addClass('tag-changing');
 
       var tagName = $tagValue.closest('tr').attr('data-tag');
-      var tag = this.collection.get(tagName);
+      var tag = this.model.get(tagName);
 
       if (tag.get('type') === 'bool')
       {
-        this.setBoolValue($tagValue, tagName, !controller.values[tagName]);
+        this.setBoolValue($tagValue, tagName, !tag.get('value'));
       }
       else
       {
@@ -168,7 +132,7 @@ define([
     {
       var view = this;
 
-      controller.setValue(tagName, newValue, function(err)
+      view.model.setValue(tagName, newValue, function(err)
       {
         if (err)
         {
@@ -181,22 +145,23 @@ define([
 
     showEditor: function(tag, $tagValue)
     {
+      var view = this;
+      var object = tag.get('type') === 'object';
+      var oldValue = tag.get('value');
       var pos = $tagValue.position();
-
       var $form = $('<form class="input-group"></form>')
         .css({
           position: 'absolute',
-          top: pos.top + 2 + 'px',
-          left: pos.left + 'px',
-          width: $tagValue.outerWidth() + 'px'
+          top: pos.top + 4 + 'px',
+          left: pos.left + 4 + 'px',
+          width: object ? '600px' : ($tagValue.outerWidth() + 'px')
         });
+      var $value = $(object
+        ? '<textarea class="form-control" name="value" rows="6" cols="50"></textarea>'
+        : '<input class="form-control" name="value" type="text">');
 
-      var $value = $('<input class="form-control" name="value" type="text">');
-
-      $form.append($value.val(controller.values[tag.get('name')]));
-      $form.append('<div class="input-group-btn"><input class="btn btn-default" type="submit" value="&gt;"></div>');
-
-      var view = this;
+      $form.append($value.val(object ? JSON.stringify(oldValue || null, null, 2) : oldValue));
+      $form.append('<span class="input-group-btn"><input class="btn btn-primary" type="submit" value="&gt;"></span>');
 
       $form.submit(function()
       {
@@ -211,6 +176,17 @@ define([
         {
           newValue = parseFloat(rawValue);
         }
+        else if (tag.get('type') === 'object')
+        {
+          try
+          {
+            newValue = JSON.parse(rawValue);
+          }
+          catch (err)
+          {
+            newValue = oldValue;
+          }
+        }
         else
         {
           newValue = rawValue;
@@ -218,7 +194,7 @@ define([
 
         var tagName = tag.get('name');
 
-        controller.setValue(tagName, newValue, function(err)
+        view.model.setValue(tagName, newValue, function(err)
         {
           if (err)
           {
@@ -262,5 +238,6 @@ define([
         })
       });
     }
+
   });
 });

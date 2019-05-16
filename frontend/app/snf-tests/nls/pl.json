@@ -1,0 +1,36 @@
+{
+  "BREADCRUMBS:browse": "Historia",
+  "BREADCRUMBS:details": "Wynik",
+
+  "PANEL:TITLE:details": "Szczegóły wyniku",
+  "PANEL:TITLE:charts": "Wykresy",
+
+  "filter:placeholder:program": "Dowolny program",
+  "filter:submit": "Filtruj historię",
+
+  "PROPERTY:prodLine": "Linia",
+  "PROPERTY:orderNo": "Zlecenie",
+  "PROPERTY:serialNo": "Sztuka",
+  "PROPERTY:program": "Program",
+  "PROPERTY:result": "Wynik",
+  "PROPERTY:startedAt": "Czas rozpoczęcia",
+  "PROPERTY:finishedAt": "Czas ukończenia",
+  "PROPERTY:duration": "Czas trwania",
+  "PROPERTY:timePassed": "Czas trwania?",
+  "PROPERTY:lightPassed": "Poziom światła?",
+  "PROPERTY:currentPassed": "Pobór mocy?",
+  "PROPERTY:bulbHolderPassed": "Test porcelanki?",
+
+  "result:true": "Sukces",
+  "result:false": "Porażka",
+
+  "charts:temperature": "Temperatura",
+  "charts:temperature:suffix": "°C",
+  "charts:current": "Natężenie",
+  "charts:current:suffix": "A",
+  "charts:voltage": "Napięcie",
+  "charts:voltage:suffix": "V",
+  "charts:light": "Poziom światła",
+  "charts:light1": "Poziom światła 1",
+  "charts:light2": "Poziom światła 2"
+}

@@ -11,6 +11,7 @@ test.failure,Flaga niepowodzenia testu,snfPlc,output,1,M9,1,0,bool,-,-,-,-,-,-,-
 test.failure.current,Porażka: pobór mocy,snfPlc,output,1,M13,1,0,bool,-,-,-,-,-,-,-,-,-
 test.failure.light,Porażka: za słabe światło,snfPlc,output,1,M14,1,0,bool,-,-,-,-,-,-,-,-,-
 test.failure.time,Porażka: test zakończony przed czasem,snfPlc,output,1,M15,1,0,bool,-,-,-,-,-,-,-,-,-
+test.failure.bulbHolder,Porażka: test porcelanki,snfPlc,output,1,M27,1,0,bool,-,-,-,-,-,-,-,-,-
 test.elapsedTime,Aktualny czas testu,snfPlc,register,1,T100,1,0,uint16,-,-,-,div(10); floor,-,-,-,-,-
 test.hrsIntervalTime,Aktualny czas odstępu HRS,snfPlc,register,1,T103,1,0,uint16,-,-,-,div(10); floor,-,-,-,-,-
 test.hrsElapsedTime,Aktualny czas iteracji HRS,snfPlc,register,1,T101,1,0,uint16,-,-,-,div(10); floor,-,-,-,-,-
@@ -19,9 +20,9 @@ test.schleich,Pozwolenie testu Schleich,snfPlc,output,1,M11,1,0,bool,-,-,-,-,-,-
 test.probe.son1,Test: jedna sonda SON/HPI,snfPlc,output,1,M18,1,0,bool,-,-,-,-,-,-,-,-,-
 test.probe.son2,Test: dwie sondy SON/HPI,snfPlc,output,1,M19,1,0,bool,-,-,-,-,-,-,-,-,-
 test.probe.mnh,Test: jedna sonda SON/HPI,snfPlc,output,1,M20,1,0,bool,-,-,-,-,-,-,-,-,-
-program.30s,ID programu przypisanego do testu 30s,-,setting,-,-,0,1,string,-,-,-,-,-,-,-,-,-
-program.hrs,ID programu przypisanego do testu HRS,-,setting,-,-,0,1,string,-,-,-,-,-,-,-,-,-
-program.tester,ID programu przypisanego do testu Tester,-,setting,-,-,0,1,string,-,-,-,-,-,-,-,-,-
+program.30s,Program przypisany do testu 30s,-,setting,-,-,0,1,object,-,-,-,-,-,-,-,-,-
+program.hrs,Program przypisany do testu HRS,-,setting,-,-,0,1,object,-,-,-,-,-,-,-,-,-
+program.tester,Program przypisany do testu Tester,-,setting,-,-,0,1,object,-,-,-,-,-,-,-,-,-
 program.mnh,Test MNH,snfPlc,output,1,M17,1,1,bool,-,-,-,-,-,-,-,-,-
 program.lampCount,Ilość lamp,snfPlc,output,1,M21,1,1,bool,-,-,-,-,-,-,-,-,-
 program.lightSensors,Czujniki światła aktywne?,snfPlc,output,1,M16,1,1,bool,-,-,-,-,-,-,-,-,-
@@ -38,6 +39,7 @@ program.hrsInterval.pc,Czas odstępu HRS (PC),snfPlc,register,1,D12,1,1,uint16,-
 program.contactors,Konfiguracja styczników,snfPlc,register,1,D0,1,1,uint16,-,-,-,-,-,-,-,-,-
 program.current.min,Dolna tolerancja prądu,snfPlc,register,1,D232,1,1,uint16,-,-,-,div(10),-,-,-,-,-
 program.current.max,Górna tolerancja prądu,snfPlc,register,1,D233,1,1,uint16,-,-,-,div(10),-,-,-,-,-
+program.bulbHolder,Test porcelanki aktywny?,snfPlc,output,1,M25,1,1,bool,-,-,-,-,-,-,-,-,-
 limitSwitch,Wyłącznik krańcowy w lampie,snfPlc,input,1,X3,1,0,bool,-,-,-,-,-,-,-,-,-
 programStart.count,Kluczyk typu uruchomienia programu,snfPlc,input,1,X10,1,0,bool,-,-,-,-,-,-,-,-,-
 programStart.left,Przycisk uruchomienia programu (lewy),snfPlc,input,1,X4,1,0,bool,-,-,-,-,-,-,-,-,-
@@ -158,8 +160,9 @@ predef.16.current.min,Dolna tolerancja prądu 16,snfPlc,register,1,D331,0,1,uint
 predef.16.current.max,Górna tolerancja prądu 16,snfPlc,register,1,D347,0,1,uint16,-,-,-,-,-,-,-,-,-
 ,Inne,,,,,,,,,,,,,,,,
 watchdog,Watchdog,snfPlc,output,1,M8,1,1,bool,-,-,-,-,-,-,-,-,-
-remoteServerUrl,Adres serwera WMES,-,setting,-,-,0,1,string,-,-,-,-,-,-,-,-,-
 prodLine,ID linii produkcyjnej WMES,-,setting,-,-,0,1,string,-,-,-,-,-,-,-,-,-
+currentOrder,Nr aktualnego zlecenia,-,setting,-,-,0,1,string,-,-,-,-,-,-,-,-,-
+currentQty,Aktualna ilość w zleceniu,-,setting,-,-,0,1,object,-,-,-,-,-,-,-,-,-
 ,Stany połączenia z urządzeniami,,,,,,,,,,,,,,,,
 masters.controlProcess,Stan połączenia z urządzeniami sterowania (snfPlc),-,virtual,-,-,0,0,bool,-,-,-,-,-,-,-,-,-
 masters.snfPlc,Stan połączenia ze sterownikiem delta,snfPlc,virtual,-,-,0,0,bool,-,-,-,-,-,-,0,-,-

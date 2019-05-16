@@ -1,12 +1,8 @@
-// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
-// Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
-// Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
-
-/*global module:false*/
+// Part of <https://miracle.systems/p/walkner-snf> licensed under <CC BY-NC-SA 4.0>
 
 'use strict';
 
-var requirejsConfig = require('./config/require');
+const requirejsConfig = require('./config/require');
 
 module.exports = function(grunt)
 {
@@ -26,13 +22,13 @@ module.exports = function(grunt)
         './build'
       ]
     },
-    jshint: {
+    eslint: {
       backend: {
         src: [
           './backend/**/*.js'
         ],
         options: {
-          jshintrc: '.jshintrc'
+          configFile: '.eslintrc.json'
         }
       },
       frontend: {
@@ -40,7 +36,7 @@ module.exports = function(grunt)
           './frontend/app/**/*.js'
         ],
         options: {
-          jshintrc: 'frontend/.jshintrc'
+          configFile: 'frontend/.eslintrc.json'
         }
       }
     },
@@ -103,12 +99,7 @@ module.exports = function(grunt)
         options: {
           baseUrl: './build/frontend',
           dir: './frontend-build',
-          optimize: 'uglify2',
-          uglify2: {
-            compress: {
-              drop_console: true
-            }
-          },
+          optimize: 'none',
           optimizeCss: 'standard',
           modules: [
             {name: 'snf-main'}
@@ -118,20 +109,37 @@ module.exports = function(grunt)
           locale: 'pl'
         }
       }
+    },
+    uglify: {
+      options: {
+        ecma: 5,
+        compress: {
+          drop_console: false // eslint-disable-line camelcase
+        }
+      },
+      frontend: {
+        files: [{
+          expand: true,
+          cwd: './frontend-build',
+          src: '**/*.js',
+          dest: './frontend-build'
+        }]
+      }
     }
   });
 
   grunt.loadNpmTasks('grunt-contrib-clean');
   grunt.loadNpmTasks('grunt-contrib-copy');
-  grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-requirejs');
+  grunt.loadNpmTasks('grunt-uglify-es-multicore');
   grunt.loadNpmTasks('grunt-ejs-amd');
+  grunt.loadNpmTasks('grunt-eslint');
   grunt.loadNpmTasks('grunt-messageformat-amd');
 
   grunt.registerTask('default', [
     'clean',
-    'jshint:backend',
-    'jshint:frontend'
+    'eslint:backend',
+    'eslint:frontend'
   ]);
 
   grunt.registerTask('build-frontend', [
@@ -141,6 +149,7 @@ module.exports = function(grunt)
     'messageformatAmdLocale:frontend',
     'messageformatAmd:frontend',
     'requirejs:frontend',
+    'uglify:frontend',
     'clean:frontendBuilt'
   ]);
 };

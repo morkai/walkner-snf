@@ -1,4 +1,4 @@
-// Part of <https://miracle.systems/p/walkner-wmes> licensed under <CC BY-NC-SA 4.0>
+// Part of <https://miracle.systems/p/walkner-snf> licensed under <CC BY-NC-SA 4.0>
 
 define([
   'underscore',
@@ -16,6 +16,11 @@ define([
   createPageBreadcrumbs
 ) {
   'use strict';
+
+  function i18n(nlsDomain, key)
+  {
+    return t.bound(t.has(nlsDomain, key) ? nlsDomain : 'core', key);
+  }
 
   return View.extend({
 
@@ -38,12 +43,13 @@ define([
     {
       this.model = bindLoadingMessage(this.options.model, this);
 
+      var nlsDomain = this.model.getNlsDomain();
       var actionKey = this.options.actionKey;
 
       this.view = new ActionFormView(_.defaults({model: this.model}, this.options, {
-        formActionText: t.bound(this.model.getNlsDomain(), 'ACTION_FORM:BUTTON:' + actionKey),
-        messageText: t.bound(this.model.getNlsDomain(), 'ACTION_FORM:MESSAGE:' + actionKey),
-        failureText: t.bound(this.model.getNlsDomain(), 'ACTION_FORM:MESSAGE_FAILURE:' + actionKey),
+        formActionText: i18n(nlsDomain, 'ACTION_FORM:BUTTON:' + actionKey),
+        messageText: i18n(nlsDomain, 'ACTION_FORM:MESSAGE:' + actionKey),
+        failureText: i18n(nlsDomain, 'ACTION_FORM:MESSAGE_FAILURE:' + actionKey),
         requestData: {action: actionKey}
       }));
     },

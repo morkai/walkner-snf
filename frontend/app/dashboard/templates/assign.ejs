@@ -1,0 +1,18 @@
+<form method="post" action="/snf/programs;assign" autocomplete="off">
+  <div class="form-group">
+    <label for="<%- idPrefix %>-30s" class="control-label"><%- helpers.t('assignPrograms:30s') %></label>
+    <input id="<%- idPrefix %>-30s" type="text" name="30s" class="form-control" disabled>
+  </div>
+  <div class="form-group">
+    <label for="<%- idPrefix %>-hrs" class="control-label"><%- helpers.t('assignPrograms:hrs') %></label>
+    <input id="<%- idPrefix %>-hrs" type="text" name="hrs" class="form-control" disabled>
+  </div>
+  <div class="form-group">
+    <label for="<%- idPrefix %>-tester" class="control-label"><%- helpers.t('assignPrograms:tester') %></label>
+    <input id="<%- idPrefix %>-tester" type="text" name="tester" class="form-control" disabled>
+  </div>
+  <div class="form-actions">
+    <button id="<%- idPrefix %>-submit" type="submit" class="btn btn-primary" disabled><%- helpers.t('assignPrograms:submit') %></button>
+    <button type="button" class="btn btn-link cancel"><%- helpers.t('assignPrograms:cancel') %></button>
+  </div>
+</form>

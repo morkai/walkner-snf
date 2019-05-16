@@ -1,4 +1,4 @@
-// Part of <https://miracle.systems/p/walkner-wmes> licensed under <CC BY-NC-SA 4.0>
+// Part of <https://miracle.systems/p/walkner-snf> licensed under <CC BY-NC-SA 4.0>
 
 define([
   'underscore',
@@ -24,7 +24,12 @@ define([
 
     this.rqlQuery = this.createRqlQuery(options.rqlQuery || this.rqlQuery);
 
-    this.paginationData = options.paginate !== false ? new PaginationData() : null;
+    if (this.rqlQuery.limit === -1337)
+    {
+      this.rqlQuery.limit = this.getDefaultPageLimit();
+    }
+
+    this.paginationData = options.paginate !== false && this.paginate !== false ? new PaginationData() : null;
 
     if (!this.url)
     {
@@ -170,6 +175,44 @@ define([
     this.rqlQuery.skip = (newPage - 1) * this.rqlQuery.limit;
 
     this.fetch({reset: true});
+  };
+
+  Collection.prototype.getDefaultPageLimit = function()
+  {
+    var hdHeight = 84 + 15;
+    var filterHeight = 91 + 15;
+    var pagerHeight = 39 + 15;
+    var theadHeight = 32;
+    var rowHeight = 34;
+
+    if (this.theadHeight > 8)
+    {
+      theadHeight = this.theadHeight;
+    }
+    else
+    {
+      theadHeight = 32 + 20 * ((this.theadHeight || 1) - 1);
+    }
+
+    if (typeof this.rowHeight === 'number')
+    {
+      if (this.rowHeight > 8)
+      {
+        rowHeight = this.rowHeight;
+      }
+      else
+      {
+        rowHeight = 31 + 20 * (this.rowHeight - 1);
+      }
+    }
+    else if (this.rowHeight === false)
+    {
+      rowHeight = 31;
+    }
+
+    var availHeight = window.innerHeight - hdHeight - filterHeight - pagerHeight - theadHeight;
+
+    return Math.max(10, Math.floor(availHeight / rowHeight));
   };
 
   return Collection;

@@ -1,6 +1,4 @@
-// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
-// Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
-// Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
+// Part of <https://miracle.systems/p/walkner-snf> licensed under <CC BY-NC-SA 4.0>
 
 define([
   'underscore',
@@ -13,6 +11,7 @@ define([
  * @param {function(new:h5.pubsub.MessageBroker)} MessageBroker
  * @param {h5.pubsub.Broker} broker
  * @param {Socket} socket
+ * @returns {h5.pubsub.Broker}
  */
 function(
   _,
@@ -99,9 +98,16 @@ function(
     }
   });
 
-  socket.on('pubsub.message', function(topic, message)
+  socket.on('pubsub.message', function(topic, message, meta)
   {
-    pubsub.publish(topic, message, {remote: true});
+    meta.remote = true;
+
+    if (meta.json && typeof message === 'string')
+    {
+      message = JSON.parse(message);
+    }
+
+    pubsub.publish(topic, message, meta);
   });
 
   function onSocketSubscribe(topics, err, notAllowedTopics)

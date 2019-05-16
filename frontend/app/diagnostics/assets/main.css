@@ -1,6 +1,1 @@
-@import url(./settings.css);
-@import url(./tags.css);
-
-.tag-writable {
-  cursor: pointer;
-}
+@import "./tags.css";

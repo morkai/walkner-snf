@@ -1,6 +1,4 @@
-// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
-// Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
-// Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
+// Part of <https://miracle.systems/p/walkner-snf> licensed under <CC BY-NC-SA 4.0>
 
 define([
   'underscore',
@@ -9,8 +7,8 @@ define([
   '../socket',
   '../controller',
   '../core/Model',
-  '../data/programs',
-  '../tests/Test'
+  '../snf-programs/Program',
+  '../snf-tests/Test'
 ], function(
   _,
   $,
@@ -18,12 +16,14 @@ define([
   socket,
   controller,
   Model,
-  programs,
+  Program,
   Test
 ) {
   'use strict';
 
   return Model.extend({
+
+    nlsDomain: 'dashboard',
 
     defaults: {
       status: 'offline',
@@ -38,7 +38,7 @@ define([
 
       this.update();
 
-      this.broker.subscribe('controller.tagValuesChanged', this.onTagValuesChanged.bind(this));
+      this.broker.subscribe('controller.valuesChanged', this.onTagValuesChanged.bind(this));
     },
 
     destroy: function()
@@ -51,7 +51,7 @@ define([
       var deferred = $.Deferred();
       var model = this;
 
-      socket.emit('tests.getData', function(testData)
+      socket.emit('snf.tests.getData', function(testData)
       {
         var currentTest = testData.currentTest ? new Test(testData.currentTest) : null;
         var lastTest = testData.currentTest ? new Test(testData.currentTest) : null;
@@ -81,29 +81,29 @@ define([
         return this.get('currentTest').get('program');
       }
 
-      var testKind1 = controller.getValue('testKind.1');
-      var testKind2 = controller.getValue('testKind.2');
+      var testKind1 = controller.tags.getValue('testKind.1');
+      var testKind2 = controller.tags.getValue('testKind.2');
       var program;
 
       if (testKind1 === true && testKind2 === false)
       {
-        program = programs.get(controller.getValue('program.30s'));
+        program = controller.tags.getValue('program.30s');
       }
       else if (testKind1 === false && testKind2 === false)
       {
-        program = programs.get(controller.getValue('program.hrs'));
+        program = controller.tags.getValue('program.hrs');
       }
       else
       {
-        program = programs.get(controller.getValue('program.tester'));
+        program = controller.tags.getValue('program.tester');
       }
 
-      return program || null;
+      return program ? new Program(program) : null;
     },
 
     onTagValuesChanged: function(changes)
     {
-      _.each(changes, this.updateState, this);
+      _.forEach(changes, this.updateState, this);
     },
 
     updateState: function(newValue, tagName)
@@ -134,7 +134,7 @@ define([
     {
       var status = 'offline';
 
-      if (controller.getValue('masters.controlProcess'))
+      if (controller.tags.getValue('masters.controlProcess'))
       {
         status = this.isTesting() ? 'testing' : 'online';
       }
@@ -144,14 +144,12 @@ define([
 
     updateCurrentProgram: function()
     {
-      var oldCurrentProgram = this.get('currentProgram') || null;
-      var newCurrentProgram = this.getCurrentProgram() || null;
+      var oldProgram = this.get('currentProgram') || null;
+      var newProgram = this.getCurrentProgram() || null;
 
-      if (!newCurrentProgram
-        || !oldCurrentProgram
-        || oldCurrentProgram.id !== newCurrentProgram.id)
+      if (!newProgram || !oldProgram || !_.isEqual(oldProgram.attributes, newProgram.attributes))
       {
-        this.set('currentProgram', newCurrentProgram);
+        this.set('currentProgram', newProgram);
       }
     }
 

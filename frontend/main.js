@@ -1,17 +1,93 @@
-// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
-// Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
-// Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
-
-if (!window.location.origin)
-{
-  window.location.origin = window.location.protocol + '//'
-    + window.location.hostname
-    + (window.location.port ? (':' + window.location.port) : '');
-}
+// Part of <https://miracle.systems/p/walkner-snf> licensed under <CC BY-NC-SA 4.0>
 
 (function()
 {
   'use strict';
+
+  var navigator = window.navigator;
+  var location = window.location;
+
+  if (location.protocol === 'http:' && location.pathname === '/' && location.port === '')
+  {
+    location.protocol = 'https:';
+  }
+
+  if (!location.origin)
+  {
+    location.origin = location.protocol + '//' + location.hostname + (location.port ? (':' + location.port) : '');
+  }
+
+  window.COMPUTERNAME = (location.href.match(/COMPUTERNAME=(.*?)(?:(?:#|&).*)?$/i) || [null, null])[1];
+  window.INSTANCE_ID = Math.round(Date.now() + Math.random() * 9999999).toString(36).toUpperCase();
+  window.IS_EMBEDDED = window.parent !== window;
+  window.IS_IE = navigator.userAgent.indexOf('Trident/') !== -1;
+  window.IS_MOBILE = /(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series[46]0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino|android|ipad|playbook|silk/i
+    .test(navigator.userAgent);
+  window.IS_LINUX = navigator.userAgent.indexOf('X11; Linux') !== -1;
+
+  document.body.classList.toggle('is-ie', window.IS_IE);
+  document.body.classList.toggle('is-mobile', window.IS_MOBILE);
+  document.body.classList.toggle('is-embedded', window.IS_EMBEDDED);
+  document.body.classList.toggle('is-linux', window.IS_LINUX);
+
+  if (window.ENV === 'testing')
+  {
+    var matches = location.hash.match(/^(?:#proxy=([0-9]+))?(#.*?)?$/);
+
+    if (!matches || matches[1] === undefined || matches[1] === localStorage.getItem('PROXY'))
+    {
+      location.href = '/redirect?referrer=' + encodeURIComponent(
+        location.origin + '/#proxy=' + Date.now() + (matches && matches[2] ? matches[2] : '#')
+      );
+
+      return;
+    }
+
+    location.hash = matches && matches[2] ? matches[2] : '#';
+
+    localStorage.setItem('PROXY', matches[1]);
+  }
+
+  if (window.IS_EMBEDDED)
+  {
+    window.parent.postMessage({type: 'init', host: location.hostname}, '*');
+  }
+
+  if (!window.IS_EMBEDDED
+    && !window.IS_LINUX
+    && window.navigator.serviceWorker
+    && window.navigator.serviceWorker.getRegistrations
+    && location.protocol === 'https:'
+    && location.pathname === '/')
+  {
+    window.navigator.serviceWorker.register('/sw.js')
+      .then(function() { console.log('[sw] Registered!'); })
+      .catch(function(err) { console.error('[sw] Failed to register:', err); });
+  }
+
+  var oldSend = XMLHttpRequest.prototype.send;
+
+  XMLHttpRequest.prototype.send = function()
+  {
+    this.setRequestHeader('X-WMES-INSTANCE', window.INSTANCE_ID);
+
+    if (window.COMPUTERNAME)
+    {
+      this.setRequestHeader('X-WMES-CNAME', window.COMPUTERNAME);
+    }
+
+    if (window.WMES_APP_ID)
+    {
+      this.setRequestHeader('X-WMES-APP', window.WMES_APP_ID);
+    }
+
+    if (window.WMES_LINE_ID)
+    {
+      this.setRequestHeader('X-WMES-LINE', window.WMES_LINE_ID);
+    }
+
+    return oldSend.apply(this, arguments);
+  };
 
   var domains = [];
   var i18n = null;
@@ -19,7 +95,7 @@ if (!window.location.origin)
 
   require.onError = function(err)
   {
-    console.error(err);
+    console.error(Object.keys(err), err);
 
     var loadingEl = document.getElementById('app-loading');
 
@@ -82,14 +158,17 @@ if (!window.location.origin)
     }
   };
 
-  if (!navigator.onLine || !document.getElementsByTagName('html')[0].hasAttribute('manifest'))
+  var appCache = window.applicationCache;
+
+  if (!appCache
+    || !navigator.onLine
+    || !document.getElementsByTagName('html')[0].hasAttribute('manifest'))
   {
     return window.requireApp();
   }
 
-  var appCache = window.applicationCache;
   var reload = location.reload.bind(location);
-  var reloadTimer = setTimeout(reload, 60000);
+  var reloadTimer = setTimeout(reload, 90000);
 
   function doStartApp()
   {

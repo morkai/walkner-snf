@@ -1,6 +1,4 @@
-// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
-// Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
-// Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
+// Part of <https://miracle.systems/p/walkner-snf> licensed under <CC BY-NC-SA 4.0>
 
 define([
   'underscore',
@@ -8,9 +6,10 @@ define([
   'app/i18n',
   'app/user',
   'app/time',
+  'app/viewport',
   'app/controller',
-  'app/data/programs',
   'app/core/View',
+  'app/dashboard/views/OrderPickerDialogView',
   'app/dashboard/templates/currentProgram'
 ], function(
   _,
@@ -18,32 +17,53 @@ define([
   t,
   user,
   time,
+  viewport,
   controller,
-  programs,
   View,
-  currentProgramTemplate
+  OrderPickerDialogView,
+  template
 ) {
   'use strict';
 
   return View.extend({
 
-    template: currentProgramTemplate,
+    template: template,
+
+    events: {
+      'click #-orderNo': function()
+      {
+        var dialogView = new OrderPickerDialogView({
+          model: this.model
+        });
+
+        this.listenTo(dialogView, 'picked', function(data)
+        {
+          controller.tags.setValue('currentOrder', data.orderNo);
+          controller.tags.setValue('currentQty', {
+            qtyTodo: data.qtyTodo,
+            qtyDone: 0
+          });
+
+          viewport.closeDialog();
+        });
+
+        viewport.showDialog(dialogView, this.t('orderPicker:title'));
+      }
+    },
 
     localTopics: {
-      'controller.tagValuesChanged': function(changes)
+      'controller.valuesChanged': function(changes)
       {
-        _.each(changes, this.updateState, this);
+        _.forEach(changes, this.updateState, this);
       }
     },
 
     initialize: function()
     {
-      this.idPrefix = _.uniqueId('currentProgram');
+      View.prototype.initialize.apply(this, arguments);
 
       this.listenTo(this.model, 'change:status', this.updateStatus);
-
       this.listenTo(this.model, 'change:currentTest', this.updateProgressBar);
-
       this.listenTo(this.model, 'change:currentProgram', function()
       {
         this.updateProgramName();
@@ -51,20 +71,9 @@ define([
       });
     },
 
-    destroy: function()
-    {
-
-    },
-
-    serialize: function()
-    {
-      return {
-        idPrefix: this.idPrefix
-      };
-    },
-
     afterRender: function()
     {
+      this.updateCurrentOrder();
       this.updateStatus();
       this.updateProgramName();
       this.updateProgressBar();
@@ -79,6 +88,11 @@ define([
         case 'test.hrsElapsedTime':
         case 'test.hrsIteration':
           this.updateProgressValue();
+          break;
+
+        case 'currentOrder':
+        case 'currentQty':
+          this.updateCurrentOrder();
           break;
       }
     },
@@ -127,9 +141,9 @@ define([
       {
         if (this.model.isTesting())
         {
-          var hrsIteration = controller.getValue('test.hrsIteration');
-          var hrsIntervalTime = controller.getValue('test.hrsIntervalTime');
-          var hrsElapsedTime = controller.getValue('test.hrsElapsedTime');
+          var hrsIteration = controller.tags.getValue('test.hrsIteration');
+          var hrsIntervalTime = controller.tags.getValue('test.hrsIntervalTime');
+          var hrsElapsedTime = controller.tags.getValue('test.hrsElapsedTime');
 
           if (hrsIteration > 0 || hrsIntervalTime > 0 || hrsElapsedTime > 0)
           {
@@ -155,7 +169,7 @@ define([
 
     updateProgressBarValue: function()
     {
-      var elapsedTime = controller.getValue('test.elapsedTime');
+      var elapsedTime = controller.tags.getValue('test.elapsedTime');
       var illuminationTime = this.model.get('currentProgram').get('illuminationTime');
 
       this.setProgressBarValue(
@@ -180,9 +194,9 @@ define([
       var hrsTime = program.get('hrsTime');
       var hrsInterval = program.get('hrsInterval');
 
-      var hrsIteration = controller.getValue('test.hrsIteration');
-      var hrsIntervalTime = controller.getValue('test.hrsIntervalTime');
-      var hrsElapsedTime = controller.getValue('test.hrsElapsedTime');
+      var hrsIteration = controller.tags.getValue('test.hrsIteration');
+      var hrsIntervalTime = controller.tags.getValue('test.hrsIntervalTime');
+      var hrsElapsedTime = controller.tags.getValue('test.hrsElapsedTime');
       var reset = hrsIteration === 0 && hrsIntervalTime === 0 && hrsElapsedTime === 0;
       var iterationStart = hrsElapsedTime === 0 && hrsIntervalTime === hrsInterval;
 
@@ -214,6 +228,19 @@ define([
           $hrsBox.addClass('is-on').text(Math.max(hrsTime - hrsElapsedTime, 0));
         }
       }
+    },
+
+    updateCurrentOrder: function()
+    {
+      var currentOrder = controller.tags.getValue('currentOrder') || this.t('currentProgram:order:empty');
+      var currentQty = controller.tags.getValue('currentQty') || {
+        qtyDone: 0,
+        qtyTodo: 0
+      };
+
+      this.$id('orderNo').text(currentOrder);
+      this.$id('qtyDone').text(currentQty.qtyTodo > 0 && currentQty.qtyDone >= 0 ? currentQty.qtyDone : '0');
+      this.$id('qtyTodo').text(currentQty.qtyTodo || '?');
     }
 
   });

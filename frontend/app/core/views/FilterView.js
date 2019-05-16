@@ -1,4 +1,4 @@
-// Part of <https://miracle.systems/p/walkner-wmes> licensed under <CC BY-NC-SA 4.0>
+// Part of <https://miracle.systems/p/walkner-snf> licensed under <CC BY-NC-SA 4.0>
 
 define([
   'underscore',
@@ -48,17 +48,17 @@ define([
     {
       var view = this;
 
-      return {
-        idPrefix: this.idPrefix,
-        renderLimit: function()
+      return _.assign(View.prototype.serialize.apply(view, arguments), {
+        renderLimit: function(templateData)
         {
-          return filterLimitTemplate({
+          return filterLimitTemplate(_.assign({
             idPrefix: view.idPrefix,
             min: view.minLimit,
-            max: view.maxLimit
-          });
+            max: view.maxLimit,
+            hidden: false
+          }, templateData));
         }
-      };
+      });
     },
 
     toggleButtonGroup: function(groupName)
@@ -106,7 +106,7 @@ define([
     serializeQueryToForm: function()
     {
       var rqlQuery = this.model.rqlQuery;
-      var formData = _.extend({}, _.result(this, 'defaultFormData'), {
+      var formData = _.assign({}, _.result(this, 'defaultFormData'), {
         limit: rqlQuery.limit < 5 ? 5 : (rqlQuery.limit > 100 ? 100 : rqlQuery.limit)
       });
 

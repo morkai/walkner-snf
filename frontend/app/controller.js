@@ -1,55 +1,182 @@
-// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
-// Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
-// Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
+// Part of <https://miracle.systems/p/walkner-snf> licensed under <CC BY-NC-SA 4.0>
 
 define([
-  './broker',
-  './pubsub',
-  './socket'
+  'underscore',
+  'jquery',
+  'app/broker',
+  'app/pubsub',
+  'app/user',
+  'app/tags/TagCollection'
 ], function(
+  _,
+  $,
   broker,
   pubsub,
-  socket
+  user,
+  TagCollection
 ) {
   'use strict';
 
-  var controller = {
-    values: typeof window === 'object' && window.TAG_VALUES ? window.TAG_VALUES : {}
-  };
+  var pendingTagChanges = [];
+  var controller = {};
 
-  controller.getValue = function(tagName)
-  {
-    return controller.values[tagName];
-  };
+  controller.auth = {
 
-  controller.setValue = function(tagName, value, done)
-  {
-    socket.emit('controller.setTagValue', tagName, value, done);
-  };
-
-  pubsub.subscribe('controller.tagValuesChanged', function(changes)
-  {
-    var diff = {};
-    var diffCount = 0;
-
-    Object.keys(changes).forEach(function(tagName)
+    isEmbedded: function()
     {
-      var oldValue = controller.values[tagName];
-      var newValue = changes[tagName];
+      return window.location.hostname === 'localhost'
+        || (window !== window.parent && window.navigator.userAgent.indexOf('X11; Linux') !== -1);
+    }
 
-      if (newValue !== oldValue)
+  };
+
+  controller.tags = new TagCollection([], {paginate: false});
+
+  controller.loaded = false;
+  controller.loading = null;
+  controller.load = function()
+  {
+    if (controller.loaded)
+    {
+      return $.Deferred().resolve().promise(); // eslint-disable-line new-cap
+    }
+
+    if (controller.loading)
+    {
+      return controller.loading;
+    }
+
+    return load();
+  };
+
+  function load()
+  {
+    if (controller.loading)
+    {
+      return;
+    }
+
+    var tagsReq = $.ajax({url: _.result(controller.tags, 'url')}).done(function(res) { resetTags(res.collection);});
+
+    controller.loading = $.when(tagsReq);
+
+    controller.loading.done(function()
+    {
+      controller.loaded = true;
+    });
+
+    controller.loading.always(function()
+    {
+      controller.loading = null;
+    });
+
+    return controller.loading;
+  }
+
+  function resetTags(newTags)
+  {
+    var changes = {};
+    var silent = {silent: true};
+
+    if (controller.tags.length === 0 || Object.keys(newTags).length !== controller.tags.length)
+    {
+      controller.tags.reset(newTags, silent);
+
+      _.forEach(newTags, function(newTag)
       {
-        controller.values[tagName] = newValue;
-        diff[tagName] = newValue;
-        diffCount += 1;
+        changes[newTag.name] = newTag.value;
+      });
+    }
+    else
+    {
+      _.forEach(newTags, function(newTag)
+      {
+        var oldTag = controller.tags.get(newTag.name);
+        var oldValue;
+
+        if (oldTag)
+        {
+          oldValue = oldTag.get('value');
+          oldTag.set(newTag, silent);
+        }
+        else
+        {
+          controller.tags.add(newTag, silent);
+        }
+
+        if (newTag.value !== oldValue)
+        {
+          changes[newTag.name] = newTag.value;
+        }
+      });
+    }
+
+    _.forEach(pendingTagChanges, function(pendingChange)
+    {
+      var changeTime = pendingChange.time;
+
+      _.forEach(pendingTagChanges.newValues, function(newValue, tagName)
+      {
+        var tag = controller.tags.get(tagName);
+
+        if (tag && changeTime > tag.get('lastChangeTime'))
+        {
+          tag.set({
+            lastChangeTime: changeTime,
+            value: newValue
+          }, silent);
+
+          changes[tagName] = newValue;
+        }
+      });
+    });
+
+    pendingTagChanges = [];
+
+    controller.tags.trigger('reset');
+
+    if (!_.isEmpty(changes))
+    {
+      broker.publish('controller.valuesChanged', changes);
+    }
+  }
+
+  broker.subscribe('socket.connected', function() { load(); });
+
+  pubsub.subscribe('controller.tagsChanged', function(tags) { resetTags(tags); });
+
+  pubsub.subscribe('controller.tagValuesChanged', function(newValues)
+  {
+    if (controller.loading)
+    {
+      pendingTagChanges.push({
+        time: newValues['@timestamp'],
+        newValues: newValues
+      });
+
+      return;
+    }
+
+    var changes = {};
+
+    _.forEach(newValues, function(newValue, tagName)
+    {
+      var tag = controller.tags.get(tagName);
+
+      if (tag && !_.isEqual(newValue, tag.get('value')))
+      {
+        tag.set('value', newValue);
+        changes[tagName] = newValue;
       }
     });
 
-    if (diffCount > 0)
+    if (!_.isEmpty(changes))
     {
-      broker.publish('controller.tagValuesChanged', diff);
+      broker.publish('controller.valuesChanged', changes);
     }
   });
+
+  window.controller = controller;
 
   return controller;
 });

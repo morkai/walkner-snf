@@ -1,36 +1,36 @@
-// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
-// Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
-// Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
+// Part of <https://miracle.systems/p/walkner-snf> licensed under <CC BY-NC-SA 4.0>
 
 define([
   'jquery',
   'app/i18n',
   'app/user',
   'app/viewport',
-  'app/data/programs',
   'app/core/View',
   'app/core/Model',
-  'app/programs/views/AssignProgramsView',
-  'app/tests/views/TestListView',
-  'app/tests/TestCollection',
+  'app/core/util/embedded',
+  'app/snf-tests/views/TestListView',
+  'app/snf-tests/TestCollection',
+  '../views/AssignProgramsView',
+  '../views/PrintHidLabelView',
   '../views/CameraView',
   '../views/CurrentProgramView',
   '../views/CurrentStateView',
   '../views/ImageGalleryView',
   '../Dashboard',
-  'app/tests/Test',
+  'app/snf-tests/Test',
   'app/dashboard/templates/dashboard'
 ], function(
   $,
   t,
   user,
   viewport,
-  programs,
   View,
   Model,
-  AssignProgramsView,
+  embedded,
   TestListView,
   TestCollection,
+  AssignProgramsView,
+  PrintHidLabelView,
   CameraView,
   CurrentProgramView,
   CurrentStateView,
@@ -47,15 +47,13 @@ define([
 
     layoutName: 'page',
 
-    pageId: 'dashboard',
-
     remoteTopics: {
-      'tests.started': function(test)
+      'snf.tests.started': function(test)
       {
         this.model.set('currentTest', test ? new Test(test) : null);
         this.model.update();
       },
-      'tests.finished': function(test)
+      'snf.tests.finished': function(test)
       {
         this.model.set({
           currentTest: null,
@@ -69,17 +67,21 @@ define([
     {
       var actions = [{
         className: 'dashboard-action-gallery',
-        label: t('dashboard', 'gallery:pageAction'),
+        label: this.t('gallery:pageAction'),
         icon: 'image',
         callback: this.showImageGalleryDialog.bind(this)
       }];
 
-      if (user.data.local || user.isAllowedTo('PROGRAMS:MANAGE'))
+      if (user.data.local || user.isAllowedTo('SNF:MANAGE'))
       {
         actions.push({
-          label: t('dashboard', 'assignPrograms:pageAction'),
+          label: this.t('assignPrograms:pageAction'),
           icon: 'plus',
           callback: this.showAssignProgramsDialog.bind(this)
+        }, {
+          label: this.t('printHidLabel:pageAction'),
+          icon: 'print',
+          callback: this.showPrintHidLabelDialog.bind(this)
         });
       }
 
@@ -91,9 +93,9 @@ define([
       this.model = new Dashboard();
 
       this.tests = new TestCollection(null, {
-        paginate: false,
-        rqlQuery: 'select(startedAt,finishedAt,program.name,result)&sort(-finishedAt)&limit(7)'
+        paginate: false
       });
+      this.tests.rqlQuery.limit = 10;
 
       this.currentProgramView = new CurrentProgramView({model: this.model});
 
@@ -101,25 +103,30 @@ define([
 
       this.testListView = new TestListView({
         collection: this.tests,
-        columns: ['program', 'startedAt', 'duration']
+        columns: [
+          {id: 'program'},
+          {id: 'orderNo', className: 'is-min'},
+          {id: 'serialNo', className: 'is-min is-number'},
+          {id: 'startedAt', className: 'is-min'},
+          {id: 'duration', className: 'is-min'}
+        ]
       });
 
-      this.setView('.currentProgram-container', this.currentProgramView);
-      this.setView('.currentState-container', this.currentStateView);
-      this.setView('.dashboard-tests-container', this.testListView);
+      this.setView('#-program', this.currentProgramView);
+      this.setView('#-state', this.currentStateView);
+      this.setView('#-tests', this.testListView);
 
       if (user.data.local)
       {
         this.cameraView = new CameraView();
 
-        this.setView('.dashboard-camera-container', this.cameraView);
+        this.setView('#-camera', this.cameraView);
       }
 
-      this.listenTo(programs, 'change:images', this.onImagesChanged);
       this.listenTo(this.model, 'change:currentProgram', this.toggleGalleryAction);
     },
 
-    serialize: function()
+    getTemplateData: function()
     {
       return {
         local: !!user.data.local
@@ -128,26 +135,57 @@ define([
 
     load: function(when)
     {
-      return when(this.model.fetch(), this.tests.fetch({reset: true}));
+      return when(
+        this.model.fetch(),
+        this.tests.fetch({reset: true})
+      );
     },
 
     afterRender: function()
     {
       this.toggleGalleryAction();
+
+      if (window.IS_EMBEDDED)
+      {
+        embedded.render(this);
+
+        window.parent.postMessage({type: 'ready', app: 'snf'}, '*');
+      }
     },
 
     showAssignProgramsDialog: function()
     {
-      viewport.showDialog(new AssignProgramsView(), t('dashboard', 'assignPrograms:dialogTitle'));
+      var dialogView = new AssignProgramsView({
+        model: {
+          nlsDomain: this.model.nlsDomain
+        }
+      });
+
+      viewport.showDialog(dialogView, this.t('assignPrograms:dialogTitle'));
+    },
+
+    showPrintHidLabelDialog: function()
+    {
+      var dialogView = new PrintHidLabelView({
+        model: {
+          nlsDomain: this.model.nlsDomain,
+          lastTest: this.tests.find(function(test)
+          {
+            return !!test.get('orderNo') && test.get('serialNo') > 0;
+          })
+        }
+      });
+
+      viewport.showDialog(dialogView, this.t('printHidLabel:dialogTitle'));
     },
 
     showImageGalleryDialog: function()
     {
-      var currentProgram = this.model.get('currentProgram');
+      var program = this.model.get('currentProgram');
 
-      if (currentProgram)
+      if (program && program.get('images').length)
       {
-        viewport.showDialog(new ImageGalleryView({model: currentProgram}));
+        viewport.showDialog(new ImageGalleryView({model: program}));
       }
     },
 
@@ -163,9 +201,9 @@ define([
 
     toggleGalleryAction: function()
     {
-      var currentProgram = this.model.get('currentProgram');
+      var program = this.model.get('currentProgram');
 
-      $('.dashboard-action-gallery').attr('disabled', !currentProgram || !currentProgram.get('images').length);
+      $('.dashboard-action-gallery').attr('disabled', !program || !program.get('images').length);
     }
 
   });

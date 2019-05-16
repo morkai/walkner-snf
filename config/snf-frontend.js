@@ -1,43 +1,54 @@
 'use strict';
 
+const fs = require('fs');
 const mongodb = require('./snf-mongodb');
 
 exports.id = 'snf-frontend';
 
+Object.assign(exports, require('./snf-common'));
+
 exports.modules = [
   'updater',
-  'mongoose',
+  {id: 'h5-mongoose', name: 'mongoose'},
   'events',
   'pubsub',
   'user',
-  'express',
+  {id: 'h5-express', name: 'express'},
+  {id: 'h5-remoteApi', name: 'remoteApi'},
   'users',
-  'programs',
-  'tests',
+  'snf-programs',
+  'snf-tests',
   {id: 'messenger/client', name: 'messenger/client:controller'},
+  {id: 'messenger/client', name: 'messenger/client:wmes'},
   'controller',
   'messenger/server',
   'httpServer',
   'sio'
 ];
 
-exports.mainJsFile = 'snf-main.js';
-exports.mainCssFile = 'assets/snf-main.css';
-
-exports.dictionaryModules = {
-  programs: 'PROGRAMS'
-};
-
 exports.updater = {
-  manifestPath: null,
-  packageJsonPath: __dirname + '/../package.json',
-  restartDelay: 10000,
+  packageJsonPath: `${__dirname}/../package.json`,
+  restartDelay: 5000,
   pull: {
     exe: 'git.exe',
-    cwd: __dirname + '/../',
+    cwd: `${__dirname}/../`,
     timeout: 30000
   },
-  versionsKey: 'snf'
+  versionsKey: 'snf',
+  manifests: [
+    {
+      frontendVersionKey: 'frontend',
+      path: '/manifest.appcache',
+      mainJsFile: '/snf-main.js',
+      mainCssFile: '/assets/snf-main.css',
+      template: fs.readFileSync(`${__dirname}/snf-manifest.appcache`, 'utf8'),
+      frontendAppData: {
+        XLSX_EXPORT: process.platform === 'win32',
+        CORS_PING_URL: 'https://test.wmes.pl/ping'
+      },
+      dictionaryModules: {}
+    }
+  ]
 };
 
 exports.events = {
@@ -45,7 +56,6 @@ exports.events = {
   insertDelay: 1000,
   topics: {
     debug: [
-      'app.started',
       'users.login', 'users.logout',
       '*.added', '*.edited'
     ],
@@ -57,7 +67,7 @@ exports.events = {
       '*.deleted'
     ],
     error: [
-
+      'app.started'
     ]
   },
   blacklist: []
@@ -65,7 +75,7 @@ exports.events = {
 
 exports.httpServer = {
   host: '0.0.0.0',
-  port: 6080
+  port: 1337
 };
 
 exports.sio = {
@@ -79,25 +89,22 @@ exports.sio = {
 exports.pubsub = {
   statsPublishInterval: 60000,
   republishTopics: [
-    'events.saved',
-    'updater.newVersion',
-    '*.added', '*.edited', '*.deleted', '*.synced',
-    'controller.tagsChanged', 'controller.tagValuesChanged',
-    'programs.*.images.*'
+    '*.added', '*.edited', '*.deleted', '*.synced'
   ]
 };
 
 exports.mongoose = {
   uri: mongodb.uri,
-  options: mongodb,
+  mongoClient: Object.assign(mongodb.mongoClient, {
+    poolSize: 5
+  }),
   maxConnectTries: 10,
-  connectAttemptDelay: 500,
-  models: ['event', 'user', 'test', 'program']
+  connectAttemptDelay: 500
 };
 
 exports.express = {
-  staticPath: __dirname + '/../frontend',
-  staticBuildPath: __dirname + '/../frontend-build',
+  staticPath: `${__dirname}/../frontend`,
+  staticBuildPath: `${__dirname}/../frontend-build`,
   sessionCookieKey: 'snf.sid',
   sessionCookie: {
     httpOnly: true,
@@ -105,27 +112,47 @@ exports.express = {
     maxAge: 3600 * 24 * 30 * 1000
   },
   sessionStore: {
-    touchInterval: 3600 * 8 * 1000,
-    touchChance: 0
+    touchInterval: 10 * 60 * 1000,
+    touchChance: 0,
+    gcInterval: 8 * 3600,
+    cacheInMemory: false
   },
   cookieSecret: '1ee7\\/\\/snf',
   ejsAmdHelpers: {
+    _: 'underscore',
+    $: 'jquery',
     t: 'app/i18n',
-    time: 'app/time'
+    time: 'app/time',
+    user: 'app/user',
+    forms: 'app/core/util/forms'
   },
   textBody: {limit: '15mb'},
-  jsonBody: {limit: '4mb'}
+  jsonBody: {limit: '4mb'},
+  routes: [
+    require('../backend/routes/core')
+  ]
+};
+
+exports.remoteApi = {
+  apiUrl: null,
+  apiKey: null
 };
 
 exports.user = {
-  localAddresses: [/^192\.168\./],
-  privileges: [
-    'USERS:VIEW', 'USERS:MANAGE',
-    'EVENTS:VIEW',
-    'PROGRAMS:VIEW', 'PROGRAMS:MANAGE',
-    'TESTS:VIEW',
-    'DIAGNOSTICS:VIEW', 'DIAGNOSTICS:MANAGE'
-  ]
+  userInfoIdProperty: 'id',
+  localAddresses: [/^192\.168\./]
+};
+
+exports.users = {
+
+};
+
+exports['messenger/server'] = {
+  pubHost: '0.0.0.0',
+  pubPort: 5052,
+  repHost: '0.0.0.0',
+  repPort: 5053,
+  broadcastTopics: ['snf.programs.edited', 'snf.programs.deleted']
 };
 
 exports['messenger/client:controller'] = {
@@ -136,22 +163,28 @@ exports['messenger/client:controller'] = {
   responseTimeout: 15000
 };
 
-exports.tests = {
-  messengerClientId: 'messenger/client:controller'
+exports['messenger/client:wmes'] = {
+  pubHost: '127.0.0.1',
+  pubPort: 28010,
+  repHost: '127.0.0.1',
+  repPort: 28011,
+  responseTimeout: 15000,
+  subscribeTopics: [
+    'snf.programs.edited',
+    'snf.programs.deleted',
+    'snf.tests.saved'
+  ]
+};
+
+exports['snf-programs'] = {
+  imagesPath: `${__dirname}/../data/uploads/programs`
+};
+
+exports['snf-tests'] = {
+  controllerClientId: 'messenger/client:controller',
+  remoteClientId: 'messenger/client:wmes',
 };
 
 exports.controller = {
   messengerClientId: 'messenger/client:controller'
-};
-
-exports['messenger/server'] = {
-  pubHost: '0.0.0.0',
-  pubPort: 5052,
-  repHost: '0.0.0.0',
-  repPort: 5053,
-  broadcastTopics: ['programs.edited', 'programs.deleted']
-};
-
-exports.programs = {
-  imagesPath: __dirname + '/../data/uploads/programs'
 };

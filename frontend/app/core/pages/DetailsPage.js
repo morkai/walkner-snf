@@ -1,4 +1,4 @@
-// Part of <https://miracle.systems/p/walkner-wmes> licensed under <CC BY-NC-SA 4.0>
+// Part of <https://miracle.systems/p/walkner-snf> licensed under <CC BY-NC-SA 4.0>
 
 define([
   'app/i18n',
@@ -59,7 +59,21 @@ define([
 
     defineViews: function()
     {
-      var DetailsViewClass = this.DetailsView || DetailsView;
+      this.view = new (this.getViewClass())(this.getViewOptions());
+    },
+
+    load: function(when)
+    {
+      return when(this[this.modelProperty].fetch(this.fetchOptions));
+    },
+
+    getViewClass: function()
+    {
+      return this.DetailsView || DetailsView;
+    },
+
+    getViewOptions: function()
+    {
       var options = {
         model: this[this.modelProperty]
       };
@@ -74,12 +88,7 @@ define([
         options.serializeDetails = this.serializeDetails;
       }
 
-      this.view = new DetailsViewClass(options);
-    },
-
-    load: function(when)
-    {
-      return when(this[this.modelProperty].fetch(this.fetchOptions));
+      return options;
     }
 
   });

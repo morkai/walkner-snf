@@ -1,4 +1,4 @@
-// Part of <https://miracle.systems/p/walkner-wmes> licensed under <CC BY-NC-SA 4.0>
+// Part of <https://miracle.systems/p/walkner-snf> licensed under <CC BY-NC-SA 4.0>
 
 define([
   'underscore',
@@ -23,13 +23,15 @@ define([
 
     $errorMessage: null,
 
+    updateOnChange: true,
+
     initialize: function()
     {
       this.$errorMessage = null;
 
       this.listenTo(this.model, 'change', function()
       {
-        if (this.isRendered())
+        if (this.isRendered() && this.updateOnChange)
         {
           js2form(this.el, this.serializeToForm(true), '.', null, false, false);
         }
@@ -43,15 +45,16 @@ define([
 
     serialize: function()
     {
-      return {
-        editMode: !!this.options.editMode,
-        idPrefix: this.idPrefix,
-        formMethod: this.options.formMethod,
-        formAction: this.options.formAction,
-        formActionText: this.options.formActionText,
-        panelTitleText: this.options.panelTitleText,
+      var options = this.options;
+
+      return _.assign(View.prototype.serialize.apply(this, arguments), {
+        editMode: !!options.editMode,
+        formMethod: options.formMethod,
+        formAction: options.formAction,
+        formActionText: options.formActionText,
+        panelTitleText: options.panelTitleText,
         model: this.model.toJSON()
-      };
+      });
     },
 
     afterRender: function()

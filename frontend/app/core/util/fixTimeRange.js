@@ -1,4 +1,4 @@
-// Part of <https://miracle.systems/p/walkner-wmes> licensed under <CC BY-NC-SA 4.0>
+// Part of <https://miracle.systems/p/walkner-snf> licensed under <CC BY-NC-SA 4.0>
 
 define([
   'underscore',
@@ -125,8 +125,11 @@ define([
       to: null
     };
 
-    var fromMoment = fixEl(view.$id(options.fromId), options.defaultTime, options.utc);
-    var toMoment = fixEl(view.$id(options.toId), options.defaultTime, options.utc);
+    var $from = view.$id(options.fromId);
+    var $to = view.$id(options.toId);
+
+    var fromMoment = fixEl($from, options.defaultTime, options.utc);
+    var toMoment = fixEl($to, options.defaultTime, options.utc);
 
     if (fromMoment.isValid())
     {

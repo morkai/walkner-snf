@@ -1,0 +1,14 @@
+<form method="post" action="/snf/tests;printHidLabel" autocomplete="off">
+  <div class="form-group">
+    <label for="<%- idPrefix %>-orderNo" class="control-label"><%- helpers.t('printHidLabel:orderNo') %></label>
+    <input id="<%- idPrefix %>-orderNo" type="text" name="orderNo" class="form-control" required pattern="^[0-9]{9}$">
+  </div>
+  <div class="form-group">
+    <label for="<%- idPrefix %>-serialNo" class="control-label"><%- helpers.t('printHidLabel:serialNo') %></label>
+    <input id="<%- idPrefix %>-serialNo" type="number" name="serialNo" class="form-control" required min="1" max="9999">
+  </div>
+  <div class="form-actions">
+    <button id="<%- idPrefix %>-submit" type="submit" class="btn btn-primary"><%- helpers.t('printHidLabel:submit') %></button>
+    <button type="button" class="btn btn-link cancel"><%- helpers.t('printHidLabel:cancel') %></button>
+  </div>
+</form>

@@ -1,4 +1,4 @@
-// Part of <https://miracle.systems/p/walkner-wmes> licensed under <CC BY-NC-SA 4.0>
+// Part of <https://miracle.systems/p/walkner-snf> licensed under <CC BY-NC-SA 4.0>
 
 define([
   'underscore',
@@ -91,7 +91,7 @@ define([
    */
   Router.prototype.navigate = function(url, options)
   {
-    this.broker.publish('router.navigate', _.extend({url: url}, options));
+    this.broker.publish('router.navigate', _.assign({url: url}, options));
   };
 
   /**

@@ -1,25 +1,27 @@
-// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
-// Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
-// Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
+// Part of <https://miracle.systems/p/walkner-snf> licensed under <CC BY-NC-SA 4.0>
 
 define([
-  '../router',
-  '../user',
-  '../viewport',
-  './pages/TagsPage',
+  'app/router',
+  'app/viewport',
+  'app/user',
+  'app/controller',
+  'app/diagnostics/pages/TagsPage',
   'i18n!app/nls/diagnostics'
 ], function(
   router,
-  user,
   viewport,
+  user,
+  controller,
   TagsPage
 ) {
   'use strict';
 
-  var canView = user.auth('DIAGNOSTICS:VIEW');
+  var canView = user.auth('USER');
 
   router.map('/diagnostics/tags', canView, function()
   {
-    viewport.showPage(new TagsPage());
+    viewport.showPage(new TagsPage({
+      model: controller
+    }));
   });
 });

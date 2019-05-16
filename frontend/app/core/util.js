@@ -1,4 +1,4 @@
-// Part of <https://miracle.systems/p/walkner-wmes> licensed under <CC BY-NC-SA 4.0>
+// Part of <https://miracle.systems/p/walkner-snf> licensed under <CC BY-NC-SA 4.0>
 
 define([
   'underscore'
@@ -16,7 +16,7 @@ define([
    */
   util.inherits = function(ctor, superCtor)
   {
-    _.extend(ctor, superCtor);
+    _.assign(ctor, superCtor);
 
     var Surrogate = function() { this.constructor = ctor; };
     Surrogate.prototype = superCtor.prototype;
@@ -130,7 +130,7 @@ define([
 
     var broker = obj[brokerProperty];
 
-    _.each(topics, function subscribeTopic(onMessage, topic)
+    _.forEach(topics, function subscribeTopic(onMessage, topic)
     {
       if (_.isString(onMessage))
       {

@@ -1,4 +1,4 @@
-// Part of <https://miracle.systems/p/walkner-wmes> licensed under <CC BY-NC-SA 4.0>
+// Part of <https://miracle.systems/p/walkner-snf> licensed under <CC BY-NC-SA 4.0>
 
 define([
   'underscore',
@@ -28,6 +28,8 @@ define([
     tableClassName: 'table-bordered table-hover table-condensed',
 
     paginationOptions: {},
+
+    refreshDelay: 5000,
 
     remoteTopics: function()
     {
@@ -166,12 +168,21 @@ define([
 
       return columns.map(function(column)
       {
-        if (typeof column === 'string')
+        if (!column)
+        {
+          return null;
+        }
+
+        if (column === '-')
+        {
+          column = {id: 'filler', label: ''};
+        }
+        else if (typeof column === 'string')
         {
           column = {id: column, label: t.bound(nlsDomain, 'PROPERTY:' + column)};
         }
 
-        if (!column.label)
+        if (!column.label && column.label !== '')
         {
           column.label = t.bound(nlsDomain, 'PROPERTY:' + column.id);
         }
@@ -193,7 +204,7 @@ define([
         }
 
         return column;
-      });
+      }).filter(function(column) { return column !== null; });
     },
 
     serializeActions: function()
@@ -269,14 +280,14 @@ define([
 
       var now = Date.now();
 
-      if (now - this.lastRefreshAt > 3000)
+      if (now - this.lastRefreshAt > this.refreshDelay)
       {
         this.lastRefreshAt = now;
         this.refreshCollectionNow();
       }
       else
       {
-        this.timers.refreshCollection = setTimeout(this.refreshCollectionNow.bind(this), 3000);
+        this.timers.refreshCollection = setTimeout(this.refreshCollectionNow.bind(this), this.refreshDelay);
       }
     },
 

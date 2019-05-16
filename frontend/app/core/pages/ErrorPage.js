@@ -1,15 +1,13 @@
-// Part of <https://miracle.systems/p/walkner-wmes> licensed under <CC BY-NC-SA 4.0>
+// Part of <https://miracle.systems/p/walkner-snf> licensed under <CC BY-NC-SA 4.0>
 
 define([
   'underscore',
   'app/i18n',
-  'app/user',
   '../View',
   'app/core/templates/error'
 ], function(
   _,
   t,
-  user,
   View,
   template
 ) {
@@ -25,7 +23,7 @@ define([
       'click #-notify > a': function()
       {
         var page = this;
-        var body = this.buildMail();
+        var body = page.buildMail();
 
         page.$id('notify').html('<i class="fa fa-spinner fa-spin"></i>');
 
@@ -68,7 +66,7 @@ define([
         page.adminEmail = atob(window.ADMIN_EMAIL);
         page.senderUrl = atob(window.REMOTE_MAIL_SENDER_URL);
         page.secretKey = atob(window.REMOTE_MAIL_SECRET_KEY);
-        page.notify = true;
+        page.notify = code !== 0;
       }
       catch (err)
       {
@@ -78,6 +76,8 @@ define([
       page.view = new View({
         template: function()
         {
+          var user = require('app/user');
+
           if (code === 403 && !user.isLoggedIn())
           {
             code += ':guest';
@@ -88,6 +88,13 @@ define([
             message: t('core', 'ERROR:' + code + ':message'),
             notify: page.notify
           });
+        },
+        afterRender: function()
+        {
+          if (code === 403)
+          {
+            page.checkUser();
+          }
         }
       });
     },
@@ -116,6 +123,8 @@ define([
 
     trySendMail: function(url, body, done)
     {
+      var user = require('app/user');
+
       this.ajax({
         method: 'POST',
         url: url,
@@ -123,6 +132,7 @@ define([
           secretKey: this.secretKey,
           to: this.adminEmail,
           subject: t('core', 'ERROR:notify:subject', {
+            APP_NAME: t('core', 'APP_NAME'),
             code: this.model.code,
             user: user.getLabel()
           }),
@@ -146,6 +156,7 @@ define([
 
     buildMail: function()
     {
+      var user = require('app/user');
       var mail = [];
       var json = function(value)
       {
@@ -164,6 +175,7 @@ define([
         + '<br>' + json(_.assign({cname: window.COMPUTERNAME}, _.omit(user.data, 'privilegesMap')), null, 2));
       prop('router.currentRequest', this.model.req ? this.model.req.url : '?');
       prop('router.referrer', this.model.previousUrl || '?');
+      prop('router.recent', json(JSON.parse(localStorage.WMES_RECENT_LOCATIONS || '[]')));
       prop('response.code', this.model.code);
       prop('response.body', this.model.xhr ? this.model.xhr.responseText : '');
       prop('window.location.href', window.location.href);
@@ -175,6 +187,20 @@ define([
       ])), {innerWidth: window.innerWidth, innerHeight: window.innerHeight}));
 
       return mail.join('');
+    },
+
+    checkUser: function()
+    {
+      var user = require('app/user');
+      var req = this.ajax({url: '/users/self'});
+
+      req.done(function(userData)
+      {
+        if (userData._id !== user.data._id)
+        {
+          window.location.reload();
+        }
+      });
     }
 
   });

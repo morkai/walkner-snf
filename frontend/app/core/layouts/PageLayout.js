@@ -1,15 +1,17 @@
-// Part of <https://miracle.systems/p/walkner-wmes> licensed under <CC BY-NC-SA 4.0>
+// Part of <https://miracle.systems/p/walkner-snf> licensed under <CC BY-NC-SA 4.0>
 
 define([
   'underscore',
   'jquery',
   'app/user',
+  'app/i18n',
   '../View',
   'app/core/templates/pageLayout'
 ], function(
   _,
   $,
   user,
+  t,
   View,
   template
 ) {
@@ -27,6 +29,7 @@ define([
   {
     this.model = {
       id: null,
+      className: null,
       actions: [],
       breadcrumbs: [],
       title: null
@@ -70,7 +73,8 @@ define([
 
   PageLayout.prototype.serialize = function()
   {
-    return _.extend(View.prototype.serialize.call(this), {
+    return _.assign(View.prototype.serialize.call(this), {
+      hdHidden: !!this.options.hdHidden,
       version: this.options.version,
       changelogUrl: this.options.changelogUrl
     });
@@ -95,11 +99,17 @@ define([
     {
       this.setId(this.model.id);
     }
+
+    if (this.model.className !== null)
+    {
+      this.setClassName(this.model.className);
+    }
   };
 
   PageLayout.prototype.reset = function()
   {
     this.setId(null);
+    this.setClassName(null);
 
     this.model.title = null;
 
@@ -130,6 +140,11 @@ define([
     if (page.pageId)
     {
       this.setId(page.pageId);
+    }
+
+    if (page.pageClassName)
+    {
+      this.setClassName(page.pageClassName);
     }
 
     if (page.breadcrumbs)
@@ -163,6 +178,27 @@ define([
     }
 
     this.model.id = id;
+
+    return this;
+  };
+
+  /**
+   * @param {string} className
+   * @returns {PageLayout}
+   */
+  PageLayout.prototype.setClassName = function(className)
+  {
+    if (this.model.className)
+    {
+      document.body.classList.remove(this.model.className);
+    }
+
+    if (this.isRendered() && className)
+    {
+      document.body.classList.add(className);
+    }
+
+    this.model.className = className;
 
     return this;
   };
@@ -360,7 +396,11 @@ define([
 
       html += '<li>';
 
-      if (!breadcrumb.href)
+      if (typeof breadcrumb.template === 'function')
+      {
+        html += breadcrumb.template(breadcrumb, this);
+      }
+      else if (!breadcrumb.href)
       {
         html += breadcrumb.label;
       }
@@ -410,7 +450,14 @@ define([
       {
         if (_.isFunction(privileges))
         {
-          if (!privileges())
+          if (!privileges(user))
+          {
+            continue;
+          }
+        }
+        else if (Array.isArray(privileges))
+        {
+          if (!user.isAllowedTo.apply(user, privileges))
           {
             continue;
           }
@@ -435,11 +482,17 @@ define([
 
       if (typeof action.template === 'function')
       {
-        html += action.template(action);
+        html += action.template(action, this);
       }
       else
       {
         var className = 'btn btn-' + (action.type || 'default') + ' ' + _.result(action, 'className');
+
+        if (action.disabled)
+        {
+          className += ' disabled';
+        }
+
         var id = _.result(action, 'id');
 
         if (id && id.charAt(0) === '-')

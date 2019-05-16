@@ -1,19 +1,19 @@
-// Copyright (c) 2015, Łukasz Walukiewicz <lukasz@walukiewicz.eu>. Some Rights Reserved.
-// Licensed under CC BY-NC-SA 4.0 <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
-// Part of the walkner-snf project <http://lukasz.walukiewicz.eu/p/walkner-snf>
+// Part of <https://miracle.systems/p/walkner-snf> licensed under <CC BY-NC-SA 4.0>
 
 define([
   'underscore',
   'app/time',
   'app/i18n',
   'app/core/views/ListView',
-  'app/events/templates/list'
+  'app/events/templates/list',
+  'app/core/templates/userInfo'
 ], function(
   _,
   time,
   t,
   ListView,
-  listTemplate
+  listTemplate,
+  userInfoTemplate
 ) {
   'use strict';
 
@@ -34,13 +34,24 @@ define([
         {
           var type = event.get('type');
           var data = view.prepareData(type, event.get('data'));
+          var user = event.get('user');
+          var userInfo = null;
+
+          if (user)
+          {
+            userInfo = {
+              id: user._id,
+              label: user.name,
+              ip: user.ipAddress
+            };
+          }
 
           return {
             severity: event.getSeverityClassName(),
-            time: time.format(event.get('time'), 'lll'),
-            user: event.get('user'),
+            time: time.format(event.get('time'), 'L, LTS'),
+            user: userInfoTemplate({userInfo: userInfo}),
             type: t('events', 'TYPE:' + type),
-            text: t('events', 'TEXT:' + type, view.flatten(data))
+            text: t('events', 'TEXT:' + type, t.flatten(data))
           };
         })
       };
@@ -60,8 +71,6 @@ define([
 
     prepareData: function(type, data)
     {
-      /*jshint -W015*/
-
       if (data.$prepared)
       {
         return data;
@@ -69,47 +78,18 @@ define([
 
       data.$prepared = true;
 
-      switch (type)
+      if (data.date)
       {
+        data.dateUtc = time.utc.format(data.date, 'L');
+        data.date = time.format(data.date, 'L');
+      }
 
+      if (data.timestamp)
+      {
+        data.timestamp = time.format(data.timestamp, 'L, LTS');
       }
 
       return data;
-    },
-
-    flatten: function(obj)
-    {
-      var result = {};
-
-      if (obj == null)
-      {
-        return result;
-      }
-
-      var keys = Object.keys(obj);
-
-      for (var i = 0, l = keys.length; i < l; ++i)
-      {
-        var key = keys[i];
-        var value = obj[key];
-
-        if (value !== null && typeof value === 'object')
-        {
-          var flatObj = this.flatten(value);
-          var flatKeys = Object.keys(flatObj);
-
-          for (var ii = 0, ll = flatKeys.length; ii < ll; ++ii)
-          {
-            result[key + '->' + flatKeys[ii]] = String(flatObj[flatKeys[ii]]);
-          }
-        }
-        else
-        {
-          result[key] = _.escape(String(value));
-        }
-      }
-
-      return result;
     }
 
   });
