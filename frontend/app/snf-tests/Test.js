@@ -31,7 +31,7 @@ define([
 
       if (program && !(program instanceof Program))
       {
-        this.set('program', new Program(program));
+        this.attributes.program = new Program(program);
       }
     },
 
@@ -58,7 +58,7 @@ define([
       var obj = this.serialize();
 
       obj.className = obj.result ? 'success' : 'danger';
-      obj.program = obj.program.name;
+      obj.program = obj.program instanceof Program ? obj.program.get('name') : obj.program.name;
 
       return obj;
     }
