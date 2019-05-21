@@ -37,5 +37,10 @@
   "orderPicker:submit": "Wybierz zlecenie",
   "orderPicker:noOrder": "Brak zlecenia",
   "orderPicker:cancel": "Anuluj",
-  "orderPicker:notFound": "Zlecenie nie istnieje."
+  "orderPicker:notFound": "Zlecenie nie istnieje.",
+
+  "failure:bulbHolderPassed": "Podłącz łączówki sprawdzające obecność porcelanki.",
+  "failure:currentPassed": "Nieprawidłowy pobór mocy.",
+  "failure:lightPassed": "Nieprawidłowy poziom światła.",
+  "failure:timePassed": "Test zakończony przed czasem."
 }

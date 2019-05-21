@@ -10,6 +10,7 @@ define([
   'app/controller',
   'app/core/View',
   'app/dashboard/views/OrderPickerDialogView',
+  'app/dashboard/templates/message',
   'app/dashboard/templates/currentProgram'
 ], function(
   _,
@@ -21,6 +22,7 @@ define([
   controller,
   View,
   OrderPickerDialogView,
+  messageTemplate,
   template
 ) {
   'use strict';
@@ -69,6 +71,12 @@ define([
         this.updateProgramName();
         this.updateProgressBar();
       });
+      this.listenTo(this.model, 'change:lastTest', this.showLastTestResultMessage);
+    },
+
+    destroy: function()
+    {
+      this.hideMessage();
     },
 
     afterRender: function()
@@ -241,6 +249,56 @@ define([
       this.$id('orderNo').text(currentOrder);
       this.$id('qtyDone').text(currentQty.qtyTodo > 0 && currentQty.qtyDone >= 0 ? currentQty.qtyDone : '0');
       this.$id('qtyTodo').text(currentQty.qtyTodo || '?');
+    },
+
+    showLastTestResultMessage: function()
+    {
+      this.hideMessage();
+
+      var currentTest = this.model.get('currentTest');
+      var lastTest = this.model.get('lastTest');
+
+      if (currentTest || !lastTest || !lastTest.get('finishedAt'))
+      {
+        return;
+      }
+
+      var message;
+
+      ['bulbHolderPassed', 'currentPassed', 'lightPassed', 'timePassed'].forEach(function(prop)
+      {
+        if (!message && !lastTest.get(prop))
+        {
+          message = t('dashboard', 'failure:' + prop);
+        }
+      });
+
+      if (!message)
+      {
+        return;
+      }
+
+      this.$message = this.renderPartial(messageTemplate, {
+        message: message
+      });
+
+      this.$message.on('click', this.hideMessage.bind(this));
+
+      this.timers.hideMessage = setTimeout(this.hideMessage.bind(this), 6000);
+
+      this.$message.appendTo('body');
+    },
+
+    hideMessage: function()
+    {
+      clearTimeout(this.timers.hideMessage);
+      this.timers.hideMessage = null;
+
+      if (this.$message)
+      {
+        this.$message.remove();
+        this.$message = null;
+      }
     }
 
   });
