@@ -101,6 +101,7 @@ module.exports = function(grunt)
           dir: './frontend-build',
           optimize: 'none',
           optimizeCss: 'standard',
+          buildCSS: false,
           modules: [
             {name: 'snf-main'}
           ],

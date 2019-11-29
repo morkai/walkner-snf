@@ -128,9 +128,12 @@ exports.express = {
   },
   textBody: {limit: '15mb'},
   jsonBody: {limit: '4mb'},
-  routes: [
-    require('../backend/routes/core')
-  ]
+  routes: () =>
+  {
+    return [
+      require('../backend/routes/core')
+    ];
+  }
 };
 
 exports.remoteApi = {

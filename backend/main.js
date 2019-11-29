@@ -11,11 +11,11 @@ if (!process.env.NODE_ENV)
 
 require('./extensions');
 
+const config = require(process.argv[2]);
 const requireCache = require('./requireCache');
 const helpers = require('./helpers');
 const moment = require('moment');
 const main = require('h5.main');
-const config = require(process.argv[2]);
 
 if (!config.id)
 {
@@ -78,5 +78,16 @@ app.broker.subscribe('app.started').setLimit(1).on('message', () =>
   if (requireCache.built)
   {
     requireCache.save();
+
+    app.debug('Require cache built!');
+
+    setTimeout(() => process.exit(), 1000); // eslint-disable-line no-process-exit
   }
+
+  setTimeout(() =>
+  {
+    requireCache.reset();
+
+    app.debug('Require cache reset!');
+  }, 5000);
 });

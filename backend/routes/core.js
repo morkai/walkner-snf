@@ -1,10 +1,10 @@
-// Part of <https://miracle.systems/p/walkner-snf> licensed under <CC BY-NC-SA 4.0>
+// Part of <https://miracle.systems/p/walkner-wmes> licensed under <CC BY-NC-SA 4.0>
 
 'use strict';
 
 const _ = require('lodash');
 
-module.exports = function startCoreRoutes(app, express)
+module.exports = (app, express) =>
 {
   const updaterModule = app[app.options.updaterId || 'updater'];
   const userModule = app[app.options.userId || 'user'];
@@ -33,7 +33,7 @@ module.exports = function startCoreRoutes(app, express)
   {
     res.set('Access-Control-Allow-Origin', '*');
     res.set('Access-Control-Allow-Methods', 'GET');
-    res.set('Access-Control-Allow-Headers', req.headers['access-control-request-headers'] || '*');
+    res.set('Access-Control-Allow-Headers', req.headers['access-control-request-headers'] || '');
     res.end();
   });
 
@@ -41,7 +41,7 @@ module.exports = function startCoreRoutes(app, express)
   {
     res.set('Access-Control-Allow-Origin', '*');
     res.set('Access-Control-Allow-Methods', 'GET');
-    res.set('Access-Control-Allow-Headers', req.headers['access-control-request-headers'] || '*');
+    res.set('Access-Control-Allow-Headers', req.headers['access-control-request-headers'] || '');
     res.send(Date.now().toString());
   });
 
