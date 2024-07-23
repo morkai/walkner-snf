@@ -7,11 +7,6 @@
   var navigator = window.navigator;
   var location = window.location;
 
-  if (location.protocol === 'http:' && location.pathname === '/' && location.port === '')
-  {
-    location.protocol = 'https:';
-  }
-
   if (!location.origin)
   {
     location.origin = location.protocol + '//' + location.hostname + (location.port ? (':' + location.port) : '');
